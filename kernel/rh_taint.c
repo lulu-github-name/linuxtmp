@@ -87,3 +87,21 @@ void mark_driver_unsupported(const char *name)
 	        name ? name : "kernel");
 }
 EXPORT_SYMBOL(mark_driver_unsupported);
+
+/**
+ * mark_hardware_removed - devices that have been removed
+ * @name: the name of the driver
+ *
+ * When we remove support for certain hardware this may help
+ * understand the user possible issues when installing the OS.
+ * The support may be removed only before a new major version
+ * is released.
+ */
+void mark_hardware_removed(const char *name)
+{
+	pr_crit("Warning: %s - Support for this device has been removed in this major release. Please check the removed functionality section of the release notes.\n",
+		name ? name : "kernel");
+
+	add_taint(TAINT_SUPPORT_REMOVED, LOCKDEP_STILL_OK);
+}
+EXPORT_SYMBOL(mark_hardware_removed);
