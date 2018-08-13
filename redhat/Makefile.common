@@ -19,7 +19,7 @@ else
   PREBUILD:=
 endif
 BUILD:=0
-DIST:=.elrdy
+DIST:=.el8
 PACKAGE_NAME:=kernel
 SPECFILE:=$(PACKAGE_NAME).spec
 RPM:=$(REDHAT)/rpm
