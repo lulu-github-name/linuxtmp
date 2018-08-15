@@ -657,10 +657,16 @@ ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= $(call cc-option,-Oz,-Os)
 KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
 else
-ifdef CONFIG_PROFILE_ALL_BRANCHES
-KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,)
+# powerpc is compiled with -O3, via specfile rpmbuild -- see rhbz1051067.
+# we need to keep consistency here, however, for out of tree kmod builds --
+# see rhbz1431029 for reference
+ifeq ($(SRCARCH), powerpc)
+KBUILD_CFLAGS	+= -O3
 else
-KBUILD_CFLAGS   += -O2
+KBUILD_CFLAGS	+= -O2
+endif
+ifdef CONFIG_PROFILE_ALL_BRANCHES
+KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
 endif
 endif
 
