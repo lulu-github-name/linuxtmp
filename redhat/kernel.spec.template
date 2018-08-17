@@ -1764,6 +1764,17 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Fri Aug 17 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-2.el8]
+- [net] tcp: Add tcp_clamp_rto_to_user_timeout() helper to improve accuracy (Michael Cambria) [1605024]
+- [net] tcp: Add tcp_retransmit_stamp() helper routine (Michael Cambria) [1605024]
+- [net] tcp: convert icsk_user_timeout from jiffies to msecs (Michael Cambria) [1605024]
+- [kernel] Revert sched/fair: Consider SD_NUMA when selecting the most idle group to schedule on (Lauro Ramos Venancio) [1585746]
+- [kernel] redhat: makefile: adjust KBUILD_CFLAGS to reflect kernel.spec for powerpc builds (Gustavo Duarte) [1582568]
+- [rpmspec] redhat: spec: build ppc64le kernel with -O3 (Gustavo Duarte) [1582568]
+- [scsi] scsi: csiostor: update csio_get_flash_params() (Arjun Vynipadath) [1503574]
+- [scsi] csiostor: Add a soft dep on cxgb4 driver (Arjun Vynipadath) [1503574]
+- [firmware] dell_rbu: make firmware payload memory uncachable (Charles Rose) [1584401]
+
 * Mon Aug 13 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-1.el8]
 - [scsi] scsi: lpfc: update driver version to 12.0.0.6 (Dick Kennedy) [1613913]
 - [scsi] scsi: lpfc: Remove lpfc_enable_pbde as module parameter (Dick Kennedy) [1613913]
