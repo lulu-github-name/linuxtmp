@@ -59,8 +59,6 @@ Summary: The Linux kernel
 %define with_bpftool   %{?_without_bpftool:   0} %{?!_without_bpftool:   1}
 # kernel-debuginfo
 %define with_debuginfo %{?_without_debuginfo: 0} %{?!_without_debuginfo: 1}
-# kernel-bootwrapper (for creating zImages from kernel + initrd)
-%define with_bootwrapper %{?_without_bootwrapper: 0} %{?!_without_bootwrapper: 1}
 # Want to build a the vsdo directories installed
 %define with_vdso_install %{?_without_vdso_install: 0} %{?!_without_vdso_install: 1}
 # kernel-abi-whitelists
@@ -150,10 +148,8 @@ Summary: The Linux kernel
 %define all_arch_configs kernel-%{version}-*.config
 %endif
 
-# bootwrapper is only on ppc
 # sparse blows up on ppc
 %ifnarch ppc64le
-%define with_bootwrapper 0
 %define with_sparse 0
 %endif
 
@@ -409,14 +405,6 @@ header files define structures and constants that are needed for
 building most standard programs and are also needed for rebuilding the
 cross-glibc package.
 
-
-%package bootwrapper
-Summary: Boot wrapper files for generating combined kernel + initrd images
-Group: Development/System
-Requires: gzip binutils
-%description bootwrapper
-Kernel-bootwrapper contains the wrapper code which makes bootable "zImage"
-files combining both kernel and initial ramdisk.
 
 %package debuginfo-common-%{_target_cpu}
 Summary: Kernel source files used by %{name}-debuginfo packages
@@ -1440,10 +1428,6 @@ make DESTDIR=$RPM_BUILD_ROOT prefix=%{_prefix} bash_compdir=%{_sysconfdir}/bash_
 popd
 %endif
 
-%if %{with_bootwrapper}
-make DESTDIR=$RPM_BUILD_ROOT bootwrapper_install WRAPPER_OBJDIR=%{_libdir}/kernel-wrapper WRAPPER_DTSDIR=%{_libdir}/kernel-wrapper/dts
-%endif
-
 # We have to do the headers checksum calculation after the tools install because
 # these might end up installing their own set of headers on top of kernel's
 %if %{with_headers}
@@ -1581,13 +1565,6 @@ fi
 %files cross-headers
 %defattr(-,root,root)
 /usr/*-linux-gnu/include/*
-%endif
-
-%if %{with_bootwrapper}
-%files bootwrapper
-%defattr(-,root,root)
-/usr/sbin/*
-%{_libdir}/kernel-wrapper
 %endif
 
 %if %{with_kernel_abi_whitelists}
