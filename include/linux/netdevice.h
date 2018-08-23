@@ -53,6 +53,8 @@
 #include <uapi/linux/pkt_cls.h>
 #include <linux/hashtable.h>
 
+#include <linux/rh_kabi.h>
+
 struct netpoll_info;
 struct device;
 struct phy_device;
@@ -697,7 +699,7 @@ struct netdev_rx_queue {
 #endif
 	struct kobject			kobj;
 	struct net_device		*dev;
-	struct xdp_rxq_info		xdp_rxq;
+	RH_KABI_EXCLUDE(struct xdp_rxq_info	xdp_rxq)
 } ____cacheline_aligned_in_smp;
 
 /*
@@ -1383,13 +1385,13 @@ struct net_device_ops {
 						       struct sk_buff *skb);
 	void			(*ndo_set_rx_headroom)(struct net_device *dev,
 						       int needed_headroom);
-	int			(*ndo_bpf)(struct net_device *dev,
-					   struct netdev_bpf *bpf);
-	int			(*ndo_xdp_xmit)(struct net_device *dev, int n,
+	RH_KABI_EXCLUDE(int	(*ndo_bpf)(struct net_device *dev,
+					   struct netdev_bpf *bpf))
+	RH_KABI_EXCLUDE(int	(*ndo_xdp_xmit)(struct net_device *dev, int n,
 						struct xdp_frame **xdp,
-						u32 flags);
-	int			(*ndo_xsk_async_xmit)(struct net_device *dev,
-						      u32 queue_id);
+						u32 flags))
+	RH_KABI_EXCLUDE(int	(*ndo_xsk_async_xmit)(struct net_device *dev,
+						      u32 queue_id))
 };
 
 /**
@@ -1875,7 +1877,11 @@ struct net_device {
 	unsigned int		num_rx_queues;
 	unsigned int		real_num_rx_queues;
 
-	struct bpf_prog __rcu	*xdp_prog;
+	/* RHEL: while xdp_prog is explicitly removed from the kABI
+	 * whitelist, one semantics must be preserved: comparison of
+	 * xdp_prog to NULL denotes whether a XDP program is loaded or not.
+	 */
+	RH_KABI_EXCLUDE(struct bpf_prog __rcu	*xdp_prog)
 	unsigned long		gro_flush_timeout;
 	rx_handler_func_t __rcu	*rx_handler;
 	void __rcu		*rx_handler_data;
