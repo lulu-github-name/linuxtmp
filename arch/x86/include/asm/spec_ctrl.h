@@ -131,6 +131,7 @@ extern void spec_ctrl_cpu_init(void);
 extern bool spec_ctrl_enable_ibrs(void);
 extern bool spec_ctrl_enable_ibrs_always(void);
 extern bool spec_ctrl_enable_retpoline_ibrs_user(void);
+extern bool is_skylake_era(void);
 
 enum {
 	IBRS_DISABLED = 0,

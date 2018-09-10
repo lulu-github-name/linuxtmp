@@ -147,6 +147,7 @@ static const char *spectre_v2_strings[] = {
 	[SPECTRE_V2_NONE]			= "Vulnerable",
 	[SPECTRE_V2_RETPOLINE_MINIMAL]		= "Vulnerable: Minimal generic ASM retpoline",
 	[SPECTRE_V2_RETPOLINE_MINIMAL_AMD]	= "Vulnerable: Minimal AMD ASM retpoline",
+	[SPECTRE_V2_RETPOLINE_SKYLAKE]		= "Vulnerable: Retpoline on Skylake+",
 	[SPECTRE_V2_RETPOLINE_GENERIC]		= "Mitigation: Full generic retpoline",
 	[SPECTRE_V2_RETPOLINE_AMD]		= "Mitigation: Full AMD retpoline",
 	[SPECTRE_V2_IBRS_ENHANCED]		= "Mitigation: Enhanced IBRS",
@@ -366,6 +367,16 @@ set_ibrs_enhanced:
 			wrmsrl(MSR_IA32_SPEC_CTRL, x86_spec_ctrl_base);
 			goto specv2_set_mode;
 		}
+
+		/*
+		 * For Skylake, we enable IBRS by default, if available.
+		 */
+		if (is_skylake_era() && spec_ctrl_enable_ibrs()) {
+			mode = SPECTRE_V2_IBRS;
+			goto specv2_set_mode;
+		}
+		/* Fall through */
+
 		if (IS_ENABLED(CONFIG_RETPOLINE))
 			goto retpoline_auto;
 		break;
@@ -419,6 +430,11 @@ retpoline_auto:
 		mode = retp_compiler() ? SPECTRE_V2_RETPOLINE_GENERIC :
 					 SPECTRE_V2_RETPOLINE_MINIMAL;
 		setup_force_cpu_cap(X86_FEATURE_RETPOLINE);
+	}
+
+	if (is_skylake_era()) {
+		mode = SPECTRE_V2_RETPOLINE_SKYLAKE;
+		goto specv2_set_mode;
 	}
 
 	/*

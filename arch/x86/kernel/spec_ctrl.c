@@ -11,6 +11,7 @@
 #include <asm/spec_ctrl.h>
 #include <asm/cpufeature.h>
 #include <asm/nospec-branch.h>
+#include <asm/intel-family.h>
 #include <asm/cpu.h>
 
 /*
@@ -151,4 +152,21 @@ void __init spec_ctrl_init(const u64 spec_mask)
 {
 	spec_ctrl_mask = spec_mask & (SPEC_CTRL_IBRS|SPEC_CTRL_STIBP);
 	spec_ctrl_print_features();
+}
+
+/* Check for Skylake-like CPUs */
+bool is_skylake_era(void)
+{
+	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
+	    boot_cpu_data.x86 == 6) {
+		switch (boot_cpu_data.x86_model) {
+		case INTEL_FAM6_SKYLAKE_MOBILE:
+		case INTEL_FAM6_SKYLAKE_DESKTOP:
+		case INTEL_FAM6_SKYLAKE_X:
+		case INTEL_FAM6_KABYLAKE_MOBILE:
+		case INTEL_FAM6_KABYLAKE_DESKTOP:
+			return true;
+		}
+	}
+	return false;
 }
