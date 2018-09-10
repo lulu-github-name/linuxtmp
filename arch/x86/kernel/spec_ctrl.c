@@ -170,3 +170,17 @@ bool is_skylake_era(void)
 	}
 	return false;
 }
+
+/*
+ * Set the right SSBD bit for the current CPU.
+ */
+void spec_ctrl_set_ssbd(u64 tifn)
+{
+	if (tifn) {
+		this_cpu_or(spec_ctrl_pcp.entry, SPEC_CTRL_SSBD);
+		this_cpu_or(spec_ctrl_pcp.exit,  SPEC_CTRL_SSBD);
+	} else {
+		this_cpu_and(spec_ctrl_pcp.entry, ~SPEC_CTRL_SSBD);
+		this_cpu_and(spec_ctrl_pcp.exit,  ~SPEC_CTRL_SSBD);
+	}
+}
