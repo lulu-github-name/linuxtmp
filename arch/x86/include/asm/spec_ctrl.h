@@ -103,6 +103,8 @@
 #else  /* __ASSEMBLY__ */
 
 #include <linux/percpu.h>
+#include <asm/nospec-branch.h>
+#include <asm/microcode.h>
 
 /*
  * Percpu IBRS kernel entry/exit control structure
@@ -123,6 +125,32 @@ struct kernel_ibrs_spec_ctrl {
 };
 
 DECLARE_PER_CPU(struct kernel_ibrs_spec_ctrl, spec_ctrl_pcp);
+
+extern void spec_ctrl_init(const u64 spec_mask);
+extern void spec_ctrl_cpu_init(void);
+extern bool spec_ctrl_enable_ibrs(void);
+extern bool spec_ctrl_enable_ibrs_always(void);
+extern bool spec_ctrl_enable_retpoline_ibrs_user(void);
+
+enum {
+	IBRS_DISABLED = 0,
+
+	/* In kernel, disabled in userland */
+	IBRS_ENABLED,
+
+	/* In both kernel and userland */
+	IBRS_ENABLED_ALWAYS,
+
+	/* In userland, disabled in kernel */
+	IBRS_ENABLED_USER,
+
+	IBRS_MAX = IBRS_ENABLED_USER,
+};
+
+static __always_inline bool cpu_has_ibrs(void)
+{
+	return boot_cpu_has(X86_FEATURE_IBRS);
+}
 
 #endif /* __ASSEMBLY__ */
 #endif /* _ASM_X86_SPEC_CTRL_H */

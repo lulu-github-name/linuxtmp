@@ -30,6 +30,7 @@
 #include <asm/intel-family.h>
 #include <asm/e820/api.h>
 #include <asm/hypervisor.h>
+#include <asm/spec_ctrl.h>
 
 static void __init spectre_v2_select_mitigation(void);
 static void __init ssb_select_mitigation(void);
@@ -82,8 +83,12 @@ void __init check_bugs(void)
 	if (boot_cpu_has(X86_FEATURE_STIBP))
 		x86_spec_ctrl_mask |= SPEC_CTRL_STIBP;
 
+	/* IBRS initialization */
+	spec_ctrl_init(x86_spec_ctrl_mask);
+
 	/* Select the proper spectre mitigation before patching alternatives */
 	spectre_v2_select_mitigation();
+	spec_ctrl_cpu_init();
 
 	/*
 	 * Select proper mitigation for any exposure to the Speculative Store
