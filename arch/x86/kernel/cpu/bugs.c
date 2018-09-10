@@ -138,6 +138,9 @@ enum spectre_v2_mitigation_cmd {
 	SPECTRE_V2_CMD_RETPOLINE,
 	SPECTRE_V2_CMD_RETPOLINE_GENERIC,
 	SPECTRE_V2_CMD_RETPOLINE_AMD,
+	SPECTRE_V2_CMD_RETPOLINE_IBRS_USER,
+	SPECTRE_V2_CMD_IBRS,
+	SPECTRE_V2_CMD_IBRS_ALWAYS,
 };
 
 static const char *spectre_v2_strings[] = {
@@ -147,6 +150,9 @@ static const char *spectre_v2_strings[] = {
 	[SPECTRE_V2_RETPOLINE_GENERIC]		= "Mitigation: Full generic retpoline",
 	[SPECTRE_V2_RETPOLINE_AMD]		= "Mitigation: Full AMD retpoline",
 	[SPECTRE_V2_IBRS_ENHANCED]		= "Mitigation: Enhanced IBRS",
+	[SPECTRE_V2_IBRS]			= "Mitigation: IBRS (kernel)",
+	[SPECTRE_V2_RETPOLINE_IBRS_USER]	= "Mitigation: Full retpoline and IBRS (user space)",
+	[SPECTRE_V2_IBRS_ALWAYS]		= "Mitigation: IBRS (kernel and user space)",
 };
 
 #undef pr_fmt
@@ -280,6 +286,9 @@ static const struct {
 	{ "retpoline,amd",     SPECTRE_V2_CMD_RETPOLINE_AMD,     false },
 	{ "retpoline,generic", SPECTRE_V2_CMD_RETPOLINE_GENERIC, false },
 	{ "auto",              SPECTRE_V2_CMD_AUTO,              false },
+	{ "ibrs",              SPECTRE_V2_CMD_IBRS,              false },
+	{ "ibrs_always",       SPECTRE_V2_CMD_IBRS_ALWAYS,       false },
+	{ "retpoline,ibrs_user", SPECTRE_V2_CMD_RETPOLINE_IBRS_USER, false},
 };
 
 static enum spectre_v2_mitigation_cmd __init spectre_v2_parse_cmdline(void)
@@ -350,6 +359,7 @@ static void __init spectre_v2_select_mitigation(void)
 	case SPECTRE_V2_CMD_FORCE:
 	case SPECTRE_V2_CMD_AUTO:
 		if (boot_cpu_has(X86_FEATURE_IBRS_ENHANCED)) {
+set_ibrs_enhanced:
 			mode = SPECTRE_V2_IBRS_ENHANCED;
 			/* Force it so VMEXIT will restore correctly */
 			x86_spec_ctrl_base |= SPEC_CTRL_IBRS;
@@ -371,6 +381,24 @@ static void __init spectre_v2_select_mitigation(void)
 		if (IS_ENABLED(CONFIG_RETPOLINE))
 			goto retpoline_auto;
 		break;
+	case SPECTRE_V2_CMD_IBRS:
+		if (spec_ctrl_enable_ibrs()) {
+			mode = SPECTRE_V2_IBRS;
+			goto specv2_set_mode;
+		}
+		goto retpoline_auto;
+	case SPECTRE_V2_CMD_IBRS_ALWAYS:
+		/* Fall back to IBRS_ENHANCED if feature present */
+		if (boot_cpu_has(X86_FEATURE_IBRS_ENHANCED))
+			goto set_ibrs_enhanced;
+
+		if (spec_ctrl_enable_ibrs_always()) {
+			mode = SPECTRE_V2_IBRS_ALWAYS;
+			goto specv2_set_mode;
+		}
+		goto retpoline_auto;
+	case SPECTRE_V2_CMD_RETPOLINE_IBRS_USER:
+		goto retpoline_auto;
 	}
 	pr_err("Spectre mitigation: kernel not compiled with retpoline; no mitigation available!");
 	return;
@@ -392,6 +420,14 @@ retpoline_auto:
 					 SPECTRE_V2_RETPOLINE_MINIMAL;
 		setup_force_cpu_cap(X86_FEATURE_RETPOLINE);
 	}
+
+	/*
+	 * Check SPECTRE_V2_CMD_RETPOLINE_IBRS_USER mode.
+	 */
+	if ((cmd == SPECTRE_V2_CMD_RETPOLINE_IBRS_USER) &&
+	    boot_cpu_has(X86_FEATURE_RETPOLINE) &&
+	    spec_ctrl_enable_retpoline_ibrs_user())
+		mode = SPECTRE_V2_RETPOLINE_IBRS_USER;
 
 specv2_set_mode:
 	spectre_v2_enabled = mode;
@@ -418,14 +454,15 @@ specv2_set_mode:
 	 * Retpoline means the kernel is safe because it has no indirect
 	 * branches. Enhanced IBRS protects firmware too, so, enable restricted
 	 * speculation around firmware calls only when Enhanced IBRS isn't
-	 * supported.
+	 * supported or kernel IBRS isn't enabled.
 	 *
 	 * Use "mode" to check Enhanced IBRS instead of boot_cpu_has(), because
 	 * the user might select retpoline on the kernel command line and if
 	 * the CPU supports Enhanced IBRS, kernel might un-intentionally not
 	 * enable IBRS around firmware calls.
 	 */
-	if (boot_cpu_has(X86_FEATURE_IBRS) && mode != SPECTRE_V2_IBRS_ENHANCED) {
+	if (boot_cpu_has(X86_FEATURE_IBRS) &&
+	   !(x86_spec_ctrl_base & SPEC_CTRL_IBRS)) {
 		setup_force_cpu_cap(X86_FEATURE_USE_IBRS_FW);
 		pr_info("Enabling Restricted Speculation for firmware calls\n");
 	}
