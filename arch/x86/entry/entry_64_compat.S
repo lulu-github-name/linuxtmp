@@ -14,6 +14,7 @@
 #include <asm/irqflags.h>
 #include <asm/asm.h>
 #include <asm/smap.h>
+#include <asm/spec_ctrl.h>
 #include <linux/linkage.h>
 #include <linux/err.h>
 
@@ -52,8 +53,10 @@ ENTRY(entry_SYSENTER_compat)
 
 	/* We are about to clobber %rsp anyway, clobbering here is OK */
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%rsp
+	IBRS_ENTRY
 
 	movq	PER_CPU_VAR(cpu_current_top_of_stack), %rsp
+
 
 	/*
 	 * User tracing code (ptrace or signal handlers) might assume that
@@ -205,9 +208,11 @@ ENTRY(entry_SYSCALL_compat)
 
 	/* Use %rsp as scratch reg. User ESP is stashed in r8 */
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%rsp
+	IBRS_ENTRY
 
 	/* Switch to the kernel stack */
 	movq	PER_CPU_VAR(cpu_current_top_of_stack), %rsp
+
 
 	/* Construct struct pt_regs on stack */
 	pushq	$__USER32_DS		/* pt_regs->ss */
@@ -262,6 +267,7 @@ GLOBAL(entry_SYSCALL_compat_after_hwframe)
 	/* Opportunistic SYSRET */
 sysret32_from_system_call:
 	TRACE_IRQS_ON			/* User mode traces as IRQs on. */
+	IBRS_EXIT_CLOBBER
 	movq	RBX(%rsp), %rbx		/* pt_regs->rbx */
 	movq	RBP(%rsp), %rbp		/* pt_regs->rbp */
 	movq	EFLAGS(%rsp), %r11	/* pt_regs->flags (in r11) */
@@ -356,6 +362,7 @@ ENTRY(entry_INT80_compat)
 
 	/* Need to switch before accessing the thread stack. */
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%rdi
+	IBRS_ENTRY
 	movq	%rsp, %rdi
 	movq	PER_CPU_VAR(cpu_current_top_of_stack), %rsp
 

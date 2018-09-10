@@ -350,6 +350,8 @@
 /* Words 19-21: reserved for future extension */
 
 /* RHEL specific auxillary flags, word 22 */
+#define X86_FEATURE_SPEC_CTRL_ENTRY	(22*32+ 0) /* ""  Write SPEC_CTRL MSR on kernel entry */
+#define X86_FEATURE_SPEC_CTRL_EXIT	(22*32+ 1) /* ""  Write SPEC_CTRL MSR on kernel exit */
 
 /*
  * BUG word(s)
