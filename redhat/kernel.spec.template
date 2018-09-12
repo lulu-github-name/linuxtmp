@@ -1746,6 +1746,25 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Tue Sep 11 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-7.el8]
+- [netdrv] hv_netvsc: Fix a deadlock by getting rtnl lock earlier in netvsc_probe() (Vitaly Kuznetsov) [1625609]
+- [netdrv] hv_netvsc: ignore devices that are not PCI (Vitaly Kuznetsov) [1625609]
+- [netdrv] hv/netvsc: Fix NULL dereference at single queue mode fallback (Vitaly Kuznetsov) [1625609]
+- [netdrv] hv_netvsc: Add per-cpu ethtool stats for netvsc (Vitaly Kuznetsov) [1625609]
+- [pci] PCI: shpchp: Separate existence of SHPC and permission to use it (Steve Best) [1622953]
+- [powerpc] KVM: PPC: Book3S HV: Don't truncate HPTE index in xlate function (David Gibson) [1625513]
+- [kernel] rh_kabi: Add macros to size and extend structs (Prarit Bhargava) [1564570]
+- [pci] PCI: Remove unnecessary include of <linux/pci-aspm.h> (Myron Stowe) [1622672]
+- [wireless] iwlwifi: Remove unnecessary include of <linux/pci-aspm.h> (Myron Stowe) [1622672]
+- [wireless] ath9k: Remove unnecessary include of <linux/pci-aspm.h> (Myron Stowe) [1622672]
+- [netdrv] igb: Remove unnecessary include of <linux/pci-aspm.h> (Myron Stowe) [1622672]
+- [pci] PCI/ASPM: Convert to use sysfs_match_string() helper (Myron Stowe) [1622672]
+- [virt] KVM: s390: Properly lock mm context allow_gmap_hpage_1m setting (Thomas Huth) [1623513]
+- [virt] KVM: s390: vsie: copy wrapping keys to right place (Thomas Huth) [1623513]
+- [virt] KVM: s390: Fix pfmf and conditional skey emulation (Thomas Huth) [1623513]
+- [virt] KVM: s390: Fix storage attributes migration with memory slots (Thomas Huth) [1623513]
+- [virt] KVM: s390: a utility function for migration (Thomas Huth) [1623513]
+
 * Mon Sep 10 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-6.el8]
 - [lib] vsprintf: Add command line option debug_boot_weak_hash (Prarit Bhargava) [1625687]
 - [netdrv] i40e: Fix for Tx timeouts when interface is brought up if DCB is enabled (Stefan Assmann) [1616147]
