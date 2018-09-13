@@ -1746,6 +1746,31 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Wed Sep 12 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-8.el8]
+- [documentation] scsi: documentation: add scsi_mod.use_blk_mq to scsi-parameters (Ewan Milne) [1600014]
+- [scsi] scsi: core: Update SCSI_MQ_DEFAULT help text to match default (Ewan Milne) [1600014]
+- [scsi] scsi: core: switch to scsi-mq by default (Ewan Milne) [1600014]
+- [pci] PCI: Match Root Port's MPS to endpoint's MPSS as necessary (Myron Stowe) [1502324]
+- [pci] PCI: Skip MPS logic for Virtual Functions (VFs) (Myron Stowe) [1502324]
+- [pci] PCI: Check for PCIe Link downtraining (Myron Stowe) [1502324]
+- [pci] PCI: Workaround IDT switch ACS Source Validation erratum (Myron Stowe) [1502324]
+- [of] OF: Don't set default coherent DMA mask (Mark Salter) [1581822]
+- [acpi] ACPI/IORT: Don't set default coherent DMA mask (Mark Salter) [1581822]
+- [iommu] iommu/dma: Respect bus DMA limit for IOVAs (Mark Salter) [1581822]
+- [of] of/device: Set bus DMA mask as appropriate (Mark Salter) [1581822]
+- [acpi] ACPI/IORT: Set bus DMA mask as appropriate (Mark Salter) [1581822]
+- [kernel] dma-mapping: Generalise dma_32bit_limit flag (Mark Salter) [1581822]
+- [acpi] ACPI/IORT: Support address size limit for root complexes (Mark Salter) [1581822]
+- [of] of/platform: Initialise default DMA masks (Mark Salter) [1581822]
+- [net] Bluetooth: hidp: buffer overflow in hidp_process_report (Gopal Tiwari) [1623073] {CVE-2018-9363}
+- [irqchip] irqchip/gic-v3-its: Reduce minimum LPI allocation to 1 for PCI devices (Mark Salter) [1550500]
+- [irqchip] irqchip/gic-v3-its: Honor hypervisor enforced LPI range (Mark Salter) [1550500]
+- [irqchip] irqchip/gic-v3: Expose GICD_TYPER in the rdist structure (Mark Salter) [1550500]
+- [irqchip] irqchip/gic-v3-its: Drop chunk allocation compatibility (Mark Salter) [1550500]
+- [irqchip] irqchip/gic-v3-its: Move minimum LPI requirements to individual busses (Mark Salter) [1550500]
+- [irqchip] irqchip/gic-v3-its: Use full range of LPIs (Mark Salter) [1550500]
+- [irqchip] irqchip/gic-v3-its: Refactor LPI allocator (Mark Salter) [1550500]
+
 * Tue Sep 11 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-7.el8]
 - [netdrv] hv_netvsc: Fix a deadlock by getting rtnl lock earlier in netvsc_probe() (Vitaly Kuznetsov) [1625609]
 - [netdrv] hv_netvsc: ignore devices that are not PCI (Vitaly Kuznetsov) [1625609]
