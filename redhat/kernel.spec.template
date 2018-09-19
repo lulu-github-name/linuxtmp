@@ -1746,6 +1746,12 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Tue Sep 18 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-11.el8]
+- [net] udp6: add missing checks on edumux packet processing (Paolo Abeni) [1625954]
+- [net] udp4: fix IP_CMSG_CHECKSUM for connected sockets (Paolo Abeni) [1625954]
+- [s390] s390/pci: fix out of bounds access during irq setup (Hendrik Brueckner) [1627462]
+- [nvdimm] libnvdimm: fix ars_status output length calculation (Jeff Moyer) [1616307]
+
 * Mon Sep 17 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-10.el8]
 - [scsi] scsi: lpfc: Correct MDS diag and nvmet configuration (Dick Kennedy) [1628323]
 - [iommu] iommu/arm-smmu: workaround DMA mode issues (Mark Salter) [1624077]
