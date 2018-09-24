@@ -1746,6 +1746,58 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Mon Sep 24 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-14.el8]
+- [mm] mm: get rid of vmacache_flush_all() entirely (Waiman Long) [1631297] {CVE-2018-17182}
+- [mm] mm, vmacache: hash addresses based on pmd (Waiman Long) [1631297] {CVE-2018-17182}
+- [mm] mm: Allocate the mm_cpumask (mm->cpu_bitmap) dynamically based on nr_cpu_ids (Waiman Long) [1631297] {CVE-2018-17182}
+- [infiniband] IB/hfi1: Invalid NUMA node information can cause a divide by zero (Alex Estrin) [1622222]
+- [nvdimm] libnvdimm: Export max available extent (Jeff Moyer) [1627874]
+- [nvdimm] libnvdimm: Use max contiguous area for namespace size (Jeff Moyer) [1627874]
+- [netdrv] ice: Fix and update driver version string (Jonathan Toppins) [1611786]
+- [netdrv] ice: Introduce SERVICE_DIS flag and service routine functions (Jonathan Toppins) [1611786]
+- [netdrv] ice: Enable VSI Rx/Tx pruning only when VLAN 0 is active (Jonathan Toppins) [1611786]
+- [netdrv] ice: Enable firmware logging during device initialization (Jonathan Toppins) [1611786]
+- [netdrv] ice: Implement ice_bridge_getlink and ice_bridge_setlink (Jonathan Toppins) [1611786]
+- [netdrv] ice: Add support for Tx hang, Tx timeout and malicious driver detection (Jonathan Toppins) [1611786]
+- [netdrv] ice: Clean up register file (Jonathan Toppins) [1611786]
+- [netdrv] ice: Implement handlers for ethtool PHY/link operations (Jonathan Toppins) [1611786]
+- [netdrv] ice: Refactor VSI allocation, deletion and rebuild flow (Jonathan Toppins) [1611786]
+- [netdrv] ice: Refactor switch rule management structures and functions (Jonathan Toppins) [1611786]
+- [netdrv] ice: Code optimization for ice_fill_sw_rule() (Jonathan Toppins) [1611786]
+- [netdrv] ice: Prevent control queue operations during reset (Jonathan Toppins) [1611786]
+- [netdrv] ice: Update request resource command to latest specification (Jonathan Toppins) [1611786]
+- [netdrv] ice: Updates to Tx scheduler code (Jonathan Toppins) [1611786]
+- [netdrv] ice: Rework flex descriptor programming (Jonathan Toppins) [1611786]
+- [netdrv] net/mlx5: Fix SQ offset in QPs with small RQ (Alaa Hleihel) [1623367]
+- [x86] x86/spec_ctrl: Make IBRS code work with SSBD mitigation (Waiman Long) [1565180]
+- [x86] x86/spec_ctrl: Auto-enable IBRS on Skylake (Waiman Long) [1565180]
+- [x86] x86/spec_ctrl: Extend spectre_v2 boot option to support IBRS (Waiman Long) [1565180]
+- [x86] x86/spec_ctrl: Boot time IBRS initialization (Waiman Long) [1565180]
+- [x86] x86/spec_ctrl: Add IBRS code to the 64-bit assembly entry code (Waiman Long) [1565180]
+- [x86] x86/cpufeatures: Increase NCAPINTS for future extension (Waiman Long) [1565180]
+- [netdrv] ice: Trivial formatting fixes (Jonathan Toppins) [1611783]
+- [netdrv] ice: Change struct members from bool to u8 (Jonathan Toppins) [1611783]
+- [netdrv] ice: Fix potential return of uninitialized value (Jonathan Toppins) [1611783]
+- [netdrv] ice: Fix a few null pointer dereference issues (Jonathan Toppins) [1611783]
+- [netdrv] ice: Update to interrupts enabled in OICR (Jonathan Toppins) [1611783]
+- [netdrv] ice: Set VLAN flags correctly (Jonathan Toppins) [1611783]
+- [netdrv] ice: Use order_base_2 to calculate higher power of 2 (Jonathan Toppins) [1611783]
+- [netdrv] ice: Fix bugs in control queue processing (Jonathan Toppins) [1611783]
+- [netdrv] ice: Clean control queues only when they are initialized (Jonathan Toppins) [1611783]
+- [netdrv] ice: Report stats for allocated queues via ethtool stats (Jonathan Toppins) [1611783]
+- [netdrv] ice: Cleanup magic number (Jonathan Toppins) [1611783]
+- [netdrv] ice: Remove unnecessary node owner check (Jonathan Toppins) [1611783]
+- [netdrv] ice: Fix multiple static analyser warnings (Jonathan Toppins) [1611783]
+- [virt] KVM: VMX: fixes for vmentry_l1d_flush module parameter (Waiman Long) [1616248] {CVE-2018-15572}
+- [virt] KVM: x86: SVM: Call x86_spec_ctrl_set_guest/host() with interrupts disabled (Waiman Long) [1616248] {CVE-2018-15572}
+- [virt] x86/kvm/vmx: Fix coding style in vmx_setup_l1d_flush() (Waiman Long) [1616248] {CVE-2018-15572}
+- [x86] x86/speculation: Support Enhanced IBRS on future CPUs (Waiman Long) [1614144]
+- [x86] x86/speculation: Protect against userspace-userspace spectreRSB (Waiman Long) [1616248] {CVE-2018-15572}
+- [x86] x86/speculation: Remove SPECTRE_V2_IBRS in enum spectre_v2_mitigation (Waiman Long) [1616248] {CVE-2018-15572}
+- [cpufreq] cpufreq: Fix a circular lock dependency problem (Waiman Long) [1599154]
+- [kernel] cpu/hotplug: Add a cpus_read_trylock() function (Waiman Long) [1599154]
+- [virt] xen/spinlock: Don't use pvqspinlock if only 1 vCPU (Waiman Long) [1618486]
+
 * Thu Sep 20 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-13.el8]
 - [mailbox] mailbox: PCC: handle parse error (David Arcari) [1630382]
 - [hv] vmbus: don't return values for uninitalized channels (Vitaly Kuznetsov) [1617954]
