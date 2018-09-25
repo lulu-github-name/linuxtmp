@@ -1746,6 +1746,28 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Tue Sep 25 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-15.el8]
+- [kernel] locking/rwsem: Make owner store task pointer of last owning reader (Waiman Long) [1631842]
+- [kernel] locking/rwsem: Exit read lock slowpath if queue empty & no writer (Waiman Long) [1631842]
+- [x86] x86/microcode: Update the new microcode revision unconditionally (Prarit Bhargava) [1630931]
+- [x86] x86/microcode: Make sure boot_cpu_data.microcode is up-to-date (Prarit Bhargava) [1630931]
+- [arm64] arm64: tlb: Provide forward declaration of tlb_flush() before including tlb.h (Waiman Long) [1630521]
+- [x86] x86/mm: Only use tlb_remove_table() for paravirt (Waiman Long) [1630521]
+- [mm] mm: mmu_notifier fix for tlb_end_vma (Waiman Long) [1630521]
+- [mm] mm/tlb, x86/mm: Support invalidating TLB caches for RCU_TABLE_FREE (Waiman Long) [1630521]
+- [mm] mm/tlb: Remove tlb_remove_table() non-concurrent condition (Waiman Long) [1630521]
+- [mm] mm: move tlb_table_flush to tlb_flush_mmu_free (Waiman Long) [1630521]
+- [kernel] clocksource: Revert Remove kthread (Waiman Long) [1628402]
+- [cpuidle] cpuidle: menu: Retain tick when shallow state is selected (Waiman Long) [1628402]
+- [cpufreq] cpufreq: governor: Avoid accessing invalid governor_data (Waiman Long) [1628402]
+- [cpuidle] cpuidle: menu: Handle stopped tick more aggressively (Waiman Long) [1628402]
+- [kernel] sched: idle: Avoid retaining the tick when it has been stopped (Waiman Long) [1628402]
+- [net] netfilter: xt_hashlimit: do not crash when reading proc file (Florian Westphal) [1630131]
+- [x86] x86/boot/KASLR: Skip specified number of 1GB huge pages when doing physical randomization (KASLR) (Baoquan He) [1564824]
+- [x86] x86/boot/KASLR: Add two new functions for 1GB huge pages handling (Baoquan He) [1564824]
+- [mfd] mfd: intel-lpss: Add Ice Lake PCI IDs (Gopal Tiwari) [1483477]
+- [mmc] mmc: sdhci-pci: Add support for Intel ICP (Gopal Tiwari) [1483496]
+
 * Mon Sep 24 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-14.el8]
 - [mm] mm: get rid of vmacache_flush_all() entirely (Waiman Long) [1631297] {CVE-2018-17182}
 - [mm] mm, vmacache: hash addresses based on pmd (Waiman Long) [1631297] {CVE-2018-17182}
