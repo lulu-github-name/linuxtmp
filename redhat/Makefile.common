@@ -18,7 +18,7 @@ ifneq ($(RPMKEXTRAVERSION),)
 else
   PREBUILD:=
 endif
-BUILD:=16
+BUILD:=17
 DIST:=.el8
 PACKAGE_NAME:=kernel
 SPECFILE:=$(PACKAGE_NAME).spec
