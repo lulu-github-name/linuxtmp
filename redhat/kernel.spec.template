@@ -1757,6 +1757,11 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Tue Oct 02 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-19.el8]
+- [s390] s390: detect etoken facility (Thomas Huth) [1634069]
+- [s390] s390/lib: use expoline for all bcr instructions (Thomas Huth) [1634069]
+- [documentation] vm.txt: Adding 'nr_hugepages_mempolicy' parameter description (Prashant Dhamdhere) [1626547]
+
 * Mon Oct 01 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-18.el8]
 - [scsi] scsi: ipr: System hung while dlpar adding primary ipr adapter back (Steve Best) [1633217]
 - [target] scsi: iscsi: target: Don't use stack buffer for scatterlist (Maurizio Lombardi) [1631342]
