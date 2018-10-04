@@ -1757,6 +1757,37 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Thu Oct 04 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-21.el8]
+- [s390] s390/sclp: Allow to request adapter reset (Philipp Rudo) [1635273]
+- [char] ipmi: Fix NULL pointer dereference in ssif_probe (Tony Camuso) [1635366]
+- [char] ipmi: Fix I2C client removal in the SSIF driver (Tony Camuso) [1635366]
+- [char] ipmi: kcs_bmc: don't change device name (Tony Camuso) [1635366]
+- [kernel] timers: Clear timer_base::must_forward_clk with timer_base::lock held (Waiman Long) [1632820]
+- [pci] switchtec: Fix Spectre v1 vulnerability (Waiman Long) [1632820]
+- [kernel] cpu/hotplug: Prevent state corruption on error rollback (Waiman Long) [1632820]
+- [kernel] cpu/hotplug: Adjust misplaced smb() in cpuhp_thread_fun() (Waiman Long) [1632820]
+- [base] memory_hotplug: fix kernel_panic on offline page processing (Waiman Long) [1632820]
+- [mm] mm/hugetlb: filter out hugetlb pages if HUGEPAGE migration is not supported (Waiman Long) [1632820]
+- [lib] debugobjects: Make stack check warning more informative (Waiman Long) [1632820]
+- [fs] fs/dcache.c: fix kmemcheck splat at take_dentry_name_snapshot() (Waiman Long) [1632820]
+- [x86] x86/process: Don't mix user/kernel regs in 64bit __show_regs() (Waiman Long) [1632820]
+- [x86] x86/dumpstack: Don't dump kernel memory based on usermode RIP (Waiman Long) [1632820]
+- [x86] x86: Avoid pr_cont() in show_opcodes() (Waiman Long) [1632820]
+- [x86] x86/entry/64: Wipe KASAN stack shadow before rewind_stack_do_exit() (Waiman Long) [1632820]
+- [x86] x86/speculation/l1tf: Increase l1tf memory limit for Nehalem+ (Waiman Long) [1632820]
+- [x86] x86/spectre: Add missing family 6 check to microcode check (Waiman Long) [1632820]
+- [x86] x86/nmi: Fix NMI uaccess race against CR3 switching (Waiman Long) [1632820]
+- [x86] x86/vdso: Fix lsl operand order (Waiman Long) [1632820]
+- [x86] x86/vdso: Fix vDSO build if a retpoline is emitted (Waiman Long) [1632820]
+- [x86] x86/speculation/l1tf: Suggest what to do on systems with too much RAM (Waiman Long) [1632820]
+- [x86] x86/speculation/l1tf: Fix off-by-one error when warning that system has too much RAM (Waiman Long) [1632820]
+- [x86] x86/speculation/l1tf: Fix overflow in l1tf_pfn_limit() on 32bit (Waiman Long) [1632820]
+- [x86] x86/speculation/l1tf: Exempt zeroed PTEs from inversion (Waiman Long) [1632820]
+- [x86] x86/mm/pti: Clear Global bit more aggressively (Waiman Long) [1632820]
+- [x86] x86/paravirt: Fix spectre-v2 mitigations for paravirt guests (Waiman Long) [1632820]
+- [target] scsi: target: iscsi: Use bin2hex instead of a re-implementation (Maurizio Lombardi) [1632184] {CVE-2018-14633}
+- [target] scsi: target: iscsi: Use hex2bin instead of a re-implementation (Maurizio Lombardi) [1632184] {CVE-2018-14633}
+
 * Wed Oct 03 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-20.el8]
 - [netdrv] ibmvnic: Include missing return code checks in reset function (Steve Best) [1633553]
 - [netdrv] ibmvnic: Update firmware error reporting with cause string (Steve Best) [1633553]
