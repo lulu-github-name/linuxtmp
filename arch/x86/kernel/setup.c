@@ -841,9 +841,12 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 
 	case INTEL_FAM6_SKYLAKE_MOBILE:
 	case INTEL_FAM6_SKYLAKE_DESKTOP:
-	case INTEL_FAM6_SKYLAKE_X:
 		/* stepping > 4 is Cascade Lake and is not supported */
 		valid = (stepping <= 4);
+		break;
+
+	case INTEL_FAM6_SKYLAKE_X:
+		valid = (stepping <= 5);
 		break;
 
 	default:
