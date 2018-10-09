@@ -53,10 +53,10 @@ ENTRY(entry_SYSENTER_compat)
 
 	/* We are about to clobber %rsp anyway, clobbering here is OK */
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%rsp
-	IBRS_ENTRY
 
 	movq	PER_CPU_VAR(cpu_current_top_of_stack), %rsp
 
+	IBRS_ENTRY
 
 	/*
 	 * User tracing code (ptrace or signal handlers) might assume that
@@ -208,11 +208,11 @@ ENTRY(entry_SYSCALL_compat)
 
 	/* Use %rsp as scratch reg. User ESP is stashed in r8 */
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%rsp
-	IBRS_ENTRY
 
 	/* Switch to the kernel stack */
 	movq	PER_CPU_VAR(cpu_current_top_of_stack), %rsp
 
+	IBRS_ENTRY
 
 	/* Construct struct pt_regs on stack */
 	pushq	$__USER32_DS		/* pt_regs->ss */
@@ -362,9 +362,10 @@ ENTRY(entry_INT80_compat)
 
 	/* Need to switch before accessing the thread stack. */
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%rdi
-	IBRS_ENTRY
 	movq	%rsp, %rdi
 	movq	PER_CPU_VAR(cpu_current_top_of_stack), %rsp
+
+	IBRS_ENTRY
 
 	pushq	6*8(%rdi)		/* regs->ss */
 	pushq	5*8(%rdi)		/* regs->rsp */
