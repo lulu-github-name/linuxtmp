@@ -143,4 +143,9 @@ struct kvm_vcpu;
 void _kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu, u64 guest_msr);
 void _kvmppc_save_tm_pr(struct kvm_vcpu *vcpu, u64 guest_msr);
 
+void kvmhv_save_host_pmu(void);
+void kvmhv_load_host_pmu(void);
+void kvmhv_save_guest_pmu(struct kvm_vcpu *vcpu, bool pmu_in_use);
+void kvmhv_load_guest_pmu(struct kvm_vcpu *vcpu);
+
 #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
