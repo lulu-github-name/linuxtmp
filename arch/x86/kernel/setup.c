@@ -789,7 +789,8 @@ static void __init trim_low_memory_range(void)
 
 static bool valid_amd_processor(__u8 family, const char *model_id)
 {
-	bool valid;
+	bool valid = false;
+	int len;
 
 	switch(family) {
 	case 0x15:
@@ -797,11 +798,20 @@ static bool valid_amd_processor(__u8 family, const char *model_id)
 		break;
 
 	case 0x17:
-		valid = strstr(model_id, "AMD EPYC 7");
+		len = strlen("AMD EPYC 7");
+		if (!strncmp(model_id, "AMD EPYC 7", len)) {
+			len += 3;
+			/*
+			 * AMD EPYC 7xx1 == NAPLES
+			 */
+			if (strlen(model_id) >= len) {
+				if (model_id[len-1] == '1')
+					valid = true;
+			}
+		}
 		break;
 
 	default:
-		valid = false;
 		break;
 	}
 
