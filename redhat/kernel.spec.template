@@ -1767,6 +1767,23 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Tue Oct 16 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-27.el8]
+- [security] cap_inode_getsecurity: use d_find_any_alias() instead of d_find_alias() (Joe Lawrence) [1638647]
+- [powerpc] powerpc/cacheinfo: Report the correct shared_cpu_map on big-cores (Steve Best) [1639265]
+- [powerpc] powerpc: Use cpu_smallcore_sibling_mask at SMT level on bigcores (Steve Best) [1639265]
+- [powerpc] powerpc: Detect the presence of big-cores via ibm, thread-groups (Steve Best) [1639265]
+- [x86] mark amd rome as unsupported (David Arcari) [1638506]
+- [netdrv] qed: Add support for virtual link (Chad Dupuis) [1638013]
+- [netdrv] qede: Add driver support for 20G link speed (Chad Dupuis) [1638013]
+- [netdrv] qed: Add driver support for 20G link speed (Chad Dupuis) [1638013]
+- [netdrv] qed: Fix shmem structure inconsistency between driver and the mfw (Chad Dupuis) [1638013]
+- [netdrv] qed: Add missing device config for RoCE EDPM in UFP mode (Chad Dupuis) [1638013]
+- [netdrv] qed: Add a flag which indicates if offload TC is set (Chad Dupuis) [1638013]
+- [netdrv] qed: Do not add VLAN 0 tag to untagged frames in multi-function mode (Chad Dupuis) [1638013]
+- [netdrv] qed: Fix populating the invalid stag value in multi function mode (Chad Dupuis) [1638013]
+- [tools] perf python: Fix pyrf_evlist__read_on_cpu() interface (Jiri Olsa) [1628229]
+- [tools] perf mmap: Store real cpu number in 'struct perf_mmap' (Jiri Olsa) [1628229]
+
 * Tue Oct 16 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-26.el8]
 - [fs] gfs2: Fix iomap buffered write support for journaled files (2) (Andreas Grunbacher) [1637944]
 - [xen] xen/manage: don't complain about an empty value in control/sysrq node (Vitaly Kuznetsov) [1623344]
