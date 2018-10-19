@@ -1819,6 +1819,34 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Fri Oct 19 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-28.el8]
+- [rpmspec] kernel.spec: s390/zfcpdump: add -zfcpdump kernel variant (Philipp Rudo) [1567291]
+- [kernel] rh_taint: correct loaddable module support dependencies (Philipp Rudo) [1567291]
+- [powerpc] KVM: PPC: Book3S HV: Avoid crash from THP collapse during radix page fault (David Gibson) [1639555]
+- [irqchip] irqchip/gic-v3-its: Allow use of LPI tables in reserved memory (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Register LPI tables with EFI config table (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Check that all RDs have the same property table (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Use pre-programmed redistributor tables with kdump kernels (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Allow use of pre-programmed LPI tables (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Keep track of property table's PA and VA (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Move pending table allocation to init time (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Split property table clearing from allocation (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Simplify LPI_PENDBASE_SZ usage (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Change initialization ordering for LPIs (Jeremy Linton) [1625746]
+- [firmware] efi: add API to reserve memory persistently across kexec reboot (Jeremy Linton) [1625746]
+- [firmware] efi/arm: libstub: add a root memreserve config table (Jeremy Linton) [1625746]
+- [firmware] efi: honour memory reservations passed via a linux specific config table (Jeremy Linton) [1625746]
+- [irqchip] irqchip/gic-v3-its: Cap lpi_id_bits to reduce memory footprint (Jeremy Linton) [1625746]
+- [infiniband] RDMA/bnxt_re: Fix system crash during RDMA resource initialization (Selvin Xavier) [1637122]
+- [infiniband] RDMA/bnxt_re: Fix couple of memory leaks that could lead to IOMMU call traces (Selvin Xavier) [1637120]
+- [arm64] arm64: KVM: Sanitize PSTATE.M when being set from userspace (Wei Huang) [1635721] {CVE-2018-18021}
+- [arm64] arm64: KVM: Tighten guest core register access from userspace (Wei Huang) [1635721] {CVE-2018-18021}
+- [fs] fs/cifs: require sha512 (Leif Sahlberg) [1610619]
+- [fs] smb3: simplify code by removing CONFIG_CIFS_SMB311 (Leif Sahlberg) [1610619]
+- [fs] smb3: add support for statfs for smb3.1.1 posix extensions (Leif Sahlberg) [1610619]
+- [fs] cifs: allow disabling insecure dialects in the config (Leif Sahlberg) [1610619]
+- [fs] smb3: if server does not support posix do not allow posix mount option (Leif Sahlberg) [1610619]
+
 * Tue Oct 16 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-27.el8]
 - [security] cap_inode_getsecurity: use d_find_any_alias() instead of d_find_alias() (Joe Lawrence) [1638647]
 - [powerpc] powerpc/cacheinfo: Report the correct shared_cpu_map on big-cores (Steve Best) [1639265]
