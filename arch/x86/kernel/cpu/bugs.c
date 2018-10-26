@@ -82,7 +82,7 @@ void __init check_bugs(void)
 		x86_spec_ctrl_mask |= SPEC_CTRL_STIBP;
 
 	/* IBRS initialization */
-	spec_ctrl_init(x86_spec_ctrl_mask);
+	spec_ctrl_init();
 
 	/* Select the proper spectre mitigation before patching alternatives */
 	spectre_v2_select_mitigation();
@@ -374,6 +374,7 @@ void arch_smt_update(void)
 				"Enabling" : "Disabling");
 		x86_spec_ctrl_base = mask;
 		on_each_cpu(update_stibp_msr, NULL, 1);
+		spec_ctrl_smt_update();
 	}
 	mutex_unlock(&spec_ctrl_mutex);
 }

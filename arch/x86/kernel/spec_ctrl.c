@@ -21,7 +21,6 @@ DEFINE_PER_CPU(struct kernel_ibrs_spec_ctrl, spec_ctrl_pcp);
 
 static bool __initdata noibrs_cmdline;
 unsigned int ibrs_mode __read_mostly;
-unsigned int spec_ctrl_mask __read_mostly;
 
 static void set_spec_ctrl_pcp(bool entry, bool exit)
 {
@@ -44,12 +43,12 @@ static void set_spec_ctrl_pcp(bool entry, bool exit)
 	 * in kernel mode.
 	 */
 	if (entry)
-		x86_spec_ctrl_base |= spec_ctrl_mask;
+		x86_spec_ctrl_base |= SPEC_CTRL_IBRS;
 
 	if (exit)
-		exit_val = (unsigned int)x86_spec_ctrl_base | spec_ctrl_mask;
+		exit_val = (unsigned int)x86_spec_ctrl_base | SPEC_CTRL_IBRS;
 	else
-		exit_val = (unsigned int)x86_spec_ctrl_base & ~spec_ctrl_mask;
+		exit_val = (unsigned int)x86_spec_ctrl_base & ~SPEC_CTRL_IBRS;
 
 	hi32_val  = (unsigned int)(x86_spec_ctrl_base >> 32);
 	entry_val = (unsigned int)x86_spec_ctrl_base;
@@ -148,9 +147,8 @@ void spec_ctrl_cpu_init(void)
 		native_wrmsrl(MSR_IA32_SPEC_CTRL, x86_spec_ctrl_base);
 }
 
-void __init spec_ctrl_init(const u64 spec_mask)
+void __init spec_ctrl_init(void)
 {
-	spec_ctrl_mask = spec_mask & (SPEC_CTRL_IBRS|SPEC_CTRL_STIBP);
 	spec_ctrl_print_features();
 }
 
@@ -182,5 +180,58 @@ void spec_ctrl_set_ssbd(u64 tifn)
 	} else {
 		this_cpu_and(spec_ctrl_pcp.entry, ~SPEC_CTRL_SSBD);
 		this_cpu_and(spec_ctrl_pcp.exit,  ~SPEC_CTRL_SSBD);
+	}
+}
+
+static inline void atomic_enable_stibp_pcp(struct kernel_ibrs_spec_ctrl *pcp)
+{
+	if (!(pcp->entry & SPEC_CTRL_STIBP))
+		atomic_or(SPEC_CTRL_STIBP, (atomic_t *)&pcp->entry);
+	if (!(pcp->exit & SPEC_CTRL_STIBP))
+		atomic_or(SPEC_CTRL_STIBP, (atomic_t *)&pcp->exit);
+}
+
+static inline void atomic_disable_stibp_pcp(struct kernel_ibrs_spec_ctrl *pcp)
+{
+	if (pcp->entry & SPEC_CTRL_STIBP)
+		atomic_and(~SPEC_CTRL_STIBP, (atomic_t *)&pcp->entry);
+	if (pcp->exit & SPEC_CTRL_STIBP)
+		atomic_and(~SPEC_CTRL_STIBP, (atomic_t *)&pcp->exit);
+}
+
+/*
+ * Synchronize STIBP state in x86_spec_ctrl_base with those in the percpu
+ * spec_ctrl_pcp when the SMT state changes.
+ */
+void spec_ctrl_smt_update(void)
+{
+	unsigned int cpu, enable_stibp;
+	int idx;
+
+	if (!boot_cpu_has(X86_FEATURE_STIBP) || (ibrs_mode == IBRS_DISABLED))
+		return;
+
+	enable_stibp = x86_spec_ctrl_base & SPEC_CTRL_STIBP;
+	if ((this_cpu_read(spec_ctrl_pcp.entry) & SPEC_CTRL_STIBP)
+			== enable_stibp)
+		return;	/* No state change */
+
+	/*
+	 * This is a slowpath. Atomic instructions are used to update the
+	 * percpu spec_ctrl_pcp. However, concurrent update by
+	 * spec_ctrl_set_ssbd() above may cause the change to be lost if
+	 * that happens to be in the middle of its read-modify-write cycle.
+	 * So we double-check it one more time to be sure.
+	 */
+	for (idx = 0; idx < 2; idx++) {
+		for_each_possible_cpu(cpu) {
+			struct kernel_ibrs_spec_ctrl *pcp =
+					per_cpu_ptr(&spec_ctrl_pcp, cpu);
+
+			if (enable_stibp)
+				atomic_enable_stibp_pcp(pcp);
+			else
+				atomic_disable_stibp_pcp(pcp);
+		}
 	}
 }
