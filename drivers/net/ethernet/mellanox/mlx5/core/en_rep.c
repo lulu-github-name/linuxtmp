@@ -982,7 +982,8 @@ static int mlx5e_init_rep(struct mlx5_core_dev *mdev,
 		return err;
 
 
-	priv->channels.params.num_channels = profile->max_nch(mdev);
+	priv->channels.params.num_channels =
+				mlx5e_get_netdev_max_channels(netdev);
 
 	mlx5e_build_rep_params(mdev, &priv->channels.params, netdev->mtu);
 	mlx5e_build_rep_netdev(netdev);
@@ -1054,12 +1055,6 @@ static int mlx5e_init_rep_tx(struct mlx5e_priv *priv)
 	return 0;
 }
 
-static int mlx5e_get_rep_max_num_channels(struct mlx5_core_dev *mdev)
-{
-#define	MLX5E_PORT_REPRESENTOR_NCH 1
-	return MLX5E_PORT_REPRESENTOR_NCH;
-}
-
 static const struct mlx5e_profile mlx5e_rep_profile = {
 	.init			= mlx5e_init_rep,
 	.cleanup		= mlx5e_cleanup_rep,
@@ -1068,7 +1063,6 @@ static const struct mlx5e_profile mlx5e_rep_profile = {
 	.init_tx		= mlx5e_init_rep_tx,
 	.cleanup_tx		= mlx5e_cleanup_nic_tx,
 	.update_stats           = mlx5e_rep_update_hw_counters,
-	.max_nch		= mlx5e_get_rep_max_num_channels,
 	.update_carrier		= NULL,
 	.rx_handlers.handle_rx_cqe       = mlx5e_handle_rx_cqe_rep,
 	.rx_handlers.handle_rx_cqe_mpwqe = NULL /* Not supported */,
@@ -1131,13 +1125,14 @@ mlx5e_vport_rep_load(struct mlx5_core_dev *dev, struct mlx5_eswitch_rep *rep)
 	struct mlx5e_rep_priv *rpriv;
 	struct net_device *netdev;
 	struct mlx5e_priv *upriv;
-	int err;
+	int nch, err;
 
 	rpriv = kzalloc(sizeof(*rpriv), GFP_KERNEL);
 	if (!rpriv)
 		return -ENOMEM;
 
-	netdev = mlx5e_create_netdev(dev, &mlx5e_rep_profile, rpriv);
+	nch = mlx5e_get_max_num_channels(dev);
+	netdev = mlx5e_create_netdev(dev, &mlx5e_rep_profile, nch, rpriv);
 	if (!netdev) {
 		pr_warn("Failed to create representor netdev for vport %d\n",
 			rep->vport);
