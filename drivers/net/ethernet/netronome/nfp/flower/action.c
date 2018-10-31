@@ -45,6 +45,8 @@
 #include "main.h"
 #include "../nfp_net_repr.h"
 
+#define NFP_FL_SUPPORTED_TUNNEL_INFO_FLAGS	IP_TUNNEL_INFO_TX
+
 static void nfp_fl_pop_vlan(struct nfp_fl_pop_vlan *pop_vlan)
 {
 	size_t act_size = sizeof(struct nfp_fl_pop_vlan);
@@ -643,9 +645,14 @@ nfp_flower_loop_action(struct nfp_app *app, const struct tc_action *a,
 		nfp_fl_push_vlan(psh_v, a);
 		*a_len += sizeof(struct nfp_fl_push_vlan);
 	} else if (is_tcf_tunnel_set(a)) {
+		struct ip_tunnel_info *ip_tun = tcf_tunnel_info(a);
 		struct nfp_repr *repr = netdev_priv(netdev);
+
 		*tun_type = nfp_fl_get_tun_from_act_l4_port(repr->app, a);
 		if (*tun_type == NFP_FL_TUNNEL_NONE)
+			return -EOPNOTSUPP;
+
+		if (ip_tun->mode & ~NFP_FL_SUPPORTED_TUNNEL_INFO_FLAGS)
 			return -EOPNOTSUPP;
 
 		/* Pre-tunnel action is required for tunnel encap.
