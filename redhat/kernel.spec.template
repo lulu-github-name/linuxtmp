@@ -1871,6 +1871,20 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Wed Oct 31 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-33.el8]
+- [netdrv] nfp: flower: use host context count provided by firmware (Pablo Cascon) [1639609]
+- [netdrv] nfp: flower: use stats array instead of storing stats per flow (Pablo Cascon) [1639609]
+- [netdrv] nfp: flower: use rhashtable for flow caching (Pablo Cascon) [1639609]
+- [netdrv] nfp: avoid soft lockups under control message storm (Pablo Cascon) [1639609]
+- [kernel] sched: disable autogroups by default (Phil Auld) [1568166]
+- [s390] s390/keyboard: sanitize array index in do_kdsk_ioctl (Steve Best) [1637591]
+- [char] ipmi:ssif: Add support for multi-part transmit messages > 2 parts (Tony Camuso) [1622053]
+- [scsi] scsi: libsas: fix a race condition when smp task timeout (Zhou Wang) [1640426]
+- [scsi] scsi: libsas: check the ata device status by ata_dev_enabled() (Zhou Wang) [1640426]
+- [scsi] scsi: libsas: always unregister the old device if going to discover new (Zhou Wang) [1640426]
+- [scsi] scsi: libsas: dynamically allocate and free ata host (Zhou Wang) [1640426]
+- [scsi] scsi: libsas: remove irq save in sas_ata_qc_issue() (Zhou Wang) [1640426]
+
 * Sat Oct 27 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-32.el8]
 - [video] fbdev: make FB_BACKLIGHT a tristate (Rob Clark) [1643333 1589158]
 - [netdrv] Taint kernel if e1000 is loaded (Neil Horman) [1643617]
