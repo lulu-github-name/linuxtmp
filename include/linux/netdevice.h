@@ -583,8 +583,8 @@ struct netdev_queue {
  * read-mostly part
  */
 	struct net_device	*dev;
-	struct Qdisc __rcu	*qdisc;
-	struct Qdisc		*qdisc_sleeping;
+	RH_KABI_EXCLUDE(struct Qdisc __rcu	*qdisc)
+	RH_KABI_EXCLUDE(struct Qdisc		*qdisc_sleeping)
 #ifdef CONFIG_SYSFS
 	struct kobject		kobj;
 #endif
@@ -1306,9 +1306,9 @@ struct net_device_ops {
 	int			(*ndo_set_vf_rss_query_en)(
 						   struct net_device *dev,
 						   int vf, bool setting);
-	int			(*ndo_setup_tc)(struct net_device *dev,
+	RH_KABI_EXCLUDE(int	(*ndo_setup_tc)(struct net_device *dev,
 						enum tc_setup_type type,
-						void *type_data);
+						void *type_data))
 #if IS_ENABLED(CONFIG_FCOE)
 	int			(*ndo_fcoe_enable)(struct net_device *dev);
 	int			(*ndo_fcoe_disable)(struct net_device *dev);
@@ -1909,7 +1909,7 @@ struct net_device {
 	void __rcu		*rx_handler_data;
 
 #ifdef CONFIG_NET_CLS_ACT
-	struct mini_Qdisc __rcu	*miniq_ingress;
+	RH_KABI_EXCLUDE(struct mini_Qdisc __rcu	*miniq_ingress)
 #endif
 	struct netdev_queue __rcu *ingress_queue;
 #ifdef CONFIG_NETFILTER_INGRESS
@@ -1928,7 +1928,7 @@ struct net_device {
 	struct netdev_queue	*_tx ____cacheline_aligned_in_smp;
 	unsigned int		num_tx_queues;
 	unsigned int		real_num_tx_queues;
-	struct Qdisc		*qdisc;
+	RH_KABI_EXCLUDE(struct Qdisc		*qdisc)
 #ifdef CONFIG_NET_SCHED
 	DECLARE_HASHTABLE	(qdisc_hash, 4);
 #endif
@@ -1940,7 +1940,7 @@ struct net_device {
 	struct xps_dev_maps __rcu *xps_maps;
 #endif
 #ifdef CONFIG_NET_CLS_ACT
-	struct mini_Qdisc __rcu	*miniq_egress;
+	RH_KABI_EXCLUDE(struct mini_Qdisc __rcu	*miniq_egress)
 #endif
 
 	/* These may be needed for future network-power-down code. */
@@ -2052,6 +2052,10 @@ int netdev_set_prio_tc_map(struct net_device *dev, u8 prio, u8 tc)
 int netdev_txq_to_tc(struct net_device *dev, unsigned int txq);
 void netdev_reset_tc(struct net_device *dev);
 int netdev_set_tc_queue(struct net_device *dev, u8 tc, u16 count, u16 offset);
+/* RHEL: Increase the version of netdev_set_num_tc() kABI when TC subsystem
+ * is changed in a kABI incompatible way. This includes changes to ndo_setup_tc,
+ * inline function changes and TC struct changes. */
+RH_KABI_FORCE_CHANGE(1)
 int netdev_set_num_tc(struct net_device *dev, u8 num_tc);
 
 static inline
@@ -2930,8 +2934,8 @@ struct softnet_data {
 #ifdef CONFIG_NET_FLOW_LIMIT
 	struct sd_flow_limit __rcu *flow_limit;
 #endif
-	struct Qdisc		*output_queue;
-	struct Qdisc		**output_queue_tailp;
+	RH_KABI_EXCLUDE(struct Qdisc		*output_queue)
+	RH_KABI_EXCLUDE(struct Qdisc		**output_queue_tailp)
 	struct sk_buff		*completion_queue;
 #ifdef CONFIG_XFRM_OFFLOAD
 	struct sk_buff_head	xfrm_backlog;
