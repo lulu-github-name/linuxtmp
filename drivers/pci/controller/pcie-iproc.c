@@ -1396,6 +1396,8 @@ int iproc_pcie_rev_init(struct iproc_pcie *pcie)
 		return -EINVAL;
 	}
 
+	mark_tech_preview("Broadcom iProc PCIe Driver", THIS_MODULE);
+
 	pcie->reg_offsets = devm_kcalloc(dev, IPROC_PCIE_MAX_NUM_REG,
 					 sizeof(*pcie->reg_offsets),
 					 GFP_KERNEL);
