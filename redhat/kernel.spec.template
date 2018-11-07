@@ -1877,6 +1877,18 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Tue Nov 06 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-35.el8]
+- [netdrv] nfp: flower: use offsets provided by pedit instead of index for ipv6 (Pablo Cascon) [1645132]
+- [netdrv] nfp: flower: fix multiple keys per pedit action (Pablo Cascon) [1645132]
+- [netdrv] nfp: flower: fix pedit set actions for multiple partial masks (Pablo Cascon) [1645132]
+- [netdrv] nfp: flower: ignore checksum actions when performing pedit actions (Pablo Cascon) [1644400]
+- [kernel] sched/fair: Fix throttle_list starvation with low CFS quota (Phil Auld) [1638526]
+- [net] tipc: fix the big/little endian issue in tipc_dest (Jon Maloy) [1640712]
+- [rpmspec] kernel.spec: Include kernel-signing-ca.cer public key (Prarit Bhargava) [1638465]
+- [block] block: don't deal with discard limit in blkdev_issue_discard() (Ming Lei) [1631255]
+- [powerpc] powerpc/mm: Check memblock_add against MAX_PHYSMEM_BITS range (Gustavo Duarte) [1561402]
+- [powerpc] powerpc/mm: Increase MAX_PHYSMEM_BITS to 128TB with SPARSEMEM_VMEMMAP config (Gustavo Duarte) [1561402]
+
 * Tue Nov 06 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-34.el8]
 - [s390] s390/crypto: Enhance paes cipher to accept variable length key material (Philipp Rudo) [1644387]
 - [s390] s390/pkey: move pckmo subfunction available checks away from module init (Philipp Rudo) [1644387]
