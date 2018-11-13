@@ -1974,6 +1974,15 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Tue Nov 13 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-38.el8]
+- [pinctrl] pinctrl: intel: Add Ice Lake PCH pin controller support (David Arcari) [1483413]
+- [netdrv] nfp: flower: fix vlan match by checking both vlan id and vlan pcp (Pablo Cascon) [1645220]
+- [netdrv] nfp: flower: reject tunnel encap with ipv6 outer headers for offloading (Pablo Cascon) [1646644]
+- [netdrv] nfp: populate bus-info on representors (Pablo Cascon) [1643998]
+- [powerpc] KVM: PPC: Validate TCEs against preregistered memory page sizes (David Gibson) [1625821]
+- [powerpc] KVM: PPC: Inform the userspace about TCE update failures (David Gibson) [1625821]
+- [powerpc] KVM: PPC: Book3S: Fix guest DMA when guest partially backed by THP pages (David Gibson) [1625821]
+
 * Fri Nov 09 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-37.el8]
 - [kernel] locking/lockdep: Fix debug_locks off performance problem (Waiman Long) [1647560]
 - [kernel] locking/lockdep: Remove duplicated 'lock_class_ops' percpu array (Waiman Long) [1647560]
