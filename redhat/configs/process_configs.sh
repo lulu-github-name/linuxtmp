@@ -59,7 +59,7 @@ checkoptions()
 				configs[a[1]]=a[2];
 			} else {
 				if (configs[a[1]] != "" && configs[a[1]] != a[2])
-					 print "Found "a[1]"="configs[a[1]]" after generation, had " a[1]"="a[2]" in Source tree";
+					 print "Found "a[1]"="a[2]" after generation, had " a[1]"="configs[a[1]]" in Source tree";
 			}
 		}
 	' $1 $2 > .mismatches
@@ -114,7 +114,7 @@ function process_configs()
 		cat "${cfgorig}" >> ${cfgtmp}
 		if test -n "$CHECKOPTIONS"
 		then
-			checkoptions $cfgtmp $cfg
+			checkoptions $cfg $cfgtmp
 		fi
 		# if test run, don't overwrite original
 		if test -n "$TESTRUN"
