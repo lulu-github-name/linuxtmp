@@ -1981,6 +1981,23 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Wed Nov 21 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-42.el8]
+- [powerpc] powerpc/powernv: Fix concurrency issue with npu->mmio_atsd_usage (Steve Best) [1651267]
+- [tools] perf tools: Remove ext from struct kmod_path (Jiri Olsa) [1581390]
+- [tools] perf tools: Add gzip_is_compressed function (Jiri Olsa) [1581390]
+- [tools] perf tools: Add lzma_is_compressed function (Jiri Olsa) [1581390]
+- [tools] perf tools: Add is_compressed callback to compressions array (Jiri Olsa) [1581390]
+- [tools] perf tools: Move the temp file processing into decompress_kmodule (Jiri Olsa) [1581390]
+- [tools] perf tools: Use compression id in decompress_kmodule() (Jiri Olsa) [1581390]
+- [tools] perf tools: Store compression id into struct dso (Jiri Olsa) [1581390]
+- [tools] perf tools: Add compression id into 'struct kmod_path' (Jiri Olsa) [1581390]
+- [tools] perf tools: Make is_supported_compression() static (Jiri Olsa) [1581390]
+- [tools] perf tools: Make decompress_to_file() function static (Jiri Olsa) [1581390]
+- [tools] perf tools: Get rid of dso__needs_decompress() call in __open_dso() (Jiri Olsa) [1581390]
+- [tools] perf tools: Get rid of dso__needs_decompress() call in symbol__disassemble() (Jiri Olsa) [1581390]
+- [tools] perf tools: Get rid of dso__needs_decompress() call in read_object_code() (Jiri Olsa) [1581390]
+- [rpmspec] redhat: Enable kernel-tools (for kvm_stat) on s390x, too (Thomas Huth) [1631222]
+
 * Tue Nov 20 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-41.el8]
 - [drm] drm/atomic_helper: Stop modesets on unregistered connectors harder (Lyude Paul) [1631575]
 - [drm] drm/nouveau: Fix nv50_mstc->best_encoder() (Lyude Paul) [1631575]
