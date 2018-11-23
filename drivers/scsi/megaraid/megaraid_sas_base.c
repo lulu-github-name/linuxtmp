@@ -165,6 +165,10 @@ static struct pci_device_id megasas_pci_table[] = {
 	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_TOMCAT)},
 	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_VENTURA_4PORT)},
 	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_CRUSADER_4PORT)},
+	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_AERO_10E1)},
+	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_AERO_10E2)},
+	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_AERO_10E5)},
+	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_AERO_10E6)},
 	{}
 };
 
@@ -6127,6 +6131,10 @@ static inline void megasas_set_adapter_type(struct megasas_instance *instance)
 		instance->adapter_type = MFI_SERIES;
 	} else {
 		switch (instance->pdev->device) {
+		case PCI_DEVICE_ID_LSI_AERO_10E1:
+		case PCI_DEVICE_ID_LSI_AERO_10E2:
+		case PCI_DEVICE_ID_LSI_AERO_10E5:
+		case PCI_DEVICE_ID_LSI_AERO_10E6:
 		case PCI_DEVICE_ID_LSI_VENTURA:
 		case PCI_DEVICE_ID_LSI_CRUSADER:
 		case PCI_DEVICE_ID_LSI_HARPOON:
@@ -6483,6 +6491,13 @@ static int megasas_probe_one(struct pci_dev *pdev,
 	if (pci_device_support_removed(megasas_pci_table,
 				megasas_pci_ids_removed, pdev))
 		return -ENODEV;
+
+	switch (pdev->device) {
+	case PCI_DEVICE_ID_LSI_AERO_10E1:
+	case PCI_DEVICE_ID_LSI_AERO_10E5:
+		dev_info(&pdev->dev, "Adapter is in configurable secure mode\n");
+		break;
+	}
 
 	/* Reset MSI-X in the kdump kernel */
 	if (reset_devices) {
