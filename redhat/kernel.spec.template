@@ -1986,6 +1986,27 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Tue Nov 27 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-45.el8]
+- [s390] s390/mm: fix mis-accounting of pgtable_bytes (Joe Lawrence) [1644481]
+- [mm] mm: add mm_pxd_folded checks to pgtable_bytes accounting functions (Joe Lawrence) [1644481]
+- [mm] mm: introduce mm_[p4d|pud|pmd]_folded (Joe Lawrence) [1644481]
+- [mm] mm: make the __PAGETABLE_PxD_FOLDED defines non-empty (Joe Lawrence) [1644481]
+- [x86] x86/cpu/vmware: Do not trace vmware_sched_clock() (Vitaly Kuznetsov) [1650273]
+- [fs] fuse: fix possibly missed wake-up after abort (Lukas Czerner) [1649244]
+- [fs] fuse: fix leaked notify reply (Lukas Czerner) [1649244]
+- [fs] fuse: fix blocked_waitq wakeup (Lukas Czerner) [1649244]
+- [fs] fuse: set FR_SENT while locked (Lukas Czerner) [1649244]
+- [fs] fuse: Fix use-after-free in fuse_dev_do_write() (Lukas Czerner) [1649244]
+- [fs] fuse: Fix use-after-free in fuse_dev_do_read() (Lukas Czerner) [1649244]
+- [fs] fuse: Add missed unlock_page() to fuse_readpages_fill() (Lukas Czerner) [1649244]
+- [fs] fuse: Don't access pipe->buffers without pipe_lock() (Lukas Czerner) [1649244]
+- [fs] fuse: fix initial parallel dirops (Lukas Czerner) [1649244]
+- [fs] fuse: Fix oops at process_init_reply() (Lukas Czerner) [1649244]
+- [fs] fuse: umount should wait for all requests (Lukas Czerner) [1649244]
+- [fs] fuse: fix unlocked access to processing queue (Lukas Czerner) [1649244]
+- [fs] fuse: fix double request_end() (Lukas Czerner) [1649244]
+- [fs] fuse: fix use-after-free in fuse_direct_IO() (Lukas Czerner) [1599195]
+
 * Fri Nov 23 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-44.el8]
 - [firmware] efi: Fix debugobjects warning on 'efi_rts_work' (Waiman Long) [1652190]
 - [rpmspec] kernel.spec: Do not zip modules on noarch builds (Prarit Bhargava) [1646471]
