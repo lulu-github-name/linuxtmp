@@ -239,6 +239,11 @@ S:	Maintained
 F:	drivers/net/bonding/
 F:	include/linux/if_bonding.h
 
+CHELSIO COMMON LIBRARY DRIVER (libcxgb)
+M:	Arjun Vynipadath <avynipad@redhat.com>
+S:	Maintained
+F:	drivers/net/ethernet/chelsio/libcxgb/
+
 CIFS FILESYSTEM
 M:	Red Hat NFS Team <nfs-team@redhat.com>
 S:	Maintained
@@ -257,15 +262,41 @@ S:	Maintained
 F:	drivers/cpufreq/
 F:	arch/x86/kernel/cpu/cpufreq/
 
-CXGB3 ETHERNET DRIVER (cxgb3)
+CSIOSTOR FCOE DRIVER (csiostor)
 M:	Arjun Vynipadath <avynipad@redhat.com>
 S:	Maintained
-F:	drivers/net/ethernet/chelsio/cxgb3/
+F:	drivers/scsi/csiostor
+
+CXGB4 CRYPTO DRIVER (chcr)
+M:	Arjun Vynipadath <avynipad@redhat.com>
+S:	Maintained
+F:	drivers/crypto/chelsio
 
 CXGB4 ETHERNET DRIVER (cxgb4)
 M:	Arjun Vynipadath <avynipad@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/chelsio/cxgb4/
+
+CXGB4 ISCSI DRIVER (cxgb4i)
+M:	Arjun Vynipadath <avynipad@redhat.com>
+S:	Maintained
+F:	drivers/scsi/cxgbi/cxgb4i
+
+CXGB4 ISCSI TARGET DRIVER (cxgbit)
+M:	Arjun Vynipadath <avynipad@redhat.com>
+S:	Maintained
+F:	drivers/target/iscsi/cxgbit
+
+CXGB4 IWARP RNIC DRIVER (iw_cxgb4)
+M:	Arjun Vynipadath <avynipad@redhat.com>
+S:	Maintained
+F:	drivers/infiniband/hw/cxgb4/
+F:	include/uapi/rdma/cxgb4-abi.h
+
+CXGB4VF ETHERNET DRIVER (cxgb4vf)
+M:	Arjun Vynipadath <avynipad@redhat.com>
+S:	Maintained
+F:	drivers/net/ethernet/chelsio/cxgb4vf/
 
 DEVICE MAPPER SUPPORT
 M:	Mike Snitzer <snitzer@redhat.com>
