@@ -662,6 +662,22 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
 endif
 endif
 
+ifneq ($(DISABLE_WERROR),1)
+ifneq ($(WITH_GCOV),1)
+ifeq ($(KBUILD_EXTMOD),)
+ifneq (,$(filter $(ARCH), x86 x86_64 powerpc))
+KBUILD_CFLAGS   += -Werror
+endif
+# powerpc is compiled with -O3. Starting with gcc 4.8, there have been some
+# known problems with compiler warnings so disable them on all compilers
+# greater than that version
+ifneq (,$(filter $(ARCH), powerpc))
+KBUILD_CFLAGS += $(call cc-ifversion, -gt, 0408, -Wno-uninitialized -Wno-maybe-uninitialized -Wno-error=array-bounds)
+endif
+endif
+endif
+endif
+
 KBUILD_CFLAGS += $(call cc-ifversion, -lt, 0409, \
 			$(call cc-disable-warning,maybe-uninitialized,))
 
