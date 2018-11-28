@@ -1546,7 +1546,6 @@ int
 drm_atomic_set_crtc_for_connector(struct drm_connector_state *conn_state,
 				  struct drm_crtc *crtc)
 {
-	struct drm_connector *connector = conn_state->connector;
 	struct drm_crtc_state *crtc_state;
 
 	if (conn_state->crtc == crtc)
