@@ -44,6 +44,7 @@ enum hns3_nic_state {
 #define HNS3_RING_TX_RING_BASEADDR_H_REG	0x00044
 #define HNS3_RING_TX_RING_BD_NUM_REG		0x00048
 #define HNS3_RING_TX_RING_BD_LEN_REG		0x0004C
+#define HNS3_RING_TX_RING_TC_REG		0x00050
 #define HNS3_RING_TX_RING_TAIL_REG		0x00058
 #define HNS3_RING_TX_RING_HEAD_REG		0x0005C
 #define HNS3_RING_TX_RING_FBDNUM_REG		0x00060
@@ -622,7 +623,7 @@ void hns3_ethtool_set_ops(struct net_device *netdev);
 int hns3_set_channels(struct net_device *netdev,
 		      struct ethtool_channels *ch);
 
-bool hns3_clean_tx_ring(struct hns3_enet_ring *ring, int budget);
+void hns3_clean_tx_ring(struct hns3_enet_ring *ring);
 int hns3_init_all_ring(struct hns3_nic_priv *priv);
 int hns3_uninit_all_ring(struct hns3_nic_priv *priv);
 int hns3_nic_reset_all_ring(struct hnae3_handle *h);
