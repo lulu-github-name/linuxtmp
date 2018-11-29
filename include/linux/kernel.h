@@ -565,7 +565,6 @@ extern enum system_states {
 #define TAINT_LIVEPATCH			15
 #define TAINT_AUX			16
 #define TAINT_RANDSTRUCT		17
-/* Start of Red Hat-specific taint flags */
 #define TAINT_18			18
 #define TAINT_19			19
 #define TAINT_20			20
@@ -575,12 +574,12 @@ extern enum system_states {
 #define TAINT_24			24
 #define TAINT_25			25
 #define TAINT_26			26
+/* Start of Red Hat-specific taint flags */
 #define TAINT_SUPPORT_REMOVED		27
-/* Bits 28 - 31 are reserved for Red Hat use only */
-#define TAINT_RESERVED28		28
-#define TAINT_RESERVED29		29
-#define TAINT_RESERVED30		30
-#define TAINT_UNPRIVILEGED_BPF		31
+#define TAINT_28			28
+#define TAINT_TECH_PREVIEW		29
+#define TAINT_UNPRIVILEGED_BPF		30
+#define TAINT_31			31
 /* End of Red Hat-specific taint flags */
 #define TAINT_FLAGS_COUNT		32
 
