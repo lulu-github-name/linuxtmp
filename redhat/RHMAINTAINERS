@@ -222,6 +222,11 @@ M:	Maurizio Lombardi <mlombard@redhat.com>
 S:	Maintained
 F:	drivers/scsi/bnx2fc/
 
+Broadcom BE2ISCSI Driver
+M:	Maurizio Lombardi <mlombard@redhat.com>
+S:	Maintained
+F:	drivers/scsi/be2iscsi/
+
 Broadcom NetXtreme II CNIC Driver (cnic)
 M:	Maurizio Lombardi <mlombard@redhat.com>
 S:	Maintained
