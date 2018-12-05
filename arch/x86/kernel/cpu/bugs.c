@@ -638,6 +638,7 @@ static void update_stibp_strict(void)
 		mask & SPEC_CTRL_STIBP ? "always-on" : "off");
 	x86_spec_ctrl_base = mask;
 	on_each_cpu(update_stibp_msr, NULL, 1);
+	spec_ctrl_smt_update();
 }
 
 /* Update the static key controlling the evaluation of TIF_SPEC_IB */

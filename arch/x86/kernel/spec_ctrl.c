@@ -15,6 +15,11 @@
 #include <asm/cpu.h>
 
 /*
+ * Task specific SPEC_CTRL feature bits - SSBD and STIBP
+ */
+#define SPEC_CTRL_TASK_MASK	(SPEC_CTRL_SSBD | SPEC_CTRL_STIBP)
+
+/*
  * Kernel IBRS speculation control structure
  */
 DEFINE_PER_CPU(struct kernel_ibrs_spec_ctrl, spec_ctrl_pcp);
@@ -40,15 +45,19 @@ static void set_spec_ctrl_pcp(bool entry, bool exit)
 
 	/*
 	 * The x86_spec_ctrl_base is set to the state of SPEC_CTRL MSR
-	 * in kernel mode.
+	 * in kernel mode. STIBP will be masked off if IBRS is set.
 	 */
-	if (entry)
-		x86_spec_ctrl_base |= SPEC_CTRL_IBRS;
-
-	if (exit)
+	if (exit) {
 		exit_val = (unsigned int)x86_spec_ctrl_base | SPEC_CTRL_IBRS;
-	else
+		exit_val &= ~SPEC_CTRL_STIBP;
+	} else {
 		exit_val = (unsigned int)x86_spec_ctrl_base & ~SPEC_CTRL_IBRS;
+	}
+
+	if (entry) {
+		x86_spec_ctrl_base |= SPEC_CTRL_IBRS;
+		x86_spec_ctrl_base &= ~SPEC_CTRL_STIBP;
+	}
 
 	hi32_val  = (unsigned int)(x86_spec_ctrl_base >> 32);
 	entry_val = (unsigned int)x86_spec_ctrl_base;
@@ -170,38 +179,58 @@ bool is_skylake_era(void)
 }
 
 /*
- * Set the right SSBD bit for the current CPU.
+ * Both the SSBD and the STIBP bits in the SPEC_CTRL MSR of the current
+ * CPU may be managed on a per task basis.
+ *
+ * This function will only be called when IBRS is enabled in either the
+ * kernel and/or the userland. With IBRS enabled, we don't need STIBP as
+ * it may have a pretty big performance impact. So the STIBP bit will be
+ * mask out if IBRS is enabled. The STIBP bit comes from either the given
+ * SPEC_CTRL MSR value (switch_to_cond_stibp true) or from x86_spec_ctrl_base.
  */
-void spec_ctrl_set_ssbd(u64 tifn)
+void spec_ctrl_update(u64 spec_ctrl)
 {
-	if (tifn) {
-		this_cpu_or(spec_ctrl_pcp.entry, SPEC_CTRL_SSBD);
-		this_cpu_or(spec_ctrl_pcp.exit,  SPEC_CTRL_SSBD);
-	} else {
-		this_cpu_and(spec_ctrl_pcp.entry, ~SPEC_CTRL_SSBD);
-		this_cpu_and(spec_ctrl_pcp.exit,  ~SPEC_CTRL_SSBD);
-	}
-}
+	u64 newval;
+	u64 entry = this_cpu_read(spec_ctrl_pcp.entry);
+	u64 exit  = this_cpu_read(spec_ctrl_pcp.exit);
+	u64 stibp = static_branch_likely(&switch_to_cond_stibp)
+		  ? (spec_ctrl & SPEC_CTRL_STIBP)
+		  : (x86_spec_ctrl_base & SPEC_CTRL_STIBP);
 
-static inline void atomic_enable_stibp_pcp(struct kernel_ibrs_spec_ctrl *pcp)
-{
-	if (!(pcp->entry & SPEC_CTRL_STIBP))
-		atomic_or(SPEC_CTRL_STIBP, (atomic_t *)&pcp->entry);
-	if (!(pcp->exit & SPEC_CTRL_STIBP))
-		atomic_or(SPEC_CTRL_STIBP, (atomic_t *)&pcp->exit);
-}
+	newval = (entry & ~SPEC_CTRL_TASK_MASK) | (spec_ctrl & SPEC_CTRL_SSBD) |
+		 ((entry & SPEC_CTRL_IBRS) ? 0 : stibp);
+	if (newval != entry)
+		this_cpu_write(spec_ctrl_pcp.entry, newval);
 
-static inline void atomic_disable_stibp_pcp(struct kernel_ibrs_spec_ctrl *pcp)
-{
-	if (pcp->entry & SPEC_CTRL_STIBP)
-		atomic_and(~SPEC_CTRL_STIBP, (atomic_t *)&pcp->entry);
-	if (pcp->exit & SPEC_CTRL_STIBP)
-		atomic_and(~SPEC_CTRL_STIBP, (atomic_t *)&pcp->exit);
+	newval = (exit & ~SPEC_CTRL_TASK_MASK) | (spec_ctrl & SPEC_CTRL_SSBD) |
+		 ((exit & SPEC_CTRL_IBRS) ? 0 : stibp);
+	if (newval != exit)
+		this_cpu_write(spec_ctrl_pcp.exit, newval);
 }
 
 /*
- * Synchronize STIBP state in x86_spec_ctrl_base with those in the percpu
- * spec_ctrl_pcp when the SMT state changes.
+ * Only the SPEC_CTRL_STIBP bit may be set in enable_stibp.
+ */
+static inline void atomic_update_stibp_pcp(atomic_t *pval,
+					   unsigned int enable_stibp)
+{
+	int val = atomic_read(pval);
+
+	/* Don't turn on STIBP if IBRS has been set */
+	if (val & SPEC_CTRL_IBRS)
+		enable_stibp = 0;
+
+	if (!(enable_stibp ^ (val & SPEC_CTRL_STIBP)))
+		return;
+	if (enable_stibp)
+		atomic_or(SPEC_CTRL_STIBP, pval);
+	else
+		atomic_and(~SPEC_CTRL_STIBP, pval);
+}
+
+/*
+ * Synchronize the strict STIBP state in x86_spec_ctrl_base with those in
+ * the percpu spec_ctrl_pcp when the SMT state changes.
  */
 void spec_ctrl_smt_update(void)
 {
@@ -214,12 +243,12 @@ void spec_ctrl_smt_update(void)
 	enable_stibp = x86_spec_ctrl_base & SPEC_CTRL_STIBP;
 	if ((this_cpu_read(spec_ctrl_pcp.entry) & SPEC_CTRL_STIBP)
 			== enable_stibp)
-		return;	/* No state change */
+		goto check_ibrs;	/* No state change */
 
 	/*
 	 * This is a slowpath. Atomic instructions are used to update the
 	 * percpu spec_ctrl_pcp. However, concurrent update by
-	 * spec_ctrl_set_ssbd() above may cause the change to be lost if
+	 * spec_ctrl_update() above may cause the change to be lost if
 	 * that happens to be in the middle of its read-modify-write cycle.
 	 * So we double-check it one more time to be sure.
 	 */
@@ -228,10 +257,22 @@ void spec_ctrl_smt_update(void)
 			struct kernel_ibrs_spec_ctrl *pcp =
 					per_cpu_ptr(&spec_ctrl_pcp, cpu);
 
-			if (enable_stibp)
-				atomic_enable_stibp_pcp(pcp);
-			else
-				atomic_disable_stibp_pcp(pcp);
+			/*
+			 * If IBRS is enabled, we don't need to turn on STIBP.
+			 */
+			if (!(pcp->entry & SPEC_CTRL_IBRS))
+				atomic_update_stibp_pcp((atomic_t *)&pcp->entry,
+							enable_stibp);
+			if (!(pcp->exit & SPEC_CTRL_IBRS))
+				atomic_update_stibp_pcp((atomic_t *)&pcp->exit,
+							enable_stibp);
 		}
 	}
+
+	/*
+	 * Mask off STIBP in x86_spec_ctrl_base if IBRS is on.
+	 */
+check_ibrs:
+	if (enable_stibp && (x86_spec_ctrl_base & SPEC_CTRL_IBRS))
+		x86_spec_ctrl_base &= ~SPEC_CTRL_STIBP;
 }

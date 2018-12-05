@@ -128,7 +128,7 @@ DECLARE_PER_CPU(struct kernel_ibrs_spec_ctrl, spec_ctrl_pcp);
 
 extern void spec_ctrl_init(void);
 extern void spec_ctrl_cpu_init(void);
-extern void spec_ctrl_set_ssbd(u64 tifn);
+extern void spec_ctrl_update(u64 spec_ctrl);
 extern void spec_ctrl_smt_update(void);
 extern bool spec_ctrl_enable_ibrs(void);
 extern bool spec_ctrl_enable_ibrs_always(void);
