@@ -373,7 +373,6 @@ void arch_smt_update(void)
 				"Enabling" : "Disabling");
 		x86_spec_ctrl_base = mask;
 		on_each_cpu(update_stibp_msr, NULL, 1);
-		spec_ctrl_smt_update();
 	}
 	mutex_unlock(&spec_ctrl_mutex);
 }
