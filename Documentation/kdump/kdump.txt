@@ -282,7 +282,7 @@ This would mean:
     3) if the RAM size is larger than 2G, then reserve 128M
 
 Or you can use crashkernel=auto if you have enough memory.  The threshold
-is 2G on x86_64, arm64, ppc64 and ppc64le. The threshold is 4G for s390x.
+is 1G on x86_64, 2G on arm64, ppc64 and ppc64le. The threshold is 4G for s390x.
 If your system memory is less than the threshold crashkernel=auto will not
 reserve memory.
 
