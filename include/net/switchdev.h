@@ -87,6 +87,11 @@ struct switchdev_obj {
 	u32 flags;
 	void *complete_priv;
 	void (*complete)(struct net_device *dev, int err, void *priv);
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
 };
 
 /* SWITCHDEV_OBJ_ID_PORT_VLAN */
