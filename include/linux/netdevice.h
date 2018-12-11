@@ -308,6 +308,9 @@ struct netdev_boot_setup {
 
 int __init netdev_boot_setup(char *str);
 
+struct napi_struct_extended_rh {
+};
+
 /*
  * Structure for NAPI scheduling similar to tasklet but with weighting
  */
@@ -334,6 +337,15 @@ struct napi_struct {
 	struct list_head	dev_list;
 	struct hlist_node	napi_hash_node;
 	unsigned int		napi_id;
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
+	RH_KABI_RESERVE(5)
+	RH_KABI_RESERVE(6)
+	RH_KABI_RESERVE(7)
+	RH_KABI_SIZE_AND_EXTEND(napi_struct_extended)
 };
 
 enum {
