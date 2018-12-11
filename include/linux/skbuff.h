@@ -41,6 +41,8 @@
 #include <linux/if_packet.h>
 #include <net/flow.h>
 
+#include <linux/rh_kabi.h>
+
 /* The interface for checksum offload between the stack and networking drivers
  * is as follows...
  *
@@ -843,6 +845,12 @@ struct sk_buff {
 	/* private: */
 	__u32			headers_end[0];
 	/* public: */
+
+	/* RHEL kABI: when using a reserved slot, if a new field need to be
+	 * copied by __copy_skb_header, place it before headers_end
+	 */
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
 
 	/* These elements must be at the end, see alloc_skb() for details.  */
 	sk_buff_data_t		tail;
