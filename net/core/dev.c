@@ -149,6 +149,8 @@
 
 #include "net-sysfs.h"
 
+#include <linux/rh_features.h>
+
 /* Instead of increasing this, you should create a hash table. */
 #define MAX_GRO_SKBS 8
 
@@ -7628,6 +7630,8 @@ int dev_change_xdp_fd(struct net_device *dev, struct netlink_ext_ack *extack,
 	int err;
 
 	ASSERT_RTNL();
+
+	rh_mark_used_feature("eBPF/xdp");
 
 	query = flags & XDP_FLAGS_HW_MODE ? XDP_QUERY_PROG_HW : XDP_QUERY_PROG;
 

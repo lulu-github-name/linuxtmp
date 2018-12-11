@@ -34,6 +34,8 @@
 #include <linux/nospec.h>
 #include <linux/init.h>
 
+#include <linux/rh_features.h>
+
 #define IS_FD_ARRAY(map) ((map)->map_type == BPF_MAP_TYPE_PROG_ARRAY || \
 			   (map)->map_type == BPF_MAP_TYPE_PERF_EVENT_ARRAY || \
 			   (map)->map_type == BPF_MAP_TYPE_CGROUP_ARRAY || \
@@ -1462,6 +1464,8 @@ static int bpf_raw_tracepoint_open(const union bpf_attr *attr)
 	char tp_name[128];
 	int tp_fd, err;
 
+	rh_mark_used_feature("eBPF/rawtrace");
+
 	if (strncpy_from_user(tp_name, u64_to_user_ptr(attr->raw_tracepoint.name),
 			      sizeof(tp_name) - 1) < 0)
 		return -EFAULT;
@@ -1702,6 +1706,8 @@ static int bpf_prog_test_run(const union bpf_attr *attr,
 	prog = bpf_prog_get(attr->test.prog_fd);
 	if (IS_ERR(prog))
 		return PTR_ERR(prog);
+
+	rh_mark_used_feature("eBPF/test");
 
 	if (prog->aux->ops->test_run)
 		ret = prog->aux->ops->test_run(prog, attr, uattr);
@@ -2288,16 +2294,10 @@ out:
 SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, size)
 {
 	union bpf_attr attr = {};
-	static int marked;
 	int err;
 
 	if (sysctl_unprivileged_bpf_disabled && !capable(CAP_SYS_ADMIN))
 		return -EPERM;
-
-	if (!marked) {
-		mark_tech_preview("eBPF syscall", NULL);
-		marked = true;
-	}
 
 	err = bpf_check_uarg_tail_zero(uattr, sizeof(attr), size);
 	if (err)
