@@ -939,6 +939,9 @@ enum tls_offload_ctx_dir {
 struct tls_crypto_info;
 struct tls_context;
 
+struct tlsdev_ops_extended_rh {
+};
+
 struct tlsdev_ops {
 	int (*tls_dev_add)(struct net_device *netdev, struct sock *sk,
 			   enum tls_offload_ctx_dir direction,
@@ -947,6 +950,15 @@ struct tlsdev_ops {
 	void (*tls_dev_del)(struct net_device *netdev,
 			    struct tls_context *ctx,
 			    enum tls_offload_ctx_dir direction);
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
+	RH_KABI_RESERVE(5)
+	RH_KABI_RESERVE(6)
+	RH_KABI_RESERVE(7)
+	RH_KABI_SIZE_AND_EXTEND(tlsdev_ops_extended)
 };
 #endif
 
