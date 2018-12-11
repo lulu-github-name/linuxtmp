@@ -127,7 +127,7 @@ rh-configs: rh-configs-prep
 	./process_configs.sh -w -c $(PACKAGE_NAME) $(KVERSION)
 
 rh-configs-check: rh-configs-prep
-	cd $(REDHAT)/configs; ./process_configs.sh -t $(PACKAGE_NAME)
+	cd $(REDHAT)/configs; ./process_configs.sh -t -w -c $(PACKAGE_NAME)
 
 rh-configs-prep: rh-clean-configs
 	cd $(REDHAT)/configs; ./build_configs.sh $(PACKAGE_NAME) $(ARCH_MACH)
