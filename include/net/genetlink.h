@@ -6,6 +6,8 @@
 #include <net/netlink.h>
 #include <net/net_namespace.h>
 
+#include <linux/rh_kabi.h>
+
 #define GENLMSG_DEFAULT_SIZE (NLMSG_DEFAULT_SIZE - GENL_HDRLEN)
 
 /**
@@ -119,6 +121,9 @@ static inline int genl_err_attr(struct genl_info *info, int err,
 	return err;
 }
 
+struct genl_ops_extended_rh {
+};
+
 /**
  * struct genl_ops - generic netlink operations
  * @cmd: command identifier
@@ -141,6 +146,15 @@ struct genl_ops {
 	u8			cmd;
 	u8			internal_flags;
 	u8			flags;
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
+	RH_KABI_RESERVE(5)
+	RH_KABI_RESERVE(6)
+	RH_KABI_RESERVE(7)
+	RH_KABI_SIZE_AND_EXTEND(genl_ops_extended)
 };
 
 int genl_register_family(struct genl_family *family);
