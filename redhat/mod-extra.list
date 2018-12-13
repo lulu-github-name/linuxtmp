@@ -132,7 +132,7 @@ sch_red.ko
 sch_sfb.ko
 sch_teql.ko
 sctp.ko
-sctp_probe.ko
+sctp_diag.ko
 sidewinder.ko
 sja1000.ko
 sja1000_platform.ko
