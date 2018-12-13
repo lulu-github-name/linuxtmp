@@ -828,6 +828,7 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 	switch(model) {
 	case INTEL_FAM6_ATOM_DENVERTON:
 	case INTEL_FAM6_ATOM_GEMINI_LAKE:
+	case INTEL_FAM6_ATOM_GOLDMONT:
 
 	case INTEL_FAM6_BROADWELL_CORE:
 	case INTEL_FAM6_BROADWELL_GT3E:
