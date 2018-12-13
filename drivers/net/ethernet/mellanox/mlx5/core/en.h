@@ -560,12 +560,12 @@ struct mlx5e_rq {
 
 	unsigned long          state;
 	int                    ix;
+	unsigned int           hw_mtu;
 
 	struct net_dim         dim; /* Dynamic Interrupt Moderation */
 
 	/* XDP */
 	struct bpf_prog       *xdp_prog;
-	unsigned int           hw_mtu;
 	struct mlx5e_xdpsq     xdpsq;
 	DECLARE_BITMAP(flags, 8);
 	struct page_pool      *page_pool;
