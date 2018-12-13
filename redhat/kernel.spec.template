@@ -1380,7 +1380,7 @@ BuildKernel %make_target %kernel_image %{with_vdso_install}
 %endif
 
 %global perf_make \
-  make -s EXTRA_CFLAGS="${RPM_OPT_FLAGS}" LDFLAGS="%{__global_ldflags}" %{?cross_opts} -C tools/perf V=1 NO_PERF_READ_VDSO32=1 NO_PERF_READ_VDSOX32=1 WERROR=0 NO_LIBUNWIND=1 HAVE_CPLUS_DEMANGLE=1 NO_GTK2=1 NO_STRLCPY=1 NO_BIONIC=1 prefix=%{_prefix} PYTHON=%{__python3}
+  make EXTRA_CFLAGS="${RPM_OPT_FLAGS}" LDFLAGS="%{__global_ldflags}" %{?cross_opts} -C tools/perf V=1 NO_PERF_READ_VDSO32=1 NO_PERF_READ_VDSOX32=1 WERROR=0 NO_LIBUNWIND=1 HAVE_CPLUS_DEMANGLE=1 NO_GTK2=1 NO_STRLCPY=1 NO_BIONIC=1 prefix=%{_prefix} PYTHON=%{__python3}
 %if %{with_perf}
 # perf
 # make sure check-headers.sh is executable
@@ -1388,15 +1388,18 @@ chmod +x tools/perf/check-headers.sh
 %{perf_make} DESTDIR=$RPM_BUILD_ROOT all
 %endif
 
+%global tools_make \
+  %{make} CFLAGS="${RPM_OPT_FLAGS}" LDFLAGS="%{__global_ldflags}" V=1
+
 %if %{with_tools}
 %ifarch %{cpupowerarchs}
 # cpupower
 # make sure version-gen.sh is executable.
 chmod +x tools/power/cpupower/utils/version-gen.sh
-%{make} %{?_smp_mflags} -C tools/power/cpupower CPUFREQ_BENCH=false
+%{tools_make} -C tools/power/cpupower CPUFREQ_BENCH=false DEBUG=false
 %ifarch x86_64
     pushd tools/power/cpupower/debug/x86_64
-    %{make} %{?_smp_mflags} centrino-decode powernow-k8-decode
+    %{tools_make} centrino-decode powernow-k8-decode
     popd
 %endif
 %ifarch x86_64
@@ -1598,20 +1601,20 @@ install -m644 %{SOURCE2001} %{buildroot}%{_sysconfdir}/sysconfig/cpupower
 %ifarch x86_64
    mkdir -p %{buildroot}%{_mandir}/man8
    pushd tools/power/x86/x86_energy_perf_policy
-   make DESTDIR=%{buildroot} install
+   %{tools_make} DESTDIR=%{buildroot} install
    popd
    pushd tools/power/x86/turbostat
-   make DESTDIR=%{buildroot} install
+   %{tools_make} DESTDIR=%{buildroot} install
    popd
 %endif #turbostat/x86_energy_perf_policy
 pushd tools/thermal/tmon
-make INSTALL_ROOT=%{buildroot} install
+%{tools_make} INSTALL_ROOT=%{buildroot} install
 popd
 pushd tools/iio
-make DESTDIR=%{buildroot} install
+%{tools_make} DESTDIR=%{buildroot} install
 popd
 pushd tools/gpio
-make DESTDIR=%{buildroot} install
+%{tools_make} DESTDIR=%{buildroot} install
 popd
 pushd tools/kvm/kvm_stat
 make INSTALL_ROOT=%{buildroot} install-tools
