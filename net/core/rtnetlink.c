@@ -984,8 +984,8 @@ static noinline size_t if_nlmsg_size(const struct net_device *dev,
 	       + nla_total_size(IFALIASZ) /* IFLA_IFALIAS */
 	       + nla_total_size(IFNAMSIZ) /* IFLA_QDISC */
 	       + nla_total_size_64bit(sizeof(struct rtnl_link_ifmap))
-	       + nla_total_size(sizeof(struct rtnl_link_stats))
-	       + nla_total_size_64bit(sizeof(struct rtnl_link_stats64))
+	       + nla_total_size(sizeof_rtnl_link_stats)
+	       + nla_total_size_64bit(sizeof_rtnl_link_stats64)
 	       + nla_total_size(MAX_ADDR_LEN) /* IFLA_ADDRESS */
 	       + nla_total_size(MAX_ADDR_LEN) /* IFLA_BROADCAST */
 	       + nla_total_size(4) /* IFLA_TXQLEN */
@@ -1168,7 +1168,7 @@ static noinline_for_stack int rtnl_fill_stats(struct sk_buff *skb,
 	struct nlattr *attr;
 
 	attr = nla_reserve_64bit(skb, IFLA_STATS64,
-				 sizeof(struct rtnl_link_stats64), IFLA_PAD);
+				 sizeof_rtnl_link_stats64, IFLA_PAD);
 	if (!attr)
 		return -EMSGSIZE;
 
@@ -1176,7 +1176,7 @@ static noinline_for_stack int rtnl_fill_stats(struct sk_buff *skb,
 	dev_get_stats(dev, sp);
 
 	attr = nla_reserve(skb, IFLA_STATS,
-			   sizeof(struct rtnl_link_stats));
+			   sizeof_rtnl_link_stats);
 	if (!attr)
 		return -EMSGSIZE;
 
@@ -4238,7 +4238,7 @@ static int rtnl_get_offload_stats_attr_size(int attr_id)
 {
 	switch (attr_id) {
 	case IFLA_OFFLOAD_XSTATS_CPU_HIT:
-		return sizeof(struct rtnl_link_stats64);
+		return sizeof_rtnl_link_stats64;
 	}
 
 	return 0;
@@ -4346,7 +4346,7 @@ static int rtnl_fill_statsinfo(struct sk_buff *skb, struct net_device *dev,
 		struct rtnl_link_stats64 *sp;
 
 		attr = nla_reserve_64bit(skb, IFLA_STATS_LINK_64,
-					 sizeof(struct rtnl_link_stats64),
+					 sizeof_rtnl_link_stats64,
 					 IFLA_STATS_UNSPEC);
 		if (!attr)
 			goto nla_put_failure;
@@ -4472,7 +4472,7 @@ static size_t if_nlmsg_stats_size(const struct net_device *dev,
 	size_t size = 0;
 
 	if (stats_attr_valid(filter_mask, IFLA_STATS_LINK_64, 0))
-		size += nla_total_size_64bit(sizeof(struct rtnl_link_stats64));
+		size += nla_total_size_64bit(sizeof_rtnl_link_stats64);
 
 	if (stats_attr_valid(filter_mask, IFLA_STATS_LINK_XSTATS, 0)) {
 		const struct rtnl_link_ops *ops = dev->rtnl_link_ops;
