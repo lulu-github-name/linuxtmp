@@ -1986,6 +1986,26 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Thu Dec 13 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-53.el8]
+- [x86] kvm: x86: Report STIBP on GET_SUPPORTED_CPUID (Eduardo Habkost) [1644870]
+- [kernel] power: remove possible deadlock when unregistering power_supply (Benjamin Tissoires) [1657623]
+- [md] dm: call blk_queue_split() to impose device limits on bios (Mike Snitzer) [1657340]
+- [pinctrl] Revert "pinctrl: intel: Do pin translation when lock IRQ" (Benjamin Tissoires) [1658075]
+- [pinctrl] pinctrl: cannonlake: Fix HOSTSW_OWN register offset of H variant (Benjamin Tissoires) [1658075]
+- [pinctrl] pinctrl: intel: Do pin translation in other GPIO operations as well (Benjamin Tissoires) [1658075]
+- [pinctrl] pinctrl: cannonlake: Fix gpio base for GPP-E (Benjamin Tissoires) [1658075]
+- [pinctrl] pinctrl: intel: Don't shadow error code of gpiochip_lock_as_irq() (Benjamin Tissoires) [1658075]
+- [pinctrl] pinctrl: cannonlake: Fix community ordering for H variant (Benjamin Tissoires) [1658075]
+- [pinctrl] pinctrl: intel: Do pin translation when lock IRQ (Benjamin Tissoires) [1658075]
+- [firmware] efi: Prevent GICv3 WARN() by mapping the memreserve table before first use (Bhupesh Sharma) [1638640]
+- [firmware] efi: Permit calling efi_mem_reserve_persistent() from atomic context (Bhupesh Sharma) [1638640]
+- [firmware] efi/arm: Defer persistent reservations until after paging_init() (Bhupesh Sharma) [1638640]
+- [firmware] efi/arm: Revert deferred unmap of early memmap mapping (Bhupesh Sharma) [1638640]
+- [arm64] arm64: memblock: don't permit memblock resizing until linear mapping is up (Bhupesh Sharma) [1638640]
+- [arm64] arm64: Fix /proc/iomem for reserved but not memory regions (Bhupesh Sharma) [1638640]
+- [tty] tty: wipe buffer. (Christoph von Recklinghausen) [1655051]
+- [tty] tty: wipe buffer if not echoing data (Christoph von Recklinghausen) [1655051]
+
 * Wed Dec 12 2018 Herton R. Krzesinski <herton@redhat.com> [4.18.0-52.el8]
 - [powerpc] powerpc/perf: Remove sched_task function defined for thread-imc (Steve Best) [1657153]
 - [s390] Add reserved fields to mm_context_t (Philipp Rudo) [1656874]
