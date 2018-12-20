@@ -1845,9 +1845,8 @@ fi
 %endif # with_perf
 
 %if %{with_tools}
-%files -n kernel-tools
-%defattr(-,root,root)
 %ifarch %{cpupowerarchs}
+%defattr(-,root,root)
 %files -n kernel-tools -f cpupower.lang
 %{_bindir}/cpupower
 %ifarch x86_64
@@ -1863,6 +1862,9 @@ fi
 %{_bindir}/turbostat
 %{_mandir}/man8/turbostat*
 %endif
+%else # !cpupowerarchs
+%files -n kernel-tools
+%defattr(-,root,root)
 %endif # cpupowerarchs
 %{_bindir}/tmon
 %{_bindir}/iio_event_monitor
