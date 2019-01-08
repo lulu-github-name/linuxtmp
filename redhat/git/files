@@ -20,6 +20,7 @@ generate_all_configs.sh
 generate_bls_conf.sh
 mod-extra.list
 mod-extra.sh
+mod-extra-blacklist.sh
 mod-sign.sh
 Module.kabi_aarch64
 Module.kabi_ppc64le

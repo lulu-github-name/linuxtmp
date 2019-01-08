@@ -356,6 +356,7 @@ Source14: redhatsecureboot003.cer
 Source16: mod-extra.list
 Source17: mod-extra.sh
 Source18: mod-sign.sh
+Source19: mod-extra-blacklist.sh
 Source90: filter-x86_64.sh
 Source93: filter-aarch64.sh
 Source96: filter-ppc64le.sh
@@ -1265,6 +1266,8 @@ BuildKernel() {
 
     # Call the modules-extra script to move things around
     %{SOURCE17} $RPM_BUILD_ROOT/lib/modules/$KernelVer %{SOURCE16}
+    # Blacklist net autoloadable modules in modules-extra
+    %{SOURCE19} $RPM_BUILD_ROOT lib/modules/$KernelVer
 
     #
     # Generate the kernel-core and kernel-modules files lists
@@ -1979,6 +1982,7 @@ fi
 /usr/src/kernels/%{KVERREL}%{?3:+%{3}}\
 %{expand:%%files %{?3:%{3}-}modules-extra}\
 %defattr(-,root,root)\
+%config(noreplace) /etc/modprobe.d/*-blacklist.conf\
 /lib/modules/%{KVERREL}%{?3:+%{3}}/extra\
 %if %{with_debuginfo}\
 %ifnarch noarch\
