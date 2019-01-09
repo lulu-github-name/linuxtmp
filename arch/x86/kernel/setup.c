@@ -787,7 +787,7 @@ static void __init trim_low_memory_range(void)
 	memblock_reserve(0, ALIGN(reserve_low, PAGE_SIZE));
 }
 
-static bool valid_amd_processor(__u8 family, const char *model_id)
+static bool valid_amd_processor(__u8 family, const char *model_id, bool guest)
 {
 	bool valid = false;
 	int len;
@@ -798,16 +798,23 @@ static bool valid_amd_processor(__u8 family, const char *model_id)
 		break;
 
 	case 0x17:
-		len = strlen("AMD EPYC 7");
-		if (!strncmp(model_id, "AMD EPYC 7", len)) {
-			len += 3;
-			/*
-			 * AMD EPYC 7xx1 == NAPLES
-			 */
-			if (strlen(model_id) >= len) {
-				if (model_id[len-1] == '1')
-					valid = true;
+		if (!guest) {
+			len = strlen("AMD EPYC 7");
+			if (!strncmp(model_id, "AMD EPYC 7", len)) {
+				len += 3;
+				/*
+				 * AMD EPYC 7xx1 == NAPLES
+				 */
+				if (strlen(model_id) >= len) {
+					if (model_id[len-1] == '1')
+						valid = true;
+				}
 			}
+		}
+		else {
+			/* guest names do not conform to bare metal */
+			if (!strncmp(model_id, "AMD EPYC", 8))
+				valid = true;
 		}
 		break;
 
@@ -888,7 +895,7 @@ static void rh_check_supported(void)
 	switch (boot_cpu_data.x86_vendor) {
 	case X86_VENDOR_AMD:
 		if (!valid_amd_processor(boot_cpu_data.x86,
-					 boot_cpu_data.x86_model_id)) {
+					 boot_cpu_data.x86_model_id, guest)) {
 			pr_crit("Detected CPU family %xh model %d\n",
 				boot_cpu_data.x86,
 				boot_cpu_data.x86_model);
