@@ -73,7 +73,7 @@ struct scsi_disk {
 	struct device	dev;
 	struct gendisk	*disk;
 	struct opal_dev *opal_dev;
-#ifdef CONFIG_BLK_DEV_ZONED
+#if 1 /* CONFIG_BLK_DEV_ZONED */
 	u32		nr_zones;
 	u32		zone_blocks;
 	u32		zones_optimal_open;

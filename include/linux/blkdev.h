@@ -494,7 +494,7 @@ struct request_queue {
 
 	struct queue_limits	limits;
 
-#ifdef CONFIG_BLK_DEV_ZONED
+#if 1 /* CONFIG_BLK_DEV_ZONED */
 	/*
 	 * Zoned block device information for request dispatch control.
 	 * nr_zones is the total number of zones of the device. This is always
