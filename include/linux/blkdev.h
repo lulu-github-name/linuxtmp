@@ -343,6 +343,15 @@ struct queue_limits {
 	unsigned char		cluster;
 	unsigned char		raid_partial_stripes_expensive;
 	enum blk_zoned_model	zoned;
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
+	RH_KABI_RESERVE(5)
+	RH_KABI_RESERVE(6)
+	RH_KABI_RESERVE(7)
+	RH_KABI_RESERVE(8)
 };
 
 #ifdef CONFIG_BLK_DEV_ZONED
@@ -1669,6 +1678,11 @@ struct block_device_operations {
 			    gfp_t gfp_mask);
 	struct module *owner;
 	const struct pr_ops *pr_ops;
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
 };
 
 extern int __blkdev_driver_ioctl(struct block_device *, fmode_t, unsigned int,
