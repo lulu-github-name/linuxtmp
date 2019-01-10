@@ -1502,6 +1502,9 @@ struct blk_integrity_profile {
 	integrity_processing_fn		*generate_fn;
 	integrity_processing_fn		*verify_fn;
 	const char			*name;
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
 };
 
 extern void blk_integrity_register(struct gendisk *, struct blk_integrity *);

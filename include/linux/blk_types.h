@@ -9,6 +9,7 @@
 #include <linux/types.h>
 #include <linux/bvec.h>
 #include <linux/ktime.h>
+#include <linux/rh_kabi.h>
 
 struct bio_set;
 struct bio;
