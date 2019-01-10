@@ -2001,6 +2001,28 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Thu Jan 10 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-59.el8]
+- [x86] expand cpu feature/bug bits (David Arcari) [1662434]
+- [x86] add kabi support for cpuinfo_x86 (David Arcari) [1662434]
+- [init] Display a message about certified hardware (Steve Best) [1660523]
+- [scsi] scsi: t10-pi: Return correct ref tag when queue has no integrity profile (Ming Lei) [1660719]
+- [scsi] scsi: storvsc: Fix a race in sub-channel creation that can cause panic (Mohammed Gamal) [1650149]
+- [uio] uio_hv_generic: set callbacks on open (Mohammed Gamal) [1650149]
+- [hv] vmbus: fix subchannel removal (Mohammed Gamal) [1650149]
+- [uio] uio_hv_generic: defer opening vmbus until first use (Mohammed Gamal) [1650149]
+- [hv] vmbus: split ring buffer allocation from open (Mohammed Gamal) [1650149]
+- [hv] vmbus: pass channel to hv_process_channel_removal (Mohammed Gamal) [1650149]
+- [hv] Drivers: hv: vmbus: Reset the channel callback in vmbus_onoffer_rescind() (Mohammed Gamal) [1650149]
+- [uio] hv_uio_generic: map ringbuffer phys addr (Mohammed Gamal) [1650149]
+- [uio] uio: introduce UIO_MEM_IOVA (Mohammed Gamal) [1650149]
+- [hv] vmbus: add driver_override support (Mohammed Gamal) [1650149]
+- [hv] vmbus: keep pointer to ring buffer page (Mohammed Gamal) [1650149]
+- [uio] uio_hv_generic: increase size of receive and send buffers (Mohammed Gamal) [1650149]
+- [uio] uio: add SPDX license tags (Mohammed Gamal) [1650149]
+- [fs] gfs2: take jdata unstuff into account in do_grow (Robert S Peterson) [1660519]
+- [drm] drm/dp_mst: Check if primary mstb is null (Lyude Paul) [1658711]
+- [tools] perf tests: Use shebangs in the shell scripts (Michael Petlan) [1613523]
+
 * Mon Jan 07 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-58.el8]
 - [mm] mm: put_and_wait_on_page_locked() while page is migrated (Baoquan He) [1649214]
 - [netdrv] i40e: define proper net_device::neigh_priv_len (Stefan Assmann) [1658743]
