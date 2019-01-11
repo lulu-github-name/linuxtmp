@@ -43,6 +43,8 @@
 #include <asm/byteorder.h>
 #include <uapi/linux/fs.h>
 
+#include <linux/rh_kabi.h>
+
 struct backing_dev_info;
 struct bdi_writeback;
 struct bio;
@@ -694,6 +696,8 @@ struct inode {
 #endif
 
 	void			*i_private; /* fs or device private pointer */
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
 } __randomize_layout;
 
 static inline unsigned int i_blocksize(const struct inode *node)
