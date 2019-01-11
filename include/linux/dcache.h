@@ -14,6 +14,8 @@
 #include <linux/stringhash.h>
 #include <linux/wait.h>
 
+#include <linux/rh_kabi.h>
+
 struct path;
 struct vfsmount;
 
@@ -117,6 +119,8 @@ struct dentry {
 		struct hlist_bl_node d_in_lookup_hash;	/* only for in-lookup ones */
 	 	struct rcu_head d_rcu;
 	} d_u;
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
 } __randomize_layout;
 
 /*
