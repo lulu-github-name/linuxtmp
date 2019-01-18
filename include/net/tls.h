@@ -44,6 +44,8 @@
 
 #include <uapi/linux/tls.h>
 
+#include <linux/rh_kabi.h>
+
 
 /* Maximum data size carried in a TLS record */
 #define TLS_MAX_PAYLOAD_SIZE		((size_t)1 << 14)
@@ -163,6 +165,11 @@ struct cipher_context {
 	char *iv;
 	u16 rec_seq_size;
 	char *rec_seq;
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
 };
 
 /* Note: this sizeof(struct tls12_crypto_info_aes_gcm_128) + 32 at rhel8 GA */
