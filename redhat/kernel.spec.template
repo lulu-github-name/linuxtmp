@@ -2007,6 +2007,16 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Thu Jan 17 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-62.el8]
+- [vhost] vhost/vsock: fix vhost vsock cid hashing inconsistent (Stefan Hajnoczi) [1619848] {CVE-2018-14625}
+- [vhost] vhost/vsock: fix use-after-free in network stack callers (Stefan Hajnoczi) [1619848] {CVE-2018-14625}
+- [netdrv] bnx2x: Add VF spoof-checking configuration (Jonathan Toppins) [1646842]
+- [netdrv] net-next: hinic: fix a problem in free_tx_poll() (Xiaojun Tan) [1642016]
+- [netdrv] net: hns: fix for unmapping problem when SMMU is on (Xiaojun Tan) [1640526]
+- [netdrv] net: hns: add netif_carrier_off before change speed and duplex (Xiaojun Tan) [1640526]
+- [netdrv] net: hns: add the code for cleaning pkt in chip (Xiaojun Tan) [1640526]
+- [netdrv] net: hns: modify variable type in hns_nic_reuse_page (Xiaojun Tan) [1640526]
+
 * Wed Jan 16 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-61.el8]
 - [irqchip] Mark GICv2 deprecated (Wei Huang) [1609391]
 - [scsi] qla2xxx: Use correct number of vectors for online CPUs (Himanshu Madhani) [1644058]
