@@ -563,6 +563,9 @@ struct pci_bus_resource {
 
 #define PCI_REGION_FLAG_MASK	0x0fU	/* These bits of resource flags tell us the PCI region flags */
 
+struct pci_bus_extended_rh {
+};
+
 struct pci_bus {
 	struct list_head node;		/* Node in list of buses */
 	struct pci_bus	*parent;	/* Parent bus this bridge is on */
@@ -597,6 +600,14 @@ struct pci_bus {
 	struct bin_attribute	*legacy_io;	/* Legacy I/O for this bus */
 	struct bin_attribute	*legacy_mem;	/* Legacy mem */
 	unsigned int		is_added:1;
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
+	RH_KABI_RESERVE(5)
+	RH_KABI_RESERVE(6)
+	RH_KABI_RESERVE(7)
 };
 
 #define to_pci_bus(n)	container_of(n, struct pci_bus, dev)
