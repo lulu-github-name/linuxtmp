@@ -439,9 +439,7 @@ struct pci_dev {
 #ifdef CONFIG_PCI_PASID
 	u16		pasid_features;
 #endif
-#ifdef CONFIG_PCI_P2PDMA
 	struct pci_p2pdma *p2pdma;
-#endif
 	phys_addr_t	rom;		/* Physical address if not from BAR */
 	size_t		romlen;		/* Length if not from BAR */
 	char		*driver_override; /* Driver name to force a match */
