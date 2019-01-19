@@ -2007,6 +2007,38 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Sat Jan 19 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-63.el8]
+- [include] PCI: Add reserved fields to 'struct hotplug_slot' (Myron Stowe) [1663534]
+- [include] PCI: Add reserved fields to 'struct hotplug_slot_ops' (Myron Stowe) [1663534]
+- [pci] PCI: Add reserved fields to 'struct pci_sriov' (Myron Stowe) [1663534]
+- [include] PCI: Add reserved fields to 'struct pci_driver' (Myron Stowe) [1663534]
+- [include] PCI: Add reserved fields to 'struct pci_bus' (Myron Stowe) [1663534]
+- [include] PCI: Add reserved fields, and extension, to 'struct pci_dev' (Myron Stowe) [1663534]
+- [pci] PCI: Add missing include to drivers/pci.h (Myron Stowe) [1663534]
+- [pci] PCI/IOV: Use VF0 cached config space size for other VFs (Myron Stowe) [1663534]
+- [include] PCI: always include 'p2pdma' in 'struct pci_dev' (Myron Stowe) [1663534]
+- [ata] PCI: Remove pci_set_dma_max_seg_size() (Myron Stowe) [1663534]
+- [pci] PCI: Remove pci_set_dma_seg_boundary() (Myron Stowe) [1663534]
+- [include] PCI: Remove pci_unmap_addr() wrappers for DMA API (Myron Stowe) [1663534]
+- [pci] PCI/AER: Abstract AER interrupt handling (Myron Stowe) [1663534]
+- [pci] PCI: Uninline PCI bus accessors for better ftracing (Myron Stowe) [1663534]
+- [pci] PCI/portdrv: Add runtime PM hooks for port service drivers (Myron Stowe) [1663534]
+- [pci] PCI: Make link active reporting detection generic (Myron Stowe) [1663534]
+- [block] block: don't lose track of REQ_INTEGRITY flag (Ming Lei) [1665684]
+- [nvme] nvme-pci: fix nvme_setup_irqs() (Ming Lei) [1661439]
+- [lib] sbitmap: Protect swap_lock from hardirq (Ming Lei) [1666192]
+- [lib] sbitmap: Protect swap_lock from softirqs (Ming Lei) [1666192]
+- [scsi] scsi: isci: initialize shost fully before calling scsi_add_host() (Ming Lei) [1664918]
+- [nvme] nvmet-fc: Mark NVMe/FC target mode driver as unsupported (Ewan Milne) [1664838]
+- [netdrv] bnx2x: Assign unique DMAE channel number for FW DMAE transactions. (Jonathan Toppins) [1638306]
+- [fs] block: don't use un-ordered __set_current_state(TASK_UNINTERRUPTIBLE) (Ming Lei) [1664580]
+- [netdrv] qed: Wait for ready indication before rereading the shmem (Chad Dupuis) [1652417]
+- [netdrv] qed: Avoid sending mailbox commands when MFW is not responsive (Chad Dupuis) [1652417]
+- [netdrv] qed: Wait for MCP halt and resume commands to take place (Chad Dupuis) [1652417]
+- [netdrv] qed: Prevent a possible deadlock during driver load and unload (Chad Dupuis) [1652417]
+- [fs] gfs2: Fix loop in gfs2_rbm_find (Andreas Grunbacher) [1658528]
+- [fs] gfs2: Get rid of potential double-freeing in gfs2_create_inode (Andreas Grunbacher) [1658539]
+
 * Thu Jan 17 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-62.el8]
 - [vhost] vhost/vsock: fix vhost vsock cid hashing inconsistent (Stefan Hajnoczi) [1619848] {CVE-2018-14625}
 - [vhost] vhost/vsock: fix use-after-free in network stack callers (Stefan Hajnoczi) [1619848] {CVE-2018-14625}
