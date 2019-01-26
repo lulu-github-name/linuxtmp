@@ -138,6 +138,7 @@ static char chosen_elevator[ELV_NAME_MAX];
 
 static int __init elevator_setup(char *str)
 {
+	pr_err("NOTE: The elevator= kernel parameter is deprecated.\n");
 	/*
 	 * Be backwards-compatible with previous kernels, so users
 	 * won't get the wrong elevator.
