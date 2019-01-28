@@ -70,6 +70,9 @@
  */
 #define DMA_ATTR_PRIVILEGED		(1UL << 9)
 
+struct dma_map_ops_extended_rh {
+};
+
 /*
  * A dma_addr_t can hold any valid DMA or bus address for the platform.
  * It can be given to a device to use as a DMA source or target.  A CPU cannot
@@ -114,6 +117,12 @@ struct dma_map_ops {
 	void (*unmap_resource)(struct device *dev, dma_addr_t dma_handle,
 			   size_t size, enum dma_data_direction dir,
 			   unsigned long attrs);
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
+	RH_KABI_RESERVE(5)
+	RH_KABI_RESERVE(6)
 	void (*sync_single_for_cpu)(struct device *dev,
 				    dma_addr_t dma_handle, size_t size,
 				    enum dma_data_direction dir);
@@ -130,6 +139,7 @@ struct dma_map_ops {
 			enum dma_data_direction direction);
 	int (*dma_supported)(struct device *dev, u64 mask);
 	u64 (*get_required_mask)(struct device *dev);
+	RH_KABI_SIZE_AND_EXTEND(dma_map_ops_extended)
 };
 
 #define DMA_MAPPING_ERROR		(~(dma_addr_t)0)
