@@ -833,28 +833,26 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 		return false;
 
 	switch(model) {
-	case INTEL_FAM6_ATOM_DENVERTON:
-	case INTEL_FAM6_ATOM_GEMINI_LAKE:
-	case INTEL_FAM6_ATOM_GOLDMONT:
-
-	case INTEL_FAM6_BROADWELL_CORE:
-	case INTEL_FAM6_BROADWELL_GT3E:
-	case INTEL_FAM6_BROADWELL_X:
-	case INTEL_FAM6_BROADWELL_XEON_D:
-
-	case INTEL_FAM6_HASWELL_CORE:
-	case INTEL_FAM6_HASWELL_GT3E:
-	case INTEL_FAM6_HASWELL_ULT:
-	case INTEL_FAM6_HASWELL_X:
-		valid = true;
-		break;
-
 	case INTEL_FAM6_KABYLAKE_DESKTOP:
 		valid = (stepping <= 10 || stepping == 12);
 		break;
 
 	case INTEL_FAM6_KABYLAKE_MOBILE:
 		valid = (stepping <= 11);
+		break;
+
+	case INTEL_FAM6_XEON_PHI_KNM:
+	case INTEL_FAM6_ATOM_GOLDMONT:
+	case INTEL_FAM6_ATOM_GEMINI_LAKE:
+	case INTEL_FAM6_ATOM_DENVERTON:
+	case INTEL_FAM6_XEON_PHI_KNL:
+	case INTEL_FAM6_BROADWELL_XEON_D:
+	case INTEL_FAM6_BROADWELL_X:
+	case INTEL_FAM6_ATOM_SILVERMONT2:
+	case INTEL_FAM6_BROADWELL_GT3E:
+	case INTEL_FAM6_HASWELL_GT3E:
+	case INTEL_FAM6_HASWELL_ULT:
+		valid = true;
 		break;
 
 	case INTEL_FAM6_SKYLAKE_MOBILE:
@@ -868,7 +866,7 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 		break;
 
 	default:
-		valid = false;
+		valid = (model <= INTEL_FAM6_HASWELL_X);
 		break;
 	}
 
