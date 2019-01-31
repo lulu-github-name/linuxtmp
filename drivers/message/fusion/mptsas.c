@@ -5290,6 +5290,9 @@ mptsas_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		    ioc, MPI_SAS_OP_CLEAR_ALL_PERSISTENT);
 	}
 
+	add_taint(TAINT_SUPPORT_REMOVED, LOCKDEP_STILL_OK);
+	pr_warn("MPTSAS MODULE IS NOT SUPPORTED\n");
+
 	error = scsi_add_host(sh, &ioc->pcidev->dev);
 	if (error) {
 		dprintk(ioc, printk(MYIOC_s_ERR_FMT
