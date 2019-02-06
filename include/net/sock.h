@@ -505,7 +505,7 @@ struct sock {
 							struct sk_buff *skb);
 #endif
 	void                    (*sk_destruct)(struct sock *sk);
-	struct sock_reuseport __rcu	*sk_reuseport_cb;
+	RH_KABI_EXCLUDE(struct sock_reuseport __rcu	*sk_reuseport_cb)
 	struct rcu_head		sk_rcu;
 
 	RH_KABI_RESERVE(1)
