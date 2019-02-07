@@ -22,8 +22,7 @@ function combine_config_layer()
 		return
 	fi
 
-	grep -Eh -e '# CONFIG_[_A-Z0-9]+ is not set' -e '^[^#]' \
-		$dir/CONFIG_* > $file
+	cat $dir/CONFIG_* > $file
 }
 
 function merge_configs()
