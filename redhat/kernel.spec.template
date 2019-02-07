@@ -2007,6 +2007,20 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Thu Feb 07 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-66.el8]
+- [arm64] arm64, vmcoreinfo : Append 'MAX_PHYSMEM_BITS' to vmcoreinfo (Bhupesh Sharma) [1666679]
+- [kernel] sched/debug: Initialize sd_sysctl_cpus if !CONFIG_CPUMASK_OFFSTACK (Joe Lawrence) [1667840]
+- [init] Small change to the message about certified hardware (Steve Best) [1671765]
+- [x86] x86/kdump: make the behavior of crashkernel=X consistent with kaslr (Pingfan Liu) [1640799]
+- [x86] Add back support for Intel processors (Steve Best) [1670529]
+- [net] SUNRPC: Clean up initialisation of the struct rpc_rqst (Benjamin Coddington) [1650494]
+- [x86] KABI, x86/paravirt: Protect paravirt ops structures (Waiman Long) [1669957]
+- [include] KABI: struct module padding (Prarit Bhargava) [1669480]
+- [include] KABI: struct stack_trace_struct padding (Prarit Bhargava) [1669480]
+- [documentation] iommu: Fix passthrough option documentation (Gary Hook) [1658391]
+- [iommu] iommu: Add config option to set passthrough as default (Gary Hook) [1658391]
+- [kernel] redhat: kernel: clean up taint flags (Jiri Benc) [1654313]
+
 * Wed Feb 06 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-65.el8]
 - [scsi] scsi: qedi: Add the CRC size within iSCSI NVM image (Charles Rose) [1670186]
 - [fs] iomap: don't search past page end in iomap_is_partially_uptodate (Eric Sandeen) [1657588]
