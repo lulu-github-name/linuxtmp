@@ -26,6 +26,7 @@
 #include <linux/uidgid.h>
 #include <linux/gfp.h>
 #include <linux/overflow.h>
+#include <linux/rh_kabi.h>
 #include <asm/device.h>
 
 struct device;
@@ -239,6 +240,12 @@ enum probe_type {
 };
 
 /**
+ * struct device_driver_rh - Red Hat KABI extension struct
+ */
+struct device_driver_rh {
+};
+
+/**
  * struct device_driver - The basic device driver structure
  * @name:	Name of the device driver.
  * @bus:	The bus which the device of this driver belongs to.
@@ -298,6 +305,11 @@ struct device_driver {
 	void (*coredump) (struct device *dev);
 
 	struct driver_private *p;
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
+	RH_KABI_SIZE_AND_EXTEND_PTR(device_driver);
 };
 
 
