@@ -2009,6 +2009,19 @@ fi
 #
 %changelog
 %%CHANGELOG%%
+* Wed Feb 13 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-68.el8]
+- [include] KABI: struct kset padding (Prarit Bhargava) [1669796]
+- [include] KABI: struct kobject and kobj_type padding (Prarit Bhargava) [1669796]
+- [include] KABI: struct delayed_work padding (Prarit Bhargava) [1669796]
+- [include] KABI: struct work_struct padding (Prarit Bhargava) [1669796]
+- [include] KABI: struct hrtimer padding (Prarit Bhargava) [1669796]
+- [include] KABI: struct user_namespace padding (Prarit Bhargava) [1669796]
+- [include] KABI: struct resource padding (Prarit Bhargava) [1669796]
+- [include] KABI: Protect device_driver struct (Prarit Bhargava) [1666316]
+- [include] KABI: Protect radix functions (Prarit Bhargava) [1669079]
+- [char] ipmi: msghandler: Fix potential Spectre v1 vulnerabilities (Tony Camuso) [1672582]
+- [vhost] vhost: fix OOB in get_rx_bufs() (Jason Wang) [1668665] {CVE-2018-16880}
+
 * Sat Feb 09 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-67.el8]
 - [md] dm: don't use bio_trim() afterall (Mike Snitzer) [1673657]
 - [md] dm: add memory barrier before waitqueue_active (Mike Snitzer) [1673110]
