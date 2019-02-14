@@ -381,6 +381,12 @@ int subsys_virtual_register(struct bus_type *subsys,
 			    const struct attribute_group **groups);
 
 /**
+ * struct class_rh - Red Hat KABI extension struct
+ */
+struct class_rh {
+};
+
+/**
  * struct class - device classes
  * @name:	Name of the class.
  * @owner:	The module owner.
@@ -428,6 +434,12 @@ struct class {
 	const struct dev_pm_ops *pm;
 
 	struct subsys_private *p;
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
+	RH_KABI_SIZE_AND_EXTEND_PTR(class);
 };
 
 struct class_dev_iter {
