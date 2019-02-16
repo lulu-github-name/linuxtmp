@@ -1,2 +1,2 @@
 #0-
-0x566d545a	blk_queue_make_request	vmlinux	EXPORT_SYMBOL
+0x4518bc30	blk_queue_make_request	vmlinux	EXPORT_SYMBOL

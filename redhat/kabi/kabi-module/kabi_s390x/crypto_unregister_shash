@@ -1,2 +1,2 @@
 #0-
-0xb0e7b04e	crypto_unregister_shash	vmlinux	EXPORT_SYMBOL_GPL
+0x603702cd	crypto_unregister_shash	vmlinux	EXPORT_SYMBOL_GPL

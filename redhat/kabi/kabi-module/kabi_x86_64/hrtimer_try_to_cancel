@@ -1,2 +1,2 @@
 #0-
-0x3f4e8a96	hrtimer_try_to_cancel	vmlinux	EXPORT_SYMBOL_GPL
+0x1415801b	hrtimer_try_to_cancel	vmlinux	EXPORT_SYMBOL_GPL

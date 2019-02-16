@@ -1,2 +1,2 @@
 #0-
-0x41b8d1ee	down_read_trylock	vmlinux	EXPORT_SYMBOL
+0x66c2d037	down_read_trylock	vmlinux	EXPORT_SYMBOL

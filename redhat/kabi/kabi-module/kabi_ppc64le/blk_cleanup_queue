@@ -1,2 +1,2 @@
 #0-
-0x4bf8f964	blk_cleanup_queue	vmlinux	EXPORT_SYMBOL
+0xfbc0b865	blk_cleanup_queue	vmlinux	EXPORT_SYMBOL

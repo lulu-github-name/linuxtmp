@@ -1,2 +1,2 @@
 #0-
-0x4b65cf10	blk_queue_max_segment_size	vmlinux	EXPORT_SYMBOL
+0x3a194a04	blk_queue_max_segment_size	vmlinux	EXPORT_SYMBOL
