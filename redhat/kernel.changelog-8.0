@@ -1,3 +1,20 @@
+* Fri Feb 22 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-71.el8]
+- [pci] pci/quirks: Add quirk to reset nvgpu at boot for the Lenovo ThinkPad P50 (Lyude Paul) [1677022]
+- [arm64] arm64, vmcoreinfo : Append 'MAX_USER_VA_BITS' to vmcoreinfo (Bhupesh Sharma) [1672962]
+- [md] dm thin: fix bug where bio that overwrites thin block ignores FUA (Mike Snitzer) [1679211]
+- [pci] PCI: Fix "try" semantics of bus and slot reset (Myron Stowe) [1662901]
+- [acpi] acpi/nfit: Fix bus command validation (Jeff Moyer) [1673958]
+- [pci] PCI/MSI: Return -ENOSPC from pci_alloc_irq_vectors_affinity() (Myron Stowe) [1667773]
+- [fs] NFS: Don't use page_file_mapping after removing the page (Benjamin Coddington) [1664190]
+- [fs] NFS: Fix up return value on fatal errors in nfs_page_async_flush() (Benjamin Coddington) [1664190]
+- [md] md: fix raid10 hang issue caused by barrier (Xiao Ni) [1630921]
+- [md] md/raid1: don't clear bitmap bits on interrupted recovery. (Xiao Ni) [1677360]
+- [virt] kvm: fix kvm_ioctl_create_device() reference counting (CVE-2019-6974) (Paolo Bonzini) [1673843] {CVE-2019-6974}
+- [block] blk-mq: fix a hung issue when fsync (Ming Lei) [1674399]
+- [block] Revert "block: cover another queue enter recursion via BIO_QUEUE_ENTERED" (Ming Lei) [1673966]
+- [tools] perf tools: Check for null when copying nsinfo. (Jiri Olsa) [1676451]
+- [iommu] iommu/amd: Fix IOMMU page flush when detach device from a domain (Suravee Suthikulpanit) [1672476]
+
 * Tue Feb 19 2019 Herton R. Krzesinski <herton@redhat.com> [4.18.0-70.el8]
 - [kernel] namespace: Add padding fix to user_table[] (Prarit Bhargava) [1677103]
 - [x86] KVM: nVMX: unconditionally cancel preemption timer in free_nested (CVE-2019-7221) (Paolo Bonzini) [1673841] {CVE-2019-7221}
