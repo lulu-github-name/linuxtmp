@@ -62,36 +62,6 @@ DEFINE_STATIC_KEY_FALSE(switch_mm_cond_ibpb);
 /* Control unconditional IBPB in switch_mm() */
 DEFINE_STATIC_KEY_FALSE(switch_mm_always_ibpb);
 
-/* Apply nosmt=policy options */
-static void __init apply_nosmt_policy(void)
-{
-	/*
-	 * This function must be updated whenever NOSMT_POLICY_LATEST_VERSION
-	 * gets bumped.
-	 */
-	BUILD_BUG_ON(NOSMT_POLICY_LATEST_VERSION > 1);
-
-	/*
-	 * Bail if SMT is already disabled.  This can happen if the CPU doesn't
-	 * support it, or if any other options or mitigations have already
-	 * disabled it.
-	 */
-	if (cpu_smt_control != CPU_SMT_ENABLED)
-		return;
-
-	/* nosmt=nopolicy */
-	if (nosmt_policy_version == 0)
-		return;
-
-	/* nosmt=policy-001 */
-	if (nosmt_policy_version == 1 &&
-	    boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) {
-		pr_info("Disabling SMT by default for security.  Use the 'nosmt=nopolicy' command-line option to re-enable it if needed.\n");
-		cpu_smt_disable(nosmt_policy_force);
-		return;
-	}
-}
-
 void __init check_bugs(void)
 {
 	identify_boot_cpu();
@@ -133,8 +103,6 @@ void __init check_bugs(void)
 	ssb_select_mitigation();
 
 	l1tf_select_mitigation();
-
-	apply_nosmt_policy();
 
 #ifdef CONFIG_X86_32
 	/*
