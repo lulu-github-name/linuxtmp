@@ -1,3 +1,6 @@
+* Sun Mar 10 2019 Frantisek Hrbata <fhrbata@redhat.com> [4.18.0-78.el8]
+- [fs] gfs2: Fix missed wakeups in find_insert_glock (Andreas Grunbacher) [1678907]
+
 * Thu Mar 07 2019 Frantisek Hrbata <fhrbata@redhat.com> [4.18.0-77.el8]
 - [firmware] efi: Reduce the amount of memblock reservations for persistent allocations (Bhupesh Sharma) [1682988]
 - [firmware] efi: Permit multiple entries in persistent memreserve data structure (Bhupesh Sharma) [1682988]
