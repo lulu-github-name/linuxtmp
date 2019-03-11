@@ -181,6 +181,12 @@ enum cpuhp_smt_control {
 extern enum cpuhp_smt_control cpu_smt_control;
 extern void cpu_smt_disable(bool force);
 extern void cpu_smt_check_topology(void);
+
+/* Support for nosmt=policy options */
+#define NOSMT_POLICY_LATEST_VERSION 1U
+extern unsigned int nosmt_policy_version __initdata;
+extern bool nosmt_policy_force __initdata;
+
 #else
 # define cpu_smt_control		(CPU_SMT_ENABLED)
 static inline void cpu_smt_disable(bool force) { }

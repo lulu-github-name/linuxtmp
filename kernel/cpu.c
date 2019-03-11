@@ -383,9 +383,62 @@ void __init cpu_smt_check_topology(void)
 		cpu_smt_control = CPU_SMT_NOT_SUPPORTED;
 }
 
+unsigned int nosmt_policy_version __initdata = NOSMT_POLICY_LATEST_VERSION;
+bool nosmt_policy_force __initdata = false;
+
 static int __init smt_cmdline_disable(char *str)
 {
-	cpu_smt_disable(str && !strcmp(str, "force"));
+	unsigned int version;
+	bool force = false;
+
+	if (str) {
+		if (!strcmp(str, "force")) {
+			force = true;
+			goto disable;
+		}
+
+		if (!strcmp(str, "nopolicy")) {
+			nosmt_policy_version = 0;
+			return 0;
+		}
+
+		if (!strcmp(str, "policy-latest,force"))  {
+			nosmt_policy_version = NOSMT_POLICY_LATEST_VERSION;
+			nosmt_policy_force = true;
+			return 0;
+		}
+
+		if (!strcmp(str, "policy-latest"))  {
+			nosmt_policy_version = NOSMT_POLICY_LATEST_VERSION;
+			nosmt_policy_force = false;
+			return 0;
+		}
+
+		if (sscanf(str, "policy-%u,force", &version) == 1 &&
+		    version <= NOSMT_POLICY_LATEST_VERSION) {
+			nosmt_policy_version = version;
+			nosmt_policy_force = true;
+			return 0;
+		}
+
+		if (sscanf(str, "policy-%u", &version) == 1 &&
+		    version <= NOSMT_POLICY_LATEST_VERSION) {
+			nosmt_policy_version = version;
+			nosmt_policy_force = false;
+			return 0;
+		}
+
+		pr_warn("Unsupported nosmt='%s' option.  Defaulting to nosmt=policy-%03u.\n",
+			str, NOSMT_POLICY_LATEST_VERSION);
+
+		nosmt_policy_version = NOSMT_POLICY_LATEST_VERSION;
+		nosmt_policy_force = false;
+		return 0;
+	}
+
+disable:
+	nosmt_policy_version = 0;
+	cpu_smt_disable(force);
 	return 0;
 }
 early_param("nosmt", smt_cmdline_disable);

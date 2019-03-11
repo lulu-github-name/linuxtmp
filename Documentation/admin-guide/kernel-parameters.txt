@@ -2797,6 +2797,16 @@
 			nosmt=force: Force disable SMT, cannot be undone
 				     via the sysfs control file.
 
+			nosmt=policy-001: Disable SMT on Intel CPUs only (default)
+			nosmt=policy-001,force: Force disable SMT on Intel CPUS
+						only; cannot be undone via sysfs.
+			nosmt=policy-latest: Use the latest nosmt=policy-00N
+					     option.
+			nosmt=policy-latest,force: Use the latest nosmt=policy-00N
+						   option; cannot be undone via
+						   sysfs.
+			nosmt=nopolicy: Leave SMT enabled.
+
 	nospectre_v2	[X86] Disable all mitigations for the Spectre variant 2
 			(indirect branch prediction) vulnerability. System may
 			allow data leaks with this option, which is equivalent
