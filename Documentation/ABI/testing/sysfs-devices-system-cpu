@@ -507,7 +507,8 @@ Description:	Control Symetric Multi Threading (SMT)
 			 "on"		SMT is enabled
 			 "off"		SMT is disabled
 			 "forceoff"	SMT is force disabled. Cannot be changed.
-			 "notsupported" SMT is not supported by the CPU
+			 "notsupported" Runtime SMT toggling is not currently
+					supported for the architecture
 
 			 If control status is "forceoff" or "notsupported" writes
 			 are rejected.
