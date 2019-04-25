@@ -1125,7 +1125,7 @@ done
 %endif
 
 cp %{SOURCE42} .
-./process_configs.sh -w -c %{name} %{rpmversion}
+./process_configs.sh -w -c %{name} %{rpmversion} %{?cross_opts}
 
 # end of kernel config
 %endif
