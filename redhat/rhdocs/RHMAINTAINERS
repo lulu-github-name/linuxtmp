@@ -287,6 +287,11 @@ M:	Arjun Vynipadath <avynipad@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/chelsio/cxgb4/
 
+DEVICE DIRECT ACCESS
+M:	Jeff Moyer <jmoyer@redhat.com>
+S:	Maintained
+F:	drivers/dax
+
 DEVICE MAPPER SUPPORT
 M:	Mike Snitzer <snitzer@redhat.com>
 S:	Maintained
@@ -313,6 +318,16 @@ Disk Array driver for HP Smart Array SAS controllers (hpsa)
 M:	Tomas Henzl <thenzl@redhat.com>
 S:	Maintained
 F:	drivers/scsi/hpsa*
+
+MICROSEMI SMART ARRAY SMARTPQI DRIVER (smartpqi)
+M:      Don Brace <dbrace@redhat.com>
+S:      Maintained
+F:      drivers/scsi/smartpqi/smartpqi*.[ch]
+F:      drivers/scsi/smartpqi/Kconfig
+F:      drivers/scsi/smartpqi/Makefile
+F:      include/linux/cciss*.h
+F:      include/uapi/linux/cciss*.h
+F:      Documentation/scsi/smartpqi.txt
 
 DM-RAID SUPPORT
 M:	Jonathan Brassow <jbrassow@redhat.com>
@@ -352,6 +367,13 @@ FORCEDETH ETHERNET DRIVER (forcedeth)
 M:	Ivan Vecera <ivecera@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/nvidia/forcedeth.c
+
+FILESYSTEM DIRECT ACCESS
+M:	Jeff Moyer <jmoyer@redhat.com>
+M:	Eric Sandeen <esandeen@redhat.com>
+F:	fs/dax.c
+F:	include/linux/dax.h
+F:	include/trace/events/fs_dax.h
 
 FIREWIRE SUBSYSTEM
 M:	Neil Horman <nhorman@redhat.com>
@@ -426,6 +448,11 @@ M:	Corinna Vinschen <vinschen@redhat.com>
 M:	Stefan Assmann <sassmann@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/intel/igbvf/
+
+INTEL IGC ETHERNET DRIVERS (igc)
+M:	David Arcari <darcari@redhat.com>
+S:	Maintained
+F:	drivers/net/ethernet/intel/igc/
 
 INTEL IOMMU (VT-d)
 M:	Jerry Snitselaar <jsnitsel@redhat.com>
@@ -565,20 +592,26 @@ M:	Jason Wang <jasowang@redhat.com>
 M:	Vitaly Kuznetsov <vkuznets@redhat.com>
 M:	Cathy Avery <cavery@redhat.com>
 S:	Maintained
+F:	Documentation/networking/netvsc.txt
 F:	arch/x86/include/asm/mshyperv.h
-F:	arch/x86/include/uapi/asm/hyperv.h
+F:	arch/x86/include/asm/trace/hyperv.h
+F:	arch/x86/include/asm/hyperv-tlfs.h
 F:	arch/x86/kernel/cpu/mshyperv.c
 F:	arch/x86/hyperv
 F:	drivers/hid/hid-hyperv.c
 F:	drivers/hv/
 F:	drivers/input/serio/hyperv-keyboard.c
+F:	drivers/pci/controller/pci-hyperv.c
 F:	drivers/net/hyperv/
-F:	drivers/pci/pci-hyperv.c
 F:	drivers/scsi/storvsc_drv.c
-F:	drivers/video/hyperv_fb.c
 F:	drivers/uio/uio_hv_generic.c
+F:	drivers/video/fbdev/hyperv_fb.c
+F:	drivers/iommu/hyperv-iommu.c
+F:	net/vmw_vsock/hyperv_transport.c
 F:	include/linux/hyperv.h
+F:	include/uapi/linux/hyperv.h
 F:	tools/hv/
+F:	Documentation/ABI/stable/sysfs-bus-vmbus
 
 INFINIBAND SUBSYSTEM
 M:	Jonathan Toppins <jtoppins@redhat.com>
@@ -749,7 +782,7 @@ F:      net/netfilter/xt_CONNSECMARK.c
 F:      net/netfilter/xt_SECMARK.c
 
 NETXEN (1/10) GbE SUPPORT
-M:	Chad Dupuis <cdupuis@redhat.com>
+M:	Manish Chopra <mchopra@redhat.com>
 M:	Tony Camuso <tcamuso@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/qlogic/netxen/
@@ -772,6 +805,15 @@ F:	fs/nfsd/
 NON-MASKABLE INTERRUPT (NMI)
 M:	Don Zickus <dzickus@redhat.com>
 S:	Maintained
+
+NVDIMM SUBSYSTEM
+M:	Jeff Moyer <jmoyer@redhat.com>
+S:	Maintained
+F:	drivers/acpi/nfit
+F:	drivers/nvdimm
+F:	include/linux/libnvdimm.h
+F:	include/linux/nd.h
+F:	include/uapi/linux/ndctl.h
 
 NVM EXPRESS BLOCK DRIVER (nvme)
 M:	David Milburn <dmilburn@redhat.com>
@@ -848,13 +890,18 @@ S:	Maintained
 F:	drivers/scsi/qla2xxx/
 
 QLOGIC QLA3XXX NETWORK DRIVER
-M:	Chad Dupuis <cdupuis@redhat.com>
+M:	Manish Chopra <mchopra@redhat.com>
 S:	Maintained
 F:	Documentation/networking/LICENSE.qla3xxx
 F:	drivers/net/ethernet/qlogic/qla3xxx.*
 
+QLOGIC QLCNIC (1/10)Gb ETHERNET DRIVER
+M:	Manish Chopra <mchopra@redhat.com>
+S:	Maintained
+F:	drivers/net/ethernet/qlogic/qlcnic/
+
 QLOGIC QLGE 10Gb ETHERNET DRIVER
-M:	Chad Dupuis <cdupuis@redhat.com>
+M:	Manish Chopra <mchopra@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/qlogic/qlge/
 
@@ -869,6 +916,21 @@ M:	Chad Dupuis <cdupuis@redhat.com>
 M:	Chris Leech <cleech@redhat.com>
 S:	Maintained
 F:	drivers/scsi/qedf/
+
+QLOGIC QED NETWORK DRIVER
+M:	Manish Chopra <mchopra@redhat.com>
+S:	Maintained
+F:	drivers/net/ethernet/qlogic/qed
+
+QLOGIC QEDE ETHERNET NETWORK DRIVER
+M:	Manish Chopra <mchopra@redhat.com>
+S:	Maintained
+F:	drivers/net/ethernet/qlogic/qede
+
+QLOGIC QEDR RDMA ETHERNET NETWORK DRIVER
+M:	Manish Chopra <mchopra@redhat.com>
+S:	Maintained
+F:	drivers/infiniband/hw/qedr
 
 RALINK RT2X00 WIRELESS LAN DRIVER
 M:	Stanislaw Gruszka <sgruszka@redhat.com>
