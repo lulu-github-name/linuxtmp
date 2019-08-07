@@ -12,7 +12,7 @@
 #define __BCM_SYSPORT_H
 
 #include <linux/if_vlan.h>
-#include <linux/net_dim.h>
+#include <linux/dim.h>
 
 /* Receive/transmit descriptor format */
 #define DESC_ADDR_HI_STATUS_LEN	0x00
