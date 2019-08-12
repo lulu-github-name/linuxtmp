@@ -876,7 +876,7 @@ int tls_sw_sendmsg(struct sock *sk, struct msghdr *msg, size_t size)
 	struct tls_sw_context_tx *ctx = tls_sw_ctx_tx(tls_ctx);
 	bool async_capable = ctx->async_capable;
 	unsigned char record_type = TLS_RECORD_TYPE_DATA;
-	bool is_kvec = msg->msg_iter.type & ITER_KVEC;
+	bool is_kvec = iov_iter_is_kvec(&msg->msg_iter);
 	bool eor = !(msg->msg_flags & MSG_MORE);
 	size_t try_to_copy, copied = 0;
 	struct sk_msg *msg_pl, *msg_en;
@@ -1676,7 +1676,7 @@ int tls_sw_recvmsg(struct sock *sk,
 	bool cmsg = false;
 	int target, err = 0;
 	long timeo;
-	bool is_kvec = msg->msg_iter.type & ITER_KVEC;
+	bool is_kvec = iov_iter_is_kvec(&msg->msg_iter);
 	bool is_peek = flags & MSG_PEEK;
 	int num_async = 0;
 

@@ -368,7 +368,7 @@ __blkdev_direct_IO(struct kiocb *iocb, struct iov_iter *iter, int nr_pages)
 
 	dio->size = 0;
 	dio->multi_bio = false;
-	dio->should_dirty = is_read && (iter->type == ITER_IOVEC);
+	dio->should_dirty = is_read && iter_is_iovec(iter);
 
 	/*
 	 * Don't plug for HIPRI/polled IO, as those should go straight
