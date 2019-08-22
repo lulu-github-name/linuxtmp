@@ -25,6 +25,7 @@
 #include <linux/gpio.h>
 #include <linux/seqlock.h>
 #include <linux/idr.h>
+#include <linux/linkmode.h>
 
 #include "swphy.h"
 
@@ -241,6 +242,8 @@ struct phy_device *fixed_phy_register(unsigned int irq,
 		linkmode_set_bit(ETHTOOL_LINK_MODE_10baseT_Full_BIT,
 				 phy->supported);
 	}
+
+	linkmode_copy(phy->advertising, phy->supported);
 
 	ret = phy_device_register(phy);
 	if (ret) {
