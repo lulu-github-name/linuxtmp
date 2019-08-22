@@ -696,6 +696,12 @@ struct phy_driver {
 			    struct ethtool_tunable *tuna,
 			    const void *data);
 	int (*set_loopback)(struct phy_device *dev, bool enable);
+
+        /*
+         * Probe the hardware to determine what abilities it has.
+         * Should only set phydev->supported.
+         */
+	RH_KABI_EXTEND(int (*get_features)(struct phy_device *phydev))
 };
 #define to_phy_driver(d) container_of(to_mdio_common_driver(d),		\
 				      struct phy_driver, mdiodrv)
@@ -1086,9 +1092,9 @@ void phy_drivers_unregister(struct phy_driver *drv, int n);
  * used in phy_driver hide checksum change and old driver loaded with new
  * kernel will crash. We need change phy_driver{s}_register
  */
-RH_KABI_FORCE_CHANGE(1)
+RH_KABI_FORCE_CHANGE(2)
 int phy_driver_register(struct phy_driver *new_driver, struct module *owner);
-RH_KABI_FORCE_CHANGE(1)
+RH_KABI_FORCE_CHANGE(2)
 int phy_drivers_register(struct phy_driver *new_driver, int n,
 			 struct module *owner);
 void phy_state_machine(struct work_struct *work);
