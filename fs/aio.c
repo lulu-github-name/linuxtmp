@@ -1436,8 +1436,9 @@ out_fput:
 	return ret;
 }
 
-static int aio_setup_rw(int rw, struct iocb *iocb, struct iovec **iovec,
-		bool vectored, bool compat, struct iov_iter *iter)
+static ssize_t aio_setup_rw(int rw, struct iocb *iocb,
+		struct iovec **iovec, bool vectored, bool compat,
+		struct iov_iter *iter)
 {
 	void __user *buf = (void __user *)(uintptr_t)iocb->aio_buf;
 	size_t len = iocb->aio_nbytes;
@@ -1496,7 +1497,7 @@ static ssize_t aio_read(struct kiocb *req, struct iocb *iocb, bool vectored,
 		goto out_fput;
 
 	ret = aio_setup_rw(READ, iocb, &iovec, vectored, compat, &iter);
-	if (ret)
+	if (ret < 0)
 		goto out_fput;
 	ret = rw_verify_area(READ, file, &req->ki_pos, iov_iter_count(&iter));
 	if (!ret)
@@ -1529,7 +1530,7 @@ static ssize_t aio_write(struct kiocb *req, struct iocb *iocb, bool vectored,
 		goto out_fput;
 
 	ret = aio_setup_rw(WRITE, iocb, &iovec, vectored, compat, &iter);
-	if (ret)
+	if (ret < 0)
 		goto out_fput;
 	ret = rw_verify_area(WRITE, file, &req->ki_pos, iov_iter_count(&iter));
 	if (!ret) {
