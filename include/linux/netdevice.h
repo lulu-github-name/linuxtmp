@@ -1295,8 +1295,8 @@ struct devlink;
  *	that got dropped are freed/returned via xdp_return_frame().
  *	Returns negative number, means general error invoking ndo, meaning
  *	no frames were xmit'ed and core-caller will free all frames.
- * struct devlink *(*ndo_get_devlink)(struct net_device *dev);
- *	Get devlink instance associated with a given netdev.
+ * struct devlink_port *(*ndo_get_devlink_port)(struct net_device *dev);
+ *	Get devlink port instance associated with a given netdev.
  *	Called with a reference on the netdevice and devlink locks only,
  *	rtnl_lock is not held.
  */
@@ -1502,7 +1502,7 @@ struct net_device_ops {
 
 	RH_KABI_USE(1, int	(*ndo_get_port_parent_id)(struct net_device *dev,
 							  struct netdev_phys_item_id *ppid))
-	RH_KABI_USE(2, struct devlink *	(*ndo_get_devlink)(struct net_device *dev))
+	RH_KABI_USE(2, struct devlink_port *(*ndo_get_devlink_port)(struct net_device *dev))
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
