@@ -595,6 +595,8 @@ struct request_queue {
 	 * percpu_ref_kill() and percpu_ref_reinit().
 	 */
 	RH_KABI_EXTEND(struct mutex		mq_freeze_lock)
+
+	RH_KABI_EXTEND(struct mutex		sysfs_dir_lock)
 };
 
 #define QUEUE_FLAG_STOPPED	1	/* queue is stopped */
