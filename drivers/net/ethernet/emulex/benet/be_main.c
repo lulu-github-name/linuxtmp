@@ -1420,15 +1420,12 @@ static void be_tx_timeout(struct net_device *netdev)
 {
 	struct be_adapter *adapter = netdev_priv(netdev);
 	struct device *dev = &adapter->pdev->dev;
-#if 0 /* RHEL only: Disable queue dump in be_tx_timeout */
 	struct be_tx_obj *txo;
 	struct sk_buff *skb;
 	struct tcphdr *tcphdr;
 	struct udphdr *udphdr;
 	u32 *entry;
-#endif
 	int status;
-#if 0 /* RHEL only: Disable queue dump in be_tx_timeout */
 	int i, j;
 
 	for_all_tx_queues(adapter, txo, i) {
@@ -1486,7 +1483,6 @@ static void be_tx_timeout(struct net_device *netdev)
 		}
 	}
 
-#endif
 	if (lancer_chip(adapter)) {
 		dev_info(dev, "Initiating reset due to tx timeout\n");
 		dev_info(dev, "Resetting adapter\n");
