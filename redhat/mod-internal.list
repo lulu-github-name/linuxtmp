@@ -1,10 +1,13 @@
 act_ctinfo
 act_mpls
 dmatest
+locktorture
 mac80211_hwsim
 netdevsim
 pktgen
+rcutorture
 rocker
+torture
 test_bpf
 test_klp_atomic_replace
 test_klp_callbacks_demo
