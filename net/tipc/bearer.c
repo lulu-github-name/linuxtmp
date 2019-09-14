@@ -389,6 +389,11 @@ int tipc_enable_l2_media(struct net *net, struct tipc_bearer *b,
 		dev_put(dev);
 		return -EINVAL;
 	}
+	if (dev == net->loopback_dev) {
+		dev_put(dev);
+		pr_info("Enabling <%s> not permitted\n", b->name);
+		return -EINVAL;
+	}
 
 	/* Autoconfigure own node identity if needed */
 	if (!tipc_own_id(net) && hwaddr_len <= NODE_ID_LEN) {
