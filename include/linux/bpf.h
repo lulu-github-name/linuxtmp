@@ -288,7 +288,7 @@ struct bpf_prog_offload {
 	void			*dev_priv;
 	struct list_head	offloads;
 	bool			dev_state;
-	const struct bpf_prog_offload_ops *dev_ops;
+	RH_KABI_DEPRECATE(const struct bpf_prog_offload_ops *, dev_ops)
 	void			*jited_image;
 	u32			jited_len;
 };
