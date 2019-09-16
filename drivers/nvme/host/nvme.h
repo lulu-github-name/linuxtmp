@@ -257,6 +257,8 @@ struct nvme_ctrl {
 	struct page *discard_page;
 	unsigned long discard_page_busy;
 
+	struct nvme_fault_inject fault_inject;
+
 	/* NVMe loop only */
 	u64 segment_boundary;
 };
