@@ -73,7 +73,7 @@ MODULE_PARM_DESC(write_queues,
 	"Number of queues to use for writes. If not set, reads and writes "
 	"will share a queue set.");
 
-static int poll_queues = 0;
+static int poll_queues;
 module_param(poll_queues, int, 0644);
 MODULE_PARM_DESC(poll_queues, "Number of queues to use for polled IO.");
 
