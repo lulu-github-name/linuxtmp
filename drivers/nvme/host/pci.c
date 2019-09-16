@@ -818,10 +818,7 @@ static blk_status_t nvme_map_data(struct nvme_dev *dev, struct request *req,
 		struct nvme_command *cmnd)
 {
 	struct nvme_iod *iod = blk_mq_rq_to_pdu(req);
-	struct request_queue *q = req->q;
-	enum dma_data_direction dma_dir = rq_data_dir(req) ?
-			DMA_TO_DEVICE : DMA_FROM_DEVICE;
-	blk_status_t ret = BLK_STS_IOERR;
+	blk_status_t ret = BLK_STS_RESOURCE;
 	int nr_mapped;
 
 	if (blk_rq_payload_bytes(req) > NVME_INT_BYTES(dev) ||
@@ -833,24 +830,21 @@ static blk_status_t nvme_map_data(struct nvme_dev *dev, struct request *req,
 		iod->sg = iod->inline_sg;
 	}
 
-	iod->use_sgl = nvme_pci_use_sgls(dev, req);
-
 	sg_init_table(iod->sg, blk_rq_nr_phys_segments(req));
-	iod->nents = blk_rq_map_sg(q, req, iod->sg);
+	iod->nents = blk_rq_map_sg(req->q, req, iod->sg);
 	if (!iod->nents)
 		goto out;
 
-	ret = BLK_STS_RESOURCE;
-
 	if (is_pci_p2pdma_page(sg_page(iod->sg)))
 		nr_mapped = pci_p2pdma_map_sg(dev->dev, iod->sg, iod->nents,
-					  dma_dir);
+						rq_dma_dir(req));
 	else
 		nr_mapped = dma_map_sg_attrs(dev->dev, iod->sg, iod->nents,
-					     dma_dir,  DMA_ATTR_NO_WARN);
+						rq_dma_dir(req), DMA_ATTR_NO_WARN);
 	if (!nr_mapped)
 		goto out;
 
+	iod->use_sgl = nvme_pci_use_sgls(dev, req);
 	if (iod->use_sgl)
 		ret = nvme_pci_setup_sgls(dev, req, &cmnd->rw, nr_mapped);
 	else
@@ -861,14 +855,14 @@ static blk_status_t nvme_map_data(struct nvme_dev *dev, struct request *req,
 
 	ret = BLK_STS_IOERR;
 	if (blk_integrity_rq(req)) {
-		if (blk_rq_count_integrity_sg(q, req->bio) != 1)
+		if (blk_rq_count_integrity_sg(req->q, req->bio) != 1)
 			goto out;
 
 		sg_init_table(&iod->meta_sg, 1);
-		if (blk_rq_map_integrity_sg(q, req->bio, &iod->meta_sg) != 1)
+		if (blk_rq_map_integrity_sg(req->q, req->bio, &iod->meta_sg) != 1)
 			goto out;
 
-		if (!dma_map_sg(dev->dev, &iod->meta_sg, 1, dma_dir))
+		if (!dma_map_sg(dev->dev, &iod->meta_sg, 1, rq_dma_dir(req)))
 			goto out;
 
 		cmnd->rw.metadata = cpu_to_le64(sg_dma_address(&iod->meta_sg));
