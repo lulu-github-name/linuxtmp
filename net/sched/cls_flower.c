@@ -400,7 +400,8 @@ static void fl_hw_destroy_filter(struct tcf_proto *tp, struct cls_fl_filter *f,
 	if (!rtnl_held)
 		rtnl_lock();
 
-	tc_cls_common_offload_init(&cls_flower.common, tp, f->flags, extack);
+	tc_cls_common_offload_init(&cls_flower.common, tp, f->flags, block,
+				   extack);
 	cls_flower.command = TC_CLSFLOWER_DESTROY;
 	cls_flower.cookie = (unsigned long) f;
 
@@ -433,7 +434,8 @@ static int fl_hw_replace_filter(struct tcf_proto *tp,
 		goto errout;
 	}
 
-	tc_cls_common_offload_init(&cls_flower.common, tp, f->flags, extack);
+	tc_cls_common_offload_init(&cls_flower.common, tp, f->flags, block,
+				   extack);
 	cls_flower.command = TC_CLSFLOWER_REPLACE;
 	cls_flower.cookie = (unsigned long) f;
 	cls_flower.rule->match.dissector = &f->mask->dissector;
@@ -489,7 +491,8 @@ static void fl_hw_update_stats(struct tcf_proto *tp, struct cls_fl_filter *f,
 	if (!rtnl_held)
 		rtnl_lock();
 
-	tc_cls_common_offload_init(&cls_flower.common, tp, f->flags, NULL);
+	tc_cls_common_offload_init(&cls_flower.common, tp, f->flags, block,
+				   NULL);
 	cls_flower.command = TC_CLSFLOWER_STATS;
 	cls_flower.cookie = (unsigned long) f;
 	cls_flower.classid = f->res.classid;
@@ -1745,7 +1748,7 @@ static int fl_reoffload(struct tcf_proto *tp, bool add, tc_setup_cb_t *cb,
 		}
 
 		tc_cls_common_offload_init(&cls_flower.common, tp, f->flags,
-					   extack);
+					   block, extack);
 		cls_flower.command = add ?
 			TC_CLSFLOWER_REPLACE : TC_CLSFLOWER_DESTROY;
 		cls_flower.cookie = (unsigned long)f;
