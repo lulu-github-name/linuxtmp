@@ -168,10 +168,10 @@ bool is_skylake_era(void)
 	    boot_cpu_data.x86 == 6) {
 		switch (boot_cpu_data.x86_model) {
 		case INTEL_FAM6_SKYLAKE_MOBILE:
-		case INTEL_FAM6_SKYLAKE_DESKTOP:
+		case INTEL_FAM6_SKYLAKE:
 		case INTEL_FAM6_SKYLAKE_X:
 		case INTEL_FAM6_KABYLAKE_MOBILE:
-		case INTEL_FAM6_KABYLAKE_DESKTOP:
+		case INTEL_FAM6_KABYLAKE:
 			return true;
 		}
 	}
