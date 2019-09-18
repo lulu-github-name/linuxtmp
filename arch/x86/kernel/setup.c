@@ -892,8 +892,8 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 	case INTEL_FAM6_BROADWELL_XEON_D:
 	case INTEL_FAM6_BROADWELL_X:
 	case INTEL_FAM6_ATOM_SILVERMONT_X:
-	case INTEL_FAM6_BROADWELL_GT3E:
-	case INTEL_FAM6_HASWELL_GT3E:
+	case INTEL_FAM6_BROADWELL_G:
+	case INTEL_FAM6_HASWELL_G:
 	case INTEL_FAM6_HASWELL_L:
 		valid = true;
 		break;
