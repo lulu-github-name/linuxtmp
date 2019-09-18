@@ -355,6 +355,8 @@ struct pci_dev {
 						      user sysfs */
 	RH_KABI_FILL_HOLE(unsigned int	clear_retrain_link:1) /* Need to clear
 						   Retrain Link bit manually */
+	RH_KABI_FILL_HOLE(unsigned int  skip_bus_pm:1)  /* Internal: Skip
+								bus-level PM */
 	unsigned int	d3_delay;	/* D3->D0 transition time in ms */
 	unsigned int	d3cold_delay;	/* D3cold->D0 transition time in ms */
 
