@@ -10,6 +10,7 @@
 
 #ifndef _ASM_X86_FPU_API_H
 #define _ASM_X86_FPU_API_H
+#include <linux/preempt.h>
 
 /*
  * Careful: __kernel_fpu_begin/end() must be called with preempt disabled
@@ -26,6 +27,16 @@ extern void __kernel_fpu_end(void);
 extern void kernel_fpu_begin(void);
 extern void kernel_fpu_end(void);
 extern bool irq_fpu_usable(void);
+
+static inline void fpregs_lock(void)
+{
+	preempt_disable();
+}
+
+static inline void fpregs_unlock(void)
+{
+	preempt_enable();
+}
 
 /*
  * Query the presence of one or more xfeatures. Works on any legacy CPU as well.
