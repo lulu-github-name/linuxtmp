@@ -142,6 +142,13 @@ struct xfrm_state_offload {
 	RH_KABI_RESERVE(4)
 };
 
+/* This is only defined to protect KABI in xfrm_state */
+struct tasklet_hrtimer {
+	struct hrtimer          timer;
+	struct tasklet_struct   tasklet;
+	enum hrtimer_restart    (*function)(struct hrtimer *);
+};
+
 /* Full description of state of transformer. */
 struct xfrm_state {
 	possible_net_t		xs_net;
