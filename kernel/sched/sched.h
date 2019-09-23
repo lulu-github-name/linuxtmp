@@ -938,7 +938,7 @@ struct rq {
 #ifdef CONFIG_HAVE_SCHED_AVG_IRQ
 	RH_KABI_EXTEND(struct sched_avg	avg_irq)
 #endif
-
+	RH_KABI_EXTEND(unsigned long misfit_task_load)
 };
 
 static inline int cpu_of(struct rq *rq)
