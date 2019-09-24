@@ -721,6 +721,7 @@ struct perf_domain {
 
 /* Scheduling group status flags */
 #define SG_OVERLOAD		0x1 /* More than one runnable task on a CPU. */
+#define SG_OVERUTILIZED		0x2 /* One or more CPUs are over-utilized. */
 
 /*
  * We add the notion of a root-domain which will be used to define per-domain
@@ -781,7 +782,9 @@ struct root_domain {
 	 */
 	RH_KABI_USE(1, struct perf_domain *pd)
 
-	RH_KABI_RESERVE(2)
+	/* Indicate one or more cpus over-utilized (tipping point) */
+	RH_KABI_USE(2, int overutilized)
+
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 };
