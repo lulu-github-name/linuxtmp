@@ -40,9 +40,7 @@
 #define AZX_REG_VS_EM2_L1SEN		BIT(13)
 
 struct skl_dsp_resource {
-	u32 max_mcps;
 	u32 max_mem;
-	u32 mcps;
 	u32 mem;
 };
 
