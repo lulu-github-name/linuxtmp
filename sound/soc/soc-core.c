@@ -1586,10 +1586,14 @@ static int soc_link_init(struct snd_soc_card *card,
 	return ret;
 }
 
-static void soc_unbind_aux_dev(struct snd_soc_component *component)
+static void soc_unbind_aux_dev(struct snd_soc_card *card)
 {
-	component->init = NULL;
-	list_del(&component->card_aux_list);
+	struct snd_soc_component *component, *_component;
+
+	for_each_card_auxs_safe(card, component, _component) {
+		component->init = NULL;
+		list_del(&component->card_aux_list);
+	}
 }
 
 static int soc_bind_aux_dev(struct snd_soc_card *card)
@@ -1641,12 +1645,8 @@ static void soc_remove_aux_devices(struct snd_soc_card *card)
 
 	for_each_comp_order(order) {
 		for_each_card_auxs_safe(card, comp, _comp) {
-
-			if (comp->driver->remove_order == order) {
+			if (comp->driver->remove_order == order)
 				soc_remove_component(comp);
-				/* remove it from the card's aux_comp_list */
-				soc_unbind_aux_dev(comp);
-			}
 		}
 	}
 }
@@ -1959,6 +1959,7 @@ static void soc_cleanup_card_resources(struct snd_soc_card *card)
 
 	/* remove auxiliary devices */
 	soc_remove_aux_devices(card);
+	soc_unbind_aux_dev(card);
 
 	snd_soc_dapm_free(&card->dapm);
 	soc_cleanup_card_debugfs(card);
