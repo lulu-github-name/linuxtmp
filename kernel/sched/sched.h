@@ -727,7 +727,11 @@ struct root_domain {
 	cpumask_var_t		span;
 	cpumask_var_t		online;
 
-	/* Indicate more than one runnable task for any CPU */
+        /*
+	 * Indicate pullable load on at least one CPU, e.g:
+	 * - More than one runnable task
+	 * - Running task is misfit
+	 */
 	RH_KABI_REPLACE_UNSAFE(bool overload, int overload)
 
 	/*
