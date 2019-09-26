@@ -1554,7 +1554,7 @@ static void rcu_gp_kthread_wake(void)
 	    !READ_ONCE(rcu_state.gp_flags) ||
 	    !rcu_state.gp_kthread)
 		return;
-	swake_up(&rcu_state.gp_wq);
+	swake_up_one(&rcu_state.gp_wq);
 }
 
 /*
@@ -1863,7 +1863,7 @@ static bool rcu_gp_init(void)
 }
 
 /*
- * Helper function for swait_event_idle() wakeup at force-quiescent-state
+ * Helper function for swait_event_idle_exclusive() wakeup at force-quiescent-state
  * time.
  */
 static bool rcu_gp_fqs_check_wake(int *gfp)
@@ -1931,7 +1931,7 @@ static void rcu_gp_fqs_loop(void)
 				       READ_ONCE(rcu_state.gp_seq),
 				       TPS("fqswait"));
 		rcu_state.gp_state = RCU_GP_WAIT_FQS;
-		ret = swait_event_idle_timeout(
+		ret = swait_event_idle_timeout_exclusive(
 				rcu_state.gp_wq, rcu_gp_fqs_check_wake(&gf), j);
 		rcu_state.gp_state = RCU_GP_DOING_FQS;
 		/* Locking provides needed memory barriers. */
@@ -2071,7 +2071,7 @@ static int __noreturn rcu_gp_kthread(void *unused)
 					       READ_ONCE(rcu_state.gp_seq),
 					       TPS("reqwait"));
 			rcu_state.gp_state = RCU_GP_WAIT_GPS;
-			swait_event_idle(rcu_state.gp_wq,
+			swait_event_idle_exclusive(rcu_state.gp_wq,
 					 READ_ONCE(rcu_state.gp_flags) &
 					 RCU_GP_FLAG_INIT);
 			rcu_state.gp_state = RCU_GP_DONE_GPS;
