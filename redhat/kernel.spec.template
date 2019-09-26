@@ -1657,6 +1657,7 @@ pushd tools/testing/selftests
 # We need to install here because we need to call make with ARCH set which
 # doesn't seem possible to do in the install section.
 %{make} -s ARCH=$Arch V=1 TARGETS="bpf net" INSTALL_PATH=%{buildroot}%{_libexecdir}/kselftests install
+%{make} -s ARCH=$Arch V=1 TARGETS="bpf livepatch net" INSTALL_PATH=%{buildroot}%{_libexecdir}/kselftests install
 popd
 %endif
 
@@ -1915,6 +1916,12 @@ pushd tools/testing/selftests/tc-testing
 find -type d -exec install -d %{buildroot}%{_libexecdir}/kselftests/tc-testing/{} \;
 find -type f -executable -exec install -D -m755 {} %{buildroot}%{_libexecdir}/kselftests/tc-testing/{} \;
 find -type f ! -executable -exec install -D -m644 {} %{buildroot}%{_libexecdir}/kselftests/tc-testing/{} \;
+popd
+# install livepatch selftests
+pushd tools/testing/selftests/livepatch
+find -type d -exec install -d %{buildroot}%{_libexecdir}/kselftests/livepatch/{} \;
+find -type f -executable -exec install -D -m755 {} %{buildroot}%{_libexecdir}/kselftests/livepatch/{} \;
+find -type f ! -executable -exec install -D -m644 {} %{buildroot}%{_libexecdir}/kselftests/livepatch/{} \;
 popd
 %endif
 
