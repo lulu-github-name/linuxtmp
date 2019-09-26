@@ -272,9 +272,15 @@ struct bpf_verifier_ops {
 };
 
 struct bpf_prog_offload_ops {
+	/* verifier basic callbacks */
 	int (*insn_hook)(struct bpf_verifier_env *env,
 			 int insn_idx, int prev_insn_idx);
 	RH_KABI_EXTEND(int (*finalize)(struct bpf_verifier_env *env))
+	/* verifier optimization callbacks (called after .finalize) */
+	RH_KABI_EXTEND(int (*replace_insn)(struct bpf_verifier_env *env, u32 off,
+					   struct bpf_insn *insn))
+	RH_KABI_EXTEND(int (*remove_insns)(struct bpf_verifier_env *env, u32 off, u32 cnt))
+	/* program management callbacks */
 	RH_KABI_EXTEND(int (*prepare)(struct bpf_prog *prog))
 	RH_KABI_EXTEND(int (*translate)(struct bpf_prog *prog))
 	RH_KABI_EXTEND(void (*destroy)(struct bpf_prog *prog))
@@ -288,6 +294,7 @@ struct bpf_prog_offload {
 	void			*dev_priv;
 	struct list_head	offloads;
 	bool			dev_state;
+	RH_KABI_EXTEND(bool	opt_failed)
 	RH_KABI_DEPRECATE(const struct bpf_prog_offload_ops *, dev_ops)
 	void			*jited_image;
 	u32			jited_len;
