@@ -140,7 +140,7 @@ static int FNAME(cmpxchg_gpte)(struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
 	pt_element_t *table;
 	struct page *page;
 
-	npages = get_user_pages_fast((unsigned long)ptep_user, 1, 1, &page);
+	npages = get_user_pages_fast((unsigned long)ptep_user, 1, FOLL_WRITE, &page);
 	if (likely(npages == 1)) {
 		table = kmap_atomic(page);
 		ret = CMPXCHG(&table[index], orig_pte, new_pte);
