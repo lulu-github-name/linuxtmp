@@ -83,7 +83,6 @@ extern u16 __read_mostly tlb_lld_4m[NR_INFO];
 extern u16 __read_mostly tlb_lld_1g[NR_INFO];
 
 struct cpuinfo_x86_extended_rh {
-	u16			x86_max_dies;
 	u16			cpu_die_id;
 };
 
