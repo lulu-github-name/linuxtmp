@@ -144,6 +144,8 @@ struct neighbour {
 	refcount_t		refcnt;
 	struct sk_buff_head	arp_queue;
 	unsigned int		arp_queue_len_bytes;
+	RH_KABI_FILL_HOLE(u8	protocol)
+	/* RHEL: Hole - 3 bytes remains */
 	struct timer_list	timer;
 	unsigned long		used;
 	atomic_t		probes;
@@ -177,6 +179,8 @@ struct pneigh_entry {
 	possible_net_t		net;
 	struct net_device	*dev;
 	u8			flags;
+	/* RHEL: Currently safe to break this structure */
+	RH_KABI_EXTEND(u8	protocol)
 	u8			key[0];
 };
 
