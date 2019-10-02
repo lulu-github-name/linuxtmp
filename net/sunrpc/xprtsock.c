@@ -977,7 +977,6 @@ static int xs_local_send_request(struct rpc_rqst *req)
 		req->rq_bytes_sent = transport->xmit.offset;
 		if (likely(req->rq_bytes_sent >= req->rq_slen)) {
 			req->rq_xmit_bytes_sent += transport->xmit.offset;
-			req->rq_bytes_sent = 0;
 			transport->xmit.offset = 0;
 			return 0;
 		}
@@ -1141,7 +1140,6 @@ static int xs_tcp_send_request(struct rpc_rqst *req)
 		req->rq_bytes_sent = transport->xmit.offset;
 		if (likely(req->rq_bytes_sent >= req->rq_slen)) {
 			req->rq_xmit_bytes_sent += transport->xmit.offset;
-			req->rq_bytes_sent = 0;
 			transport->xmit.offset = 0;
 			return 0;
 		}
