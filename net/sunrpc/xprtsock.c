@@ -776,21 +776,21 @@ static int xs_send_rm_and_kvec(struct socket *sock, struct xdr_buf *xdr,
 	return ret - iov[0].iov_len;
 }
 
-static int xs_send_kvec(struct socket *sock, struct sockaddr *addr, int addrlen, struct kvec *vec, unsigned int base, int more)
+static int xs_sendmsg(struct socket *sock, struct msghdr *msg, size_t seek)
 {
-	struct msghdr msg = {
-		.msg_name	= addr,
-		.msg_namelen	= addrlen,
-		.msg_flags	= XS_SENDMSG_FLAGS | (more ? MSG_MORE : 0),
-	};
-	struct kvec iov = {
-		.iov_base	= vec->iov_base + base,
-		.iov_len	= vec->iov_len - base,
-	};
+	if (seek)
+		iov_iter_advance(&msg->msg_iter, seek);
+	return sock_sendmsg(sock, msg);
+}
 
-	if (iov.iov_len != 0)
-		return kernel_sendmsg(sock, &msg, &iov, 1, iov.iov_len);
-	return kernel_sendmsg(sock, &msg, NULL, 0, 0);
+static int xs_send_kvec(struct socket *sock, struct msghdr *msg, struct kvec *vec, size_t seek)
+{
+	if (!vec) {
+		iov_iter_kvec(&msg->msg_iter, WRITE, NULL, 0, 0);
+		return sock_sendmsg(sock, msg);
+	}
+	iov_iter_kvec(&msg->msg_iter, WRITE, vec, 1, vec->iov_len);
+	return xs_sendmsg(sock, msg, seek);
 }
 
 static int xs_send_pagedata(struct socket *sock, struct xdr_buf *xdr, unsigned int base, int more, bool zerocopy, int *sent_p)
@@ -844,6 +844,11 @@ static int xs_send_pagedata(struct socket *sock, struct xdr_buf *xdr, unsigned i
  */
 static int xs_sendpages(struct socket *sock, struct sockaddr *addr, int addrlen, struct xdr_buf *xdr, unsigned int base, bool zerocopy, int *sent_p)
 {
+	struct msghdr msg = {
+		.msg_name = addr,
+		.msg_namelen = addrlen,
+		.msg_flags = XS_SENDMSG_FLAGS | MSG_MORE,
+	};
 	unsigned int remainder = xdr->len - base;
 	int err = 0;
 	int sent = 0;
@@ -859,11 +864,14 @@ static int xs_sendpages(struct socket *sock, struct sockaddr *addr, int addrlen,
 	if (base < xdr->head[0].iov_len || addr != NULL) {
 		unsigned int len = xdr->head[0].iov_len - base;
 		remainder -= len;
+
+		if (remainder == 0)
+			msg.msg_flags &= ~MSG_MORE;
+
 		if (!base && !addr)
 			err = xs_send_rm_and_kvec(sock, xdr, remainder);
 		else
-			err = xs_send_kvec(sock, addr, addrlen, &xdr->head[0],
-					   base, remainder != 0);
+			err = xs_send_kvec(sock, &msg, &xdr->head[0], base);
 		if (remainder == 0 || err != len)
 			goto out;
 		*sent_p += err;
@@ -884,7 +892,8 @@ static int xs_sendpages(struct socket *sock, struct sockaddr *addr, int addrlen,
 
 	if (base >= xdr->tail[0].iov_len)
 		return 0;
-	err = xs_send_kvec(sock, NULL, 0, &xdr->tail[0], base, 0);
+	msg.msg_flags &= ~MSG_MORE;
+	err = xs_send_kvec(sock, &msg, &xdr->tail[0], base);
 out:
 	if (err > 0) {
 		*sent_p += err;
