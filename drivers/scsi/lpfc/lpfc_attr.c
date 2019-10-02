@@ -7083,11 +7083,16 @@ struct fc_function_template lpfc_vport_transport_functions = {
 static void
 lpfc_get_hba_function_mode(struct lpfc_hba *phba)
 {
-	/* If it's a SkyHawk FCoE adapter */
-	if (phba->pcidev->device == PCI_DEVICE_ID_SKYHAWK)
+	/* If the adapter supports FCoE mode */
+	switch (phba->pcidev->device) {
+	case PCI_DEVICE_ID_SKYHAWK:
+	case PCI_DEVICE_ID_SKYHAWK_VF:
 		phba->hba_flag |= HBA_FCOE_MODE;
-	else
+		break;
+	default:
+	/* for others, clear the flag */
 		phba->hba_flag &= ~HBA_FCOE_MODE;
+	}
 }
 
 /**
