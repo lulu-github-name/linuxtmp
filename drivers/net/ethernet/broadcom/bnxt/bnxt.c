@@ -4987,6 +4987,7 @@ static int bnxt_hwrm_vnic_qcaps(struct bnxt *bp)
 	struct hwrm_vnic_qcaps_input req = {0};
 	int rc;
 
+	bp->hw_ring_stats_size = sizeof(struct ctx_hw_stats);
 	if (bp->hwrm_spec_code < 0x10600)
 		return 0;
 
@@ -5006,8 +5007,6 @@ static int bnxt_hwrm_vnic_qcaps(struct bnxt *bp)
 		if (bp->max_tpa_v2)
 			bp->hw_ring_stats_size =
 				sizeof(struct ctx_hw_stats_ext);
-		else
-			bp->hw_ring_stats_size = sizeof(struct ctx_hw_stats);
 	}
 	mutex_unlock(&bp->hwrm_cmd_lock);
 	return rc;
