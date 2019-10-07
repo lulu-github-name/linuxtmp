@@ -3764,19 +3764,16 @@ static const struct genl_ops ip_vs_genl_ops[] = {
 	{
 		.cmd	= IPVS_CMD_NEW_SERVICE,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_cmd,
 	},
 	{
 		.cmd	= IPVS_CMD_SET_SERVICE,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_cmd,
 	},
 	{
 		.cmd	= IPVS_CMD_DEL_SERVICE,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_cmd,
 	},
 	{
@@ -3784,42 +3781,35 @@ static const struct genl_ops ip_vs_genl_ops[] = {
 		.flags	= GENL_ADMIN_PERM,
 		.doit	= ip_vs_genl_get_cmd,
 		.dumpit	= ip_vs_genl_dump_services,
-		.policy	= ip_vs_cmd_policy,
 	},
 	{
 		.cmd	= IPVS_CMD_NEW_DEST,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_cmd,
 	},
 	{
 		.cmd	= IPVS_CMD_SET_DEST,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_cmd,
 	},
 	{
 		.cmd	= IPVS_CMD_DEL_DEST,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_cmd,
 	},
 	{
 		.cmd	= IPVS_CMD_GET_DEST,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.dumpit	= ip_vs_genl_dump_dests,
 	},
 	{
 		.cmd	= IPVS_CMD_NEW_DAEMON,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_daemon,
 	},
 	{
 		.cmd	= IPVS_CMD_DEL_DAEMON,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_daemon,
 	},
 	{
@@ -3830,7 +3820,6 @@ static const struct genl_ops ip_vs_genl_ops[] = {
 	{
 		.cmd	= IPVS_CMD_SET_CONFIG,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_cmd,
 	},
 	{
@@ -3846,7 +3835,6 @@ static const struct genl_ops ip_vs_genl_ops[] = {
 	{
 		.cmd	= IPVS_CMD_ZERO,
 		.flags	= GENL_ADMIN_PERM,
-		.policy	= ip_vs_cmd_policy,
 		.doit	= ip_vs_genl_set_cmd,
 	},
 	{
@@ -3861,6 +3849,7 @@ static struct genl_family ip_vs_genl_family __ro_after_init = {
 	.name		= IPVS_GENL_NAME,
 	.version	= IPVS_GENL_VERSION,
 	.maxattr	= IPVS_CMD_ATTR_MAX,
+	.policy = ip_vs_cmd_policy,
 	.netnsok        = true,         /* Make ipvsadm to work on netns */
 	.module		= THIS_MODULE,
 	.ops		= ip_vs_genl_ops,
