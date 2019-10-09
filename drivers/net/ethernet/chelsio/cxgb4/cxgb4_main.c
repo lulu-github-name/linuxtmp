@@ -5811,6 +5811,7 @@ static int init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
 	if (err)
 		goto out_free_adapter;
 
+#if 0
 	if (is_kdump_kernel()) {
 		/* Collect hardware state and append to /proc/vmcore */
 		err = cxgb4_cudbg_vmcore_add_dump(adapter);
@@ -5821,6 +5822,7 @@ static int init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
 			err = 0;
 		}
 	}
+#endif
 
 	if (!is_t4(adapter->params.chip)) {
 		s_qpp = (QUEUESPERPAGEPF0_S +
