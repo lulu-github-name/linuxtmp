@@ -30,6 +30,9 @@
 #include <net/netns/xfrm.h>
 #include <net/netns/mpls.h>
 #include <net/netns/can.h>
+#ifndef __GENKSYMS__
+#include <net/netns/xdp.h>
+#endif
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 #include <linux/skbuff.h>
@@ -167,6 +170,7 @@ struct net {
 	RH_KABI_EXTEND(struct bpf_prog __rcu	*flow_dissector_prog)
 	RH_KABI_EXTEND(siphash_key_t ipv4_ip_id_key)
 	RH_KABI_EXTEND(u32	hash_mix)
+	RH_KABI_EXTEND_WITH_SIZE(struct netns_xdp xdp, 21)
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
