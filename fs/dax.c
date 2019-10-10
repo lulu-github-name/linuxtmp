@@ -392,6 +392,7 @@ bool dax_lock_mapping_entry(struct page *page)
 			rcu_read_unlock();
 			entry = get_unlocked_entry(&xas);
 			xas_unlock_irq(&xas);
+			put_unlocked_entry(&xas, entry);
 			rcu_read_lock();
 			continue;
 		}
