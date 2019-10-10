@@ -38,6 +38,8 @@
 #include <asm/kvm_vcpu_regs.h>
 #include <asm/hyperv-tlfs.h>
 
+#define __KVM_HAVE_ARCH_VCPU_DEBUGFS
+
 #define KVM_MAX_VCPUS 384
 #define KVM_SOFT_MAX_VCPUS 384
 #define KVM_MAX_VCPU_ID 1023
