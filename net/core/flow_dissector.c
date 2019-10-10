@@ -27,6 +27,8 @@
 #include <uapi/linux/batadv_packet.h>
 #include <linux/bpf.h>
 
+#include <linux/rh_features.h>
+
 static DEFINE_MUTEX(flow_dissector_mutex);
 
 static void dissector_set_key(struct flow_dissector *flow_dissector,
@@ -70,6 +72,8 @@ int skb_flow_dissector_bpf_prog_attach(const union bpf_attr *attr,
 {
 	struct bpf_prog *attached;
 	struct net *net;
+
+	rh_mark_used_feature("eBPF/flowdissector");
 
 	net = current->nsproxy->net_ns;
 	mutex_lock(&flow_dissector_mutex);
