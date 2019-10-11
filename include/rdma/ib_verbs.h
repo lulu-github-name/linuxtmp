@@ -4225,6 +4225,11 @@ ib_get_vector_affinity(struct ib_device *device, int comp_vector)
 void rdma_roce_rescan_device(struct ib_device *ibdev);
 
 struct ib_ucontext *ib_uverbs_get_ucontext_file(struct ib_uverbs_file *ufile);
+
+struct ib_ucontext *rdma_get_ucontext(struct ib_udata *udata);
+
+int uverbs_destroy_def_handler(struct uverbs_attr_bundle *attrs);
+
 struct net_device *rdma_alloc_netdev(struct ib_device *device, u8 port_num,
 				     enum rdma_netdev_t type, const char *name,
 				     unsigned char name_assign_type,
@@ -4235,8 +4240,6 @@ int rdma_init_netdev(struct ib_device *device, u8 port_num,
 		     unsigned char name_assign_type,
 		     void (*setup)(struct net_device *),
 		     struct net_device *netdev);
-
-int uverbs_destroy_def_handler(struct uverbs_attr_bundle *attrs);
 
 /**
  * rdma_set_device_sysfs_group - Set device attributes group to have
