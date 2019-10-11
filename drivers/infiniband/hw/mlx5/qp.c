@@ -2066,7 +2066,7 @@ static int create_qp_common(struct mlx5_ib_dev *dev, struct ib_pd *pd,
 	if (qp->scat_cqe && is_connected(init_attr->qp_type)) {
 		configure_responder_scat_cqe(init_attr, qpc);
 		configure_requester_scat_cqe(dev, init_attr,
-					     (pd && pd->uobject) ? &ucmd : NULL,
+					     udata ? &ucmd : NULL,
 					     qpc);
 	}
 
