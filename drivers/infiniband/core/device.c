@@ -65,15 +65,17 @@ struct workqueue_struct *ib_comp_unbound_wq;
 struct workqueue_struct *ib_wq;
 EXPORT_SYMBOL_GPL(ib_wq);
 
-/* The device_list and client_list contain devices and clients after their
+/* The device_list and clients contain devices and clients after their
  * registration has completed, and the devices and clients are removed
  * during unregistration. */
 static LIST_HEAD(device_list);
 static LIST_HEAD(client_list);
+#define CLIENT_REGISTERED XA_MARK_1
+static DEFINE_XARRAY_FLAGS(clients, XA_FLAGS_ALLOC);
 
 /*
  * device_mutex and lists_rwsem protect access to both device_list and
- * client_list.  device_mutex protects writer access by device and client
+ * clients.  device_mutex protects writer access by device and client
  * registration / de-registration.  lists_rwsem protects reader access to
  * these lists.  Iterators of these lists must lock it for read, while updates
  * to the lists must be done with a write lock. A special case is when the
@@ -564,6 +566,7 @@ int ib_register_device(struct ib_device *device, const char *name)
 {
 	int ret;
 	struct ib_client *client;
+	unsigned long index;
 
 	setup_dma_device(device);
 
@@ -608,7 +611,7 @@ int ib_register_device(struct ib_device *device, const char *name)
 
 	refcount_set(&device->refcount, 1);
 
-	list_for_each_entry(client, &client_list, list)
+	xa_for_each_marked (&clients, index, client, CLIENT_REGISTERED)
 		if (!add_client_context(device, client) && client->add)
 			client->add(device);
 
@@ -680,6 +683,33 @@ void ib_unregister_device(struct ib_device *device)
 }
 EXPORT_SYMBOL(ib_unregister_device);
 
+static int assign_client_id(struct ib_client *client)
+{
+	int ret;
+
+	/*
+	 * The add/remove callbacks must be called in FIFO/LIFO order. To
+	 * achieve this we assign client_ids so they are sorted in
+	 * registration order, and retain a linked list we can reverse iterate
+	 * to get the LIFO order. The extra linked list can go away if xarray
+	 * learns to reverse iterate.
+	 */
+	if (list_empty(&client_list)) {
+		client->client_id = 0;
+	} else {
+		struct ib_client *last;
+
+		last = list_last_entry(&client_list, struct ib_client, list);
+		client->client_id = last->client_id + 1;
+	}
+	ret = xa_insert(&clients, client->client_id, client, GFP_KERNEL);
+	if (ret)
+		goto out;
+
+out:
+	return ret;
+}
+
 /**
  * ib_register_client - Register an IB client
  * @client:Client to register
@@ -696,15 +726,21 @@ EXPORT_SYMBOL(ib_unregister_device);
 int ib_register_client(struct ib_client *client)
 {
 	struct ib_device *device;
+	int ret;
 
 	mutex_lock(&device_mutex);
+	ret = assign_client_id(client);
+	if (ret) {
+		mutex_unlock(&device_mutex);
+		return ret;
+	}
 
 	list_for_each_entry(device, &device_list, core_list)
 		if (!add_client_context(device, client) && client->add)
 			client->add(device);
 
 	down_write(&lists_rwsem);
-	list_add_tail(&client->list, &client_list);
+	xa_set_mark(&clients, client->client_id, CLIENT_REGISTERED);
 	up_write(&lists_rwsem);
 
 	mutex_unlock(&device_mutex);
@@ -729,7 +765,7 @@ void ib_unregister_client(struct ib_client *client)
 	mutex_lock(&device_mutex);
 
 	down_write(&lists_rwsem);
-	list_del(&client->list);
+	xa_clear_mark(&clients, client->client_id, CLIENT_REGISTERED);
 	up_write(&lists_rwsem);
 
 	list_for_each_entry(device, &device_list, core_list) {
@@ -765,6 +801,10 @@ void ib_unregister_client(struct ib_client *client)
 		kfree(found_context);
 	}
 
+	down_write(&lists_rwsem);
+	list_del(&client->list);
+	xa_erase(&clients, client->client_id);
+	up_write(&lists_rwsem);
 	mutex_unlock(&device_mutex);
 }
 EXPORT_SYMBOL(ib_unregister_client);
@@ -1422,6 +1462,7 @@ static void __exit ib_core_cleanup(void)
 	destroy_workqueue(ib_comp_wq);
 	/* Make sure that any pending umem accounting work is done. */
 	destroy_workqueue(ib_wq);
+	WARN_ON(!xa_empty(&clients));
 }
 
 MODULE_ALIAS_RDMA_NETLINK(RDMA_NL_LS, 4);
