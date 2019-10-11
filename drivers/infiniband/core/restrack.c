@@ -13,28 +13,6 @@
 #include "cma_priv.h"
 #include "restrack.h"
 
-static int rt_xa_alloc_cyclic(struct xarray *xa, u32 *id, void *entry,
-			      u32 *next)
-{
-	int err;
-
-	*id = *next;
-	if (*next == U32_MAX)
-		*id = 0;
-
-	xa_lock(xa);
-	err = __xa_alloc(xa, id, entry, xa_limit_32b, GFP_KERNEL);
-	if (err && *next != U32_MAX) {
-		*id = 0;
-		err = __xa_alloc(xa, id, entry, xa_limit_32b, GFP_KERNEL);
-	}
-
-	if (!err)
-		*next = *id + 1;
-	xa_unlock(xa);
-	return err;
-}
-
 /**
  * rdma_restrack_init() - initialize and allocate resource tracking
  * @dev:  IB device
@@ -225,7 +203,17 @@ static void rdma_restrack_add(struct rdma_restrack_entry *res)
 
 	kref_init(&res->kref);
 	init_completion(&res->comp);
-	ret = rt_xa_alloc_cyclic(&rt->xa, &res->id, res, &rt->next_id);
+	if (res->type != RDMA_RESTRACK_QP)
+		ret = xa_alloc_cyclic(&rt->xa, &res->id, res, xa_limit_32b,
+				&rt->next_id, GFP_KERNEL);
+	else {
+		/* Special case to ensure that LQPN points to right QP */
+		struct ib_qp *qp = container_of(res, struct ib_qp, res);
+
+		ret = xa_insert(&rt->xa, qp->qp_num, res, GFP_KERNEL);
+		res->id = ret ? 0 : qp->qp_num;
+	}
+
 	if (!ret)
 		res->valid = true;
 }
