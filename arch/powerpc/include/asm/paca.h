@@ -16,6 +16,7 @@
 
 #ifdef CONFIG_PPC64
 
+#include <linux/rh_kabi.h>
 #include <linux/string.h>
 #include <asm/types.h>
 #include <asm/lppaca.h>
@@ -259,6 +260,10 @@ struct paca_struct {
 #endif /* CONFIG_PPC_BOOK3S_64 */
 #ifdef CONFIG_MMIOWB
 	struct mmiowb_state mmiowb_state;
+#endif
+
+#ifdef CONFIG_STACKPROTECTOR
+	RH_KABI_EXTEND(unsigned long canary)
 #endif
 } ____cacheline_aligned;
 

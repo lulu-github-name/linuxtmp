@@ -759,7 +759,7 @@ struct task_struct {
 	pid_t				pid;
 	pid_t				tgid;
 
-#ifdef CONFIG_STACKPROTECTOR
+#if defined(CONFIG_STACKPROTECTOR) && !defined(CONFIG_PPC64)
 	/* Canary value for the -fstack-protector GCC feature: */
 	unsigned long			stack_canary;
 #endif
@@ -804,7 +804,12 @@ struct task_struct {
 	 */
 	/* Used by memcontrol for targeted memcg charge: */
 	struct mem_cgroup		*active_memcg;
+#if defined(CONFIG_STACKPROTECTOR) && defined(CONFIG_PPC64)
+	/* powerpc canary value for the -fstack-protector GCC feature: */
+	RH_KABI_USE(2, unsigned long stack_canary)
+#else
 	long				rh_reserved2;
+#endif
 	struct pid			*thread_pid;
 	long				rh_reserved3;
 	long				rh_reserved4;
