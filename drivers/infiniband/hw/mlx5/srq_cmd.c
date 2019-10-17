@@ -611,7 +611,7 @@ err_destroy_srq_split:
 	return err;
 }
 
-int mlx5_cmd_destroy_srq(struct mlx5_ib_dev *dev, struct mlx5_core_srq *srq)
+void mlx5_cmd_destroy_srq(struct mlx5_ib_dev *dev, struct mlx5_core_srq *srq)
 {
 	struct mlx5_srq_table *table = &dev->srq_table;
 	struct mlx5_core_srq *tmp;
@@ -621,16 +621,14 @@ int mlx5_cmd_destroy_srq(struct mlx5_ib_dev *dev, struct mlx5_core_srq *srq)
 	tmp = radix_tree_delete(&table->tree, srq->srqn);
 	spin_unlock_irq(&table->lock);
 	if (!tmp || tmp != srq)
-		return -EINVAL;
+		return;
 
 	err = destroy_srq_split(dev, srq);
 	if (err)
-		return err;
+		return;
 
 	mlx5_core_res_put(&srq->common);
 	wait_for_completion(&srq->common.free);
-
-	return 0;
 }
 
 int mlx5_cmd_query_srq(struct mlx5_ib_dev *dev, struct mlx5_core_srq *srq,
