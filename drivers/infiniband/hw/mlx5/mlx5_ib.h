@@ -1089,7 +1089,6 @@ int mlx5_ib_read_user_wqe(struct mlx5_ib_qp *qp, int send, int wqe_index,
 			  struct mlx5_ib_qp_base *base);
 struct ib_cq *mlx5_ib_create_cq(struct ib_device *ibdev,
 				const struct ib_cq_init_attr *attr,
-				struct ib_ucontext *context,
 				struct ib_udata *udata);
 int mlx5_ib_destroy_cq(struct ib_cq *cq, struct ib_udata *udata);
 int mlx5_ib_poll_cq(struct ib_cq *ibcq, int num_entries, struct ib_wc *wc);
@@ -1129,8 +1128,7 @@ int mlx5_ib_process_mad(struct ib_device *ibdev, int mad_flags, u8 port_num,
 			struct ib_mad_hdr *out, size_t *out_mad_size,
 			u16 *out_mad_pkey_index);
 struct ib_xrcd *mlx5_ib_alloc_xrcd(struct ib_device *ibdev,
-					  struct ib_ucontext *context,
-					  struct ib_udata *udata);
+				   struct ib_udata *udata);
 int mlx5_ib_dealloc_xrcd(struct ib_xrcd *xrcd, struct ib_udata *udata);
 int mlx5_ib_get_buf_offset(u64 addr, int page_shift, u32 *offset);
 int mlx5_query_ext_port_caps(struct mlx5_ib_dev *dev, u8 port);
