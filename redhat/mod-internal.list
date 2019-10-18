@@ -1,3 +1,5 @@
+act_ctinfo
+act_mpls
 mac80211_hwsim
 netdevsim
 pktgen
