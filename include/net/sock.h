@@ -238,6 +238,8 @@ struct sock_common {
 	/* public: */
 };
 
+struct bpf_sk_storage;
+
 /**
   *	struct sock - network layer representation of sockets
   *	@__sk_common: shared layout with inet_timewait_sock
@@ -508,7 +510,7 @@ struct sock {
 	RH_KABI_EXCLUDE(struct sock_reuseport __rcu	*sk_reuseport_cb)
 	struct rcu_head		sk_rcu;
 
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, struct bpf_sk_storage __rcu     *sk_bpf_storage)
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
