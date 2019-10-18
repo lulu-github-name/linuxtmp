@@ -123,7 +123,7 @@ out:
 /*
  * calculate authorization info fields to send to TPM
  */
-static int TSS_authhmac(unsigned char *digest, const unsigned char *key,
+int TSS_authhmac(unsigned char *digest, const unsigned char *key,
 			unsigned int keylen, unsigned char *h1,
 			unsigned char *h2, unsigned char h3, ...)
 {
@@ -173,11 +173,12 @@ out:
 	kzfree(sdesc);
 	return ret;
 }
+EXPORT_SYMBOL_GPL(TSS_authhmac);
 
 /*
  * verify the AUTH1_COMMAND (Seal) result from TPM
  */
-static int TSS_checkhmac1(unsigned char *buffer,
+int TSS_checkhmac1(unsigned char *buffer,
 			  const uint32_t command,
 			  const unsigned char *ononce,
 			  const unsigned char *key,
@@ -257,6 +258,7 @@ out:
 	kzfree(sdesc);
 	return ret;
 }
+EXPORT_SYMBOL_GPL(TSS_checkhmac1);
 
 /*
  * verify the AUTH2_COMMAND (unseal) result from TPM
@@ -363,7 +365,7 @@ out:
  * For key specific tpm requests, we will generate and send our
  * own TPM command packets using the drivers send function.
  */
-static int trusted_tpm_send(unsigned char *cmd, size_t buflen)
+int trusted_tpm_send(unsigned char *cmd, size_t buflen)
 {
 	int rc;
 
@@ -378,6 +380,7 @@ static int trusted_tpm_send(unsigned char *cmd, size_t buflen)
 		rc = -EPERM;
 	return rc;
 }
+EXPORT_SYMBOL_GPL(trusted_tpm_send);
 
 /*
  * Lock a trusted key, by extending a selected PCR.
@@ -431,7 +434,7 @@ static int osap(struct tpm_buf *tb, struct osapsess *s,
 /*
  * Create an object independent authorisation protocol (oiap) session
  */
-static int oiap(struct tpm_buf *tb, uint32_t *handle, unsigned char *nonce)
+int oiap(struct tpm_buf *tb, uint32_t *handle, unsigned char *nonce)
 {
 	int ret;
 
@@ -451,6 +454,7 @@ static int oiap(struct tpm_buf *tb, uint32_t *handle, unsigned char *nonce)
 	       TPM_NONCE_SIZE);
 	return 0;
 }
+EXPORT_SYMBOL_GPL(oiap);
 
 struct tpm_digests {
 	unsigned char encauth[SHA1_DIGEST_SIZE];
