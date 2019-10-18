@@ -170,6 +170,7 @@ enum bpf_prog_type {
 #ifndef __GENKSYMS__
 	BPF_PROG_TYPE_SK_REUSEPORT,
 	BPF_PROG_TYPE_FLOW_DISSECTOR,
+	BPF_PROG_TYPE_CGROUP_SYSCTL,
 #endif /* __GENKSYMS__ */
 };
 
@@ -193,6 +194,7 @@ enum bpf_attach_type {
 	BPF_LIRC_MODE2,
 #ifndef __GENKSYMS__
 	BPF_FLOW_DISSECTOR,
+	BPF_CGROUP_SYSCTL,
 #endif /* __GENKSYMS__ */
 	__MAX_BPF_ATTACH_TYPE
 };
@@ -3319,4 +3321,11 @@ struct bpf_line_info {
 struct bpf_spin_lock {
 	__u32	val;
 };
+
+struct bpf_sysctl {
+	__u32	write;		/* Sysctl is being read (= 0) or written (= 1).
+				 * Allows 1,2,4-byte read, but no write.
+				 */
+};
+
 #endif /* _UAPI__LINUX_BPF_H__ */
