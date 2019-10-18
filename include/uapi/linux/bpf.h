@@ -421,6 +421,15 @@ union bpf_attr {
 		__aligned_u64	data_out;
 		__u32		repeat;
 		__u32		duration;
+#ifndef __GENKSYMS__
+		__u32		ctx_size_in;	/* input: len of ctx_in */
+		__u32		ctx_size_out;	/* input/output: len of ctx_out
+						 *   returns ENOSPC if ctx_out
+						 *   is too small.
+						 */
+		__aligned_u64	ctx_in;
+		__aligned_u64	ctx_out;
+#endif /* __GENKSYMS__ */
 	} test;
 
 	struct { /* anonymous struct used by BPF_*_GET_*_ID */
