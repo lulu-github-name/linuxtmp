@@ -81,6 +81,8 @@ struct test tests[] = {
 			.iph.protocol = IPPROTO_TCP,
 			.iph.tot_len = __bpf_constant_htons(MAGIC_BYTES),
 			.tcp.doff = 5,
+			.tcp.source = 80,
+			.tcp.dest = 8080,
 		},
 		.keys = {
 			.nhoff = ETH_HLEN,
@@ -88,6 +90,8 @@ struct test tests[] = {
 			.addr_proto = ETH_P_IP,
 			.ip_proto = IPPROTO_TCP,
 			.n_proto = __bpf_constant_htons(ETH_P_IP),
+			.sport = 80,
+			.dport = 8080,
 		},
 	},
 	{
@@ -97,6 +101,8 @@ struct test tests[] = {
 			.iph.nexthdr = IPPROTO_TCP,
 			.iph.payload_len = __bpf_constant_htons(MAGIC_BYTES),
 			.tcp.doff = 5,
+			.tcp.source = 80,
+			.tcp.dest = 8080,
 		},
 		.keys = {
 			.nhoff = ETH_HLEN,
@@ -104,6 +110,8 @@ struct test tests[] = {
 			.addr_proto = ETH_P_IPV6,
 			.ip_proto = IPPROTO_TCP,
 			.n_proto = __bpf_constant_htons(ETH_P_IPV6),
+			.sport = 80,
+			.dport = 8080,
 		},
 	},
 	{
@@ -115,6 +123,8 @@ struct test tests[] = {
 			.iph.protocol = IPPROTO_TCP,
 			.iph.tot_len = __bpf_constant_htons(MAGIC_BYTES),
 			.tcp.doff = 5,
+			.tcp.source = 80,
+			.tcp.dest = 8080,
 		},
 		.keys = {
 			.nhoff = ETH_HLEN + VLAN_HLEN,
@@ -122,6 +132,8 @@ struct test tests[] = {
 			.addr_proto = ETH_P_IP,
 			.ip_proto = IPPROTO_TCP,
 			.n_proto = __bpf_constant_htons(ETH_P_IP),
+			.sport = 80,
+			.dport = 8080,
 		},
 	},
 	{
@@ -133,6 +145,8 @@ struct test tests[] = {
 			.iph.nexthdr = IPPROTO_TCP,
 			.iph.payload_len = __bpf_constant_htons(MAGIC_BYTES),
 			.tcp.doff = 5,
+			.tcp.source = 80,
+			.tcp.dest = 8080,
 		},
 		.keys = {
 			.nhoff = ETH_HLEN + VLAN_HLEN * 2,
@@ -141,6 +155,8 @@ struct test tests[] = {
 			.addr_proto = ETH_P_IPV6,
 			.ip_proto = IPPROTO_TCP,
 			.n_proto = __bpf_constant_htons(ETH_P_IPV6),
+			.sport = 80,
+			.dport = 8080,
 		},
 	},
 };
@@ -253,7 +269,8 @@ void test_flow_dissector(void)
 	for (i = 0; i < ARRAY_SIZE(tests); i++) {
 		struct bpf_flow_keys flow_keys = {};
 		struct bpf_prog_test_run_attr tattr = {};
-		__u32 key = 0;
+		__u32 key = (__u32)(tests[i].keys.sport) << 16 |
+			    tests[i].keys.dport;
 
 		err = tx_tap(tap_fd, &tests[i].pkt, sizeof(tests[i].pkt));
 		CHECK(err < 0, "tx_tap", "err %d errno %d\n", err, errno);
@@ -263,6 +280,9 @@ void test_flow_dissector(void)
 
 		CHECK_ATTR(err, tests[i].name, "skb-less err %d\n", err);
 		CHECK_FLOW_KEYS(tests[i].name, flow_keys, tests[i].keys);
+
+		err = bpf_map_delete_elem(keys_fd, &key);
+		CHECK_ATTR(err, tests[i].name, "bpf_map_delete_elem %d\n", err);
 	}
 
 	bpf_prog_detach(prog_fd, BPF_FLOW_DISSECTOR);
