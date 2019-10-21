@@ -817,8 +817,7 @@ struct rq {
 	unsigned int		nr_numa_running;
 	unsigned int		nr_preferred_running;
 #endif
-	#define CPU_LOAD_IDX_MAX 5
-	unsigned long		cpu_load[CPU_LOAD_IDX_MAX];
+	RH_KABI_DEPRECATE(unsigned long, cpu_load[5])
 #ifdef CONFIG_NO_HZ_COMMON
 #ifdef CONFIG_SMP
 	unsigned long		last_load_update_tick;
