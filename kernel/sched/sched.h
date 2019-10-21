@@ -335,8 +335,9 @@ struct cfs_bandwidth {
 	u64			runtime_expires;
 	int			expires_seq;
 
-	short			idle;
-	short			period_active;
+	RH_KABI_REPLACE2(short idle, u8 idle, u8 period_active)
+	RH_KABI_REPLACE2(short period_active, u8 distribute_running, u8 slack_started)
+
 	struct hrtimer		period_timer;
 	struct hrtimer		slack_timer;
 	struct list_head	throttled_cfs_rq;
@@ -346,7 +347,7 @@ struct cfs_bandwidth {
 	int			nr_throttled;
 	u64			throttled_time;
 
-	bool                    distribute_running;
+	RH_KABI_DEPRECATE(bool, distribute_running)
 #endif
 };
 
