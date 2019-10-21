@@ -9,8 +9,6 @@
 #include "nl80211.h"
 #include "rdev-ops.h"
 
-#define nlmsg_parse_deprecated nlmsg_parse
-#define nla_parse_nested_deprecated nla_parse_nested
 #define nla_nest_start_noflag nla_nest_start
 
 
