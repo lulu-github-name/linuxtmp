@@ -880,7 +880,7 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 		valid = (stepping <= 13);
 		break;
 
-	case INTEL_FAM6_KABYLAKE_MOBILE:
+	case INTEL_FAM6_KABYLAKE_L:
 		valid = (stepping <= 12);
 		break;
 
@@ -894,11 +894,11 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 	case INTEL_FAM6_ATOM_SILVERMONT_X:
 	case INTEL_FAM6_BROADWELL_GT3E:
 	case INTEL_FAM6_HASWELL_GT3E:
-	case INTEL_FAM6_HASWELL_ULT:
+	case INTEL_FAM6_HASWELL_L:
 		valid = true;
 		break;
 
-	case INTEL_FAM6_SKYLAKE_MOBILE:
+	case INTEL_FAM6_SKYLAKE_L:
 	case INTEL_FAM6_SKYLAKE:
 		/* stepping > 4 is Cascade Lake and is not supported */
 		valid = (stepping <= 4);
