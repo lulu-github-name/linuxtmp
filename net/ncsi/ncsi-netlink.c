@@ -369,17 +369,20 @@ static int ncsi_clear_interface_nl(struct sk_buff *msg, struct genl_info *info)
 static const struct genl_ops ncsi_ops[] = {
 	{
 		.cmd = NCSI_CMD_PKG_INFO,
+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
 		.doit = ncsi_pkg_info_nl,
 		.dumpit = ncsi_pkg_info_all_nl,
 		.flags = 0,
 	},
 	{
 		.cmd = NCSI_CMD_SET_INTERFACE,
+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
 		.doit = ncsi_set_interface_nl,
 		.flags = GENL_ADMIN_PERM,
 	},
 	{
 		.cmd = NCSI_CMD_CLEAR_INTERFACE,
+		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
 		.doit = ncsi_clear_interface_nl,
 		.flags = GENL_ADMIN_PERM,
 	},
