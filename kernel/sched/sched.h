@@ -835,8 +835,7 @@ struct rq {
 	atomic_t nohz_flags;
 #endif /* CONFIG_NO_HZ_COMMON */
 
-	/* capture load from *all* tasks on this CPU: */
-	struct load_weight	load;
+	RH_KABI_DEPRECATE(struct load_weight, load)
 	unsigned long		nr_load_updates;
 	u64			nr_switches;
 
