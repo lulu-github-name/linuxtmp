@@ -2767,6 +2767,17 @@ account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	WRITE_ONCE(*ptr, res);					\
 } while (0)
 
+/*
+ * Remove and clamp on negative, from a local variable.
+ *
+ * A variant of sub_positive(), which does not use explicit load-store
+ * and is thus optimized for local variable updates.
+ */
+#define lsub_positive(_ptr, _val) do {				\
+	typeof(_ptr) ptr = (_ptr);				\
+	*ptr -= min_t(typeof(*ptr), *ptr, _val);		\
+} while (0)
+
 #ifdef CONFIG_SMP
 static inline void
 enqueue_runnable_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
@@ -4676,7 +4687,7 @@ static int do_sched_cfs_period_timer(struct cfs_bandwidth *cfs_b, int overrun, u
 		cfs_b->distribute_running = 0;
 		throttled = !list_empty(&cfs_b->throttled_cfs_rq);
 
-		cfs_b->runtime -= min(runtime, cfs_b->runtime);
+		lsub_positive(&cfs_b->runtime, runtime);
 	}
 
 	/*
@@ -4811,7 +4822,7 @@ static void do_sched_cfs_slack_timer(struct cfs_bandwidth *cfs_b)
 
 	raw_spin_lock_irqsave(&cfs_b->lock, flags);
 	if (expires == cfs_b->runtime_expires)
-		cfs_b->runtime -= min(runtime, cfs_b->runtime);
+		lsub_positive(&cfs_b->runtime, runtime);
 	cfs_b->distribute_running = 0;
 	raw_spin_unlock_irqrestore(&cfs_b->lock, flags);
 }
@@ -6363,7 +6374,7 @@ static unsigned long cpu_util_without(int cpu, struct task_struct *p)
 	util = READ_ONCE(cfs_rq->avg.util_avg);
 
 	/* Discount task's util from CPU's util */
-	util -= min_t(unsigned int, util, task_util(p));
+	lsub_positive(&util, task_util(p));
 
 	/*
 	 * Covered cases:
@@ -6412,10 +6423,9 @@ static unsigned long cpu_util_without(int cpu, struct task_struct *p)
 		 * properly fix the execl regression and it helps in further
 		 * reducing the chances for the above race.
 		 */
-		if (unlikely(task_on_rq_queued(p) || current == p)) {
-			estimated -= min_t(unsigned int, estimated,
-					   _task_util_est(p));
-		}
+		if (unlikely(task_on_rq_queued(p) || current == p))
+			lsub_positive(&estimated, _task_util_est(p));
+
 		util = max(util, estimated);
 	}
 
