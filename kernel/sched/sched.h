@@ -866,7 +866,7 @@ struct rq {
 
 	unsigned int		clock_update_flags;
 	u64			clock;
-	u64			clock_task;
+	RH_KABI_DEPRECATE(u64, clock_task)
 
 	atomic_t		nr_iowait;
 
@@ -961,6 +961,11 @@ struct rq {
 	RH_KABI_EXTEND(struct sched_avg	avg_irq)
 #endif
 	RH_KABI_EXTEND(unsigned long misfit_task_load)
+
+	/* Ensure that all clocks are in the same cache line */
+	RH_KABI_EXTEND(u64 clock_task ____cacheline_aligned)
+	RH_KABI_EXTEND(u64 clock_pelt)
+	RH_KABI_EXTEND(unsigned long lost_idle_time)
 };
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
