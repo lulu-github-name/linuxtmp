@@ -21,13 +21,19 @@
 #include <linux/sched/task.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/wake_q.h>
+#ifndef __GENKSYMS__
 #include <linux/sched/signal.h>
+#endif
 #include <linux/export.h>
 #include <linux/rwsem.h>
 #include <linux/atomic.h>
 
 #include "rwsem.h"
 #include "lock_events.h"
+
+#ifndef RWSEM_INIT_ONLY
+#define __init_rwsem	___init_rwsem
+#endif
 
 /*
  * The least significant 2 bits of the owner value has the following
@@ -207,6 +213,8 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name,
 }
 
 EXPORT_SYMBOL(__init_rwsem);
+
+#ifndef RWSEM_INIT_ONLY
 
 enum rwsem_waiter_type {
 	RWSEM_WAITING_FOR_WRITE,
@@ -1090,3 +1098,4 @@ void up_read_non_owner(struct rw_semaphore *sem)
 EXPORT_SYMBOL(up_read_non_owner);
 
 #endif
+#endif /* RWSEM_INIT_ONLY */
