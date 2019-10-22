@@ -4,14 +4,14 @@
  * All Rights Reserved.
  */
 #include <linux/mm.h>
-#include <linux/sched/mm.h>
 #include <linux/highmem.h>
 #include <linux/slab.h>
 #include <linux/swap.h>
 #include <linux/blkdev.h>
+#include "xfs.h"
 #include <linux/backing-dev.h>
-#include "kmem.h"
 #include "xfs_message.h"
+#include "xfs_trace.h"
 
 void *
 kmem_alloc(size_t size, xfs_km_flags_t flags)
@@ -19,6 +19,8 @@ kmem_alloc(size_t size, xfs_km_flags_t flags)
 	int	retries = 0;
 	gfp_t	lflags = kmem_flags_convert(flags);
 	void	*ptr;
+
+	trace_kmem_alloc(size, flags, _RET_IP_);
 
 	do {
 		ptr = kmalloc(size, lflags);
@@ -39,6 +41,8 @@ kmem_alloc_large(size_t size, xfs_km_flags_t flags)
 	unsigned nofs_flag = 0;
 	void	*ptr;
 	gfp_t	lflags;
+
+	trace_kmem_alloc_large(size, flags, _RET_IP_);
 
 	ptr = kmem_alloc(size, flags | KM_MAYFAIL);
 	if (ptr)
@@ -70,6 +74,8 @@ kmem_realloc(const void *old, size_t newsize, xfs_km_flags_t flags)
 	gfp_t	lflags = kmem_flags_convert(flags);
 	void	*ptr;
 
+	trace_kmem_realloc(newsize, flags, _RET_IP_);
+
 	do {
 		ptr = krealloc(old, newsize, lflags);
 		if (ptr || (flags & (KM_MAYFAIL|KM_NOSLEEP)))
@@ -90,6 +96,7 @@ kmem_zone_alloc(kmem_zone_t *zone, xfs_km_flags_t flags)
 	gfp_t	lflags = kmem_flags_convert(flags);
 	void	*ptr;
 
+	trace_kmem_zone_alloc(kmem_cache_size(zone), flags, _RET_IP_);
 	do {
 		ptr = kmem_cache_alloc(zone, lflags);
 		if (ptr || (flags & (KM_MAYFAIL|KM_NOSLEEP)))
