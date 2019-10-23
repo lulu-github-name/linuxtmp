@@ -9,9 +9,6 @@
 #include "nl80211.h"
 #include "rdev-ops.h"
 
-#define nla_nest_start_noflag nla_nest_start
-
-
 static int pmsr_parse_ftm(struct cfg80211_registered_device *rdev,
 			  struct nlattr *ftmreq,
 			  struct cfg80211_pmsr_request_peer *out,

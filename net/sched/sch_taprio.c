@@ -988,7 +988,7 @@ static int dump_entry(struct sk_buff *msg,
 {
 	struct nlattr *item;
 
-	item = nla_nest_start(msg, TCA_TAPRIO_SCHED_ENTRY);
+	item = nla_nest_start_noflag(msg, TCA_TAPRIO_SCHED_ENTRY);
 	if (!item)
 		return -ENOSPC;
 
@@ -1070,7 +1070,7 @@ static int taprio_dump(struct Qdisc *sch, struct sk_buff *skb)
 		opt.offset[i] = dev->tc_to_txq[i].offset;
 	}
 
-	nest = nla_nest_start(skb, TCA_OPTIONS);
+	nest = nla_nest_start_noflag(skb, TCA_OPTIONS);
 	if (!nest)
 		goto start_error;
 
@@ -1086,7 +1086,7 @@ static int taprio_dump(struct Qdisc *sch, struct sk_buff *skb)
 	if (!admin)
 		goto done;
 
-	sched_nest = nla_nest_start(skb, TCA_TAPRIO_ATTR_ADMIN_SCHED);
+	sched_nest = nla_nest_start_noflag(skb, TCA_TAPRIO_ATTR_ADMIN_SCHED);
 	if (!sched_nest)
 		goto options_error;
 

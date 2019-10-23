@@ -339,7 +339,8 @@ static int fill_res_info_entry(struct sk_buff *msg,
 {
 	struct nlattr *entry_attr;
 
-	entry_attr = nla_nest_start(msg, RDMA_NLDEV_ATTR_RES_SUMMARY_ENTRY);
+	entry_attr = nla_nest_start_noflag(msg,
+					   RDMA_NLDEV_ATTR_RES_SUMMARY_ENTRY);
 	if (!entry_attr)
 		return -EMSGSIZE;
 
@@ -374,7 +375,7 @@ static int fill_res_info(struct sk_buff *msg, struct ib_device *device)
 	if (fill_nldev_handle(msg, device))
 		return -EMSGSIZE;
 
-	table_attr = nla_nest_start(msg, RDMA_NLDEV_ATTR_RES_SUMMARY);
+	table_attr = nla_nest_start_noflag(msg, RDMA_NLDEV_ATTR_RES_SUMMARY);
 	if (!table_attr)
 		return -EMSGSIZE;
 
@@ -1317,7 +1318,7 @@ static int res_get_common_dumpit(struct sk_buff *skb,
 		goto err;
 	}
 
-	table_attr = nla_nest_start(skb, fe->nldev_attr);
+	table_attr = nla_nest_start_noflag(skb, fe->nldev_attr);
 	if (!table_attr) {
 		ret = -EMSGSIZE;
 		goto err;
@@ -1343,7 +1344,7 @@ static int res_get_common_dumpit(struct sk_buff *skb,
 
 		filled = true;
 
-		entry_attr = nla_nest_start(skb, fe->entry);
+		entry_attr = nla_nest_start_noflag(skb, fe->entry);
 		if (!entry_attr) {
 			ret = -EMSGSIZE;
 			rdma_restrack_put(res);

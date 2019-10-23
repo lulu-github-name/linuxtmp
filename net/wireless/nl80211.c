@@ -30,8 +30,6 @@
 #include "reg.h"
 #include "rdev-ops.h"
 
-#define nla_nest_start_noflag nla_nest_start
-
 static int nl80211_crypto_settings(struct cfg80211_registered_device *rdev,
 				   struct genl_info *info,
 				   struct cfg80211_crypto_settings *settings,

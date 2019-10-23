@@ -2361,7 +2361,8 @@ static int copy_secy_stats(struct sk_buff *skb,
 static int nla_put_secy(struct macsec_secy *secy, struct sk_buff *skb)
 {
 	struct macsec_tx_sc *tx_sc = &secy->tx_sc;
-	struct nlattr *secy_nest = nla_nest_start(skb, MACSEC_ATTR_SECY);
+	struct nlattr *secy_nest = nla_nest_start_noflag(skb,
+							 MACSEC_ATTR_SECY);
 	u64 csid;
 
 	if (!secy_nest)
@@ -2430,7 +2431,7 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 	if (nla_put_secy(secy, skb))
 		goto nla_put_failure;
 
-	attr = nla_nest_start(skb, MACSEC_ATTR_TXSC_STATS);
+	attr = nla_nest_start_noflag(skb, MACSEC_ATTR_TXSC_STATS);
 	if (!attr)
 		goto nla_put_failure;
 	if (copy_tx_sc_stats(skb, tx_sc->stats)) {
@@ -2439,7 +2440,7 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 	}
 	nla_nest_end(skb, attr);
 
-	attr = nla_nest_start(skb, MACSEC_ATTR_SECY_STATS);
+	attr = nla_nest_start_noflag(skb, MACSEC_ATTR_SECY_STATS);
 	if (!attr)
 		goto nla_put_failure;
 	if (copy_secy_stats(skb, macsec_priv(dev)->stats)) {
@@ -2448,7 +2449,7 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 	}
 	nla_nest_end(skb, attr);
 
-	txsa_list = nla_nest_start(skb, MACSEC_ATTR_TXSA_LIST);
+	txsa_list = nla_nest_start_noflag(skb, MACSEC_ATTR_TXSA_LIST);
 	if (!txsa_list)
 		goto nla_put_failure;
 	for (i = 0, j = 1; i < MACSEC_NUM_AN; i++) {
@@ -2458,7 +2459,7 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 		if (!tx_sa)
 			continue;
 
-		txsa_nest = nla_nest_start(skb, j++);
+		txsa_nest = nla_nest_start_noflag(skb, j++);
 		if (!txsa_nest) {
 			nla_nest_cancel(skb, txsa_list);
 			goto nla_put_failure;
@@ -2473,7 +2474,7 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 			goto nla_put_failure;
 		}
 
-		attr = nla_nest_start(skb, MACSEC_SA_ATTR_STATS);
+		attr = nla_nest_start_noflag(skb, MACSEC_SA_ATTR_STATS);
 		if (!attr) {
 			nla_nest_cancel(skb, txsa_nest);
 			nla_nest_cancel(skb, txsa_list);
@@ -2491,7 +2492,7 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 	}
 	nla_nest_end(skb, txsa_list);
 
-	rxsc_list = nla_nest_start(skb, MACSEC_ATTR_RXSC_LIST);
+	rxsc_list = nla_nest_start_noflag(skb, MACSEC_ATTR_RXSC_LIST);
 	if (!rxsc_list)
 		goto nla_put_failure;
 
@@ -2499,7 +2500,7 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 	for_each_rxsc_rtnl(secy, rx_sc) {
 		int k;
 		struct nlattr *rxsa_list;
-		struct nlattr *rxsc_nest = nla_nest_start(skb, j++);
+		struct nlattr *rxsc_nest = nla_nest_start_noflag(skb, j++);
 
 		if (!rxsc_nest) {
 			nla_nest_cancel(skb, rxsc_list);
@@ -2514,7 +2515,7 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 			goto nla_put_failure;
 		}
 
-		attr = nla_nest_start(skb, MACSEC_RXSC_ATTR_STATS);
+		attr = nla_nest_start_noflag(skb, MACSEC_RXSC_ATTR_STATS);
 		if (!attr) {
 			nla_nest_cancel(skb, rxsc_nest);
 			nla_nest_cancel(skb, rxsc_list);
@@ -2528,7 +2529,8 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 		}
 		nla_nest_end(skb, attr);
 
-		rxsa_list = nla_nest_start(skb, MACSEC_RXSC_ATTR_SA_LIST);
+		rxsa_list = nla_nest_start_noflag(skb,
+						  MACSEC_RXSC_ATTR_SA_LIST);
 		if (!rxsa_list) {
 			nla_nest_cancel(skb, rxsc_nest);
 			nla_nest_cancel(skb, rxsc_list);
@@ -2542,7 +2544,7 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 			if (!rx_sa)
 				continue;
 
-			rxsa_nest = nla_nest_start(skb, k++);
+			rxsa_nest = nla_nest_start_noflag(skb, k++);
 			if (!rxsa_nest) {
 				nla_nest_cancel(skb, rxsa_list);
 				nla_nest_cancel(skb, rxsc_nest);
@@ -2550,7 +2552,8 @@ static int dump_secy(struct macsec_secy *secy, struct net_device *dev,
 				goto nla_put_failure;
 			}
 
-			attr = nla_nest_start(skb, MACSEC_SA_ATTR_STATS);
+			attr = nla_nest_start_noflag(skb,
+						     MACSEC_SA_ATTR_STATS);
 			if (!attr) {
 				nla_nest_cancel(skb, rxsa_list);
 				nla_nest_cancel(skb, rxsc_nest);

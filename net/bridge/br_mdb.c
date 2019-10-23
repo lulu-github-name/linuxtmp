@@ -26,14 +26,14 @@ static int br_rports_fill_info(struct sk_buff *skb, struct netlink_callback *cb,
 	if (!br->multicast_router || hlist_empty(&br->router_list))
 		return 0;
 
-	nest = nla_nest_start(skb, MDBA_ROUTER);
+	nest = nla_nest_start_noflag(skb, MDBA_ROUTER);
 	if (nest == NULL)
 		return -EMSGSIZE;
 
 	hlist_for_each_entry_rcu(p, &br->router_list, rlist) {
 		if (!p)
 			continue;
-		port_nest = nla_nest_start(skb, MDBA_ROUTER_PORT);
+		port_nest = nla_nest_start_noflag(skb, MDBA_ROUTER_PORT);
 		if (!port_nest)
 			goto fail;
 		if (nla_put_nohdr(skb, sizeof(u32), &p->dev->ifindex) ||
@@ -91,7 +91,7 @@ static int br_mdb_fill_info(struct sk_buff *skb, struct netlink_callback *cb,
 	if (!mdb)
 		return 0;
 
-	nest = nla_nest_start(skb, MDBA_MDB);
+	nest = nla_nest_start_noflag(skb, MDBA_MDB);
 	if (nest == NULL)
 		return -EMSGSIZE;
 
@@ -105,7 +105,7 @@ static int br_mdb_fill_info(struct sk_buff *skb, struct netlink_callback *cb,
 			if (idx < s_idx)
 				goto skip;
 
-			nest2 = nla_nest_start(skb, MDBA_MDB_ENTRY);
+			nest2 = nla_nest_start_noflag(skb, MDBA_MDB_ENTRY);
 			if (nest2 == NULL) {
 				err = -EMSGSIZE;
 				goto out;
@@ -259,10 +259,10 @@ static int nlmsg_populate_mdb_fill(struct sk_buff *skb,
 	memset(bpm, 0, sizeof(*bpm));
 	bpm->family  = AF_BRIDGE;
 	bpm->ifindex = dev->ifindex;
-	nest = nla_nest_start(skb, MDBA_MDB);
+	nest = nla_nest_start_noflag(skb, MDBA_MDB);
 	if (nest == NULL)
 		goto cancel;
-	nest2 = nla_nest_start(skb, MDBA_MDB_ENTRY);
+	nest2 = nla_nest_start_noflag(skb, MDBA_MDB_ENTRY);
 	if (nest2 == NULL)
 		goto end;
 
@@ -457,7 +457,7 @@ static int nlmsg_populate_rtr_fill(struct sk_buff *skb,
 	memset(bpm, 0, sizeof(*bpm));
 	bpm->family = AF_BRIDGE;
 	bpm->ifindex = dev->ifindex;
-	nest = nla_nest_start(skb, MDBA_ROUTER);
+	nest = nla_nest_start_noflag(skb, MDBA_ROUTER);
 	if (!nest)
 		goto cancel;
 
