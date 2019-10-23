@@ -190,7 +190,15 @@ struct netlink_callback {
 	u16			family;
 	u16			min_dump_alloc;
 	unsigned int		prev_seq, seq;
-	long			args[6];
+	RH_KABI_REPLACE(long	args[6],
+		        union {
+		                u8              ctx[48];
+
+				/* args is deprecated. Cast a struct over ctx instead
+		                 * for proper type safety.
+		                 */
+		                long            args[6];
+		        };)
 	RH_KABI_EXTEND(struct netlink_ext_ack *extack)
 	RH_KABI_EXTEND(bool strict_check)
 	RH_KABI_EXTEND(u16 answer_flags)
