@@ -332,8 +332,8 @@ struct cfs_bandwidth {
 	u64			quota;
 	u64			runtime;
 	s64			hierarchical_quota;
-	u64			runtime_expires;
-	int			expires_seq;
+	RH_KABI_DEPRECATE(u64, runtime_expires)
+	RH_KABI_DEPRECATE(int, expires_seq)
 
 	RH_KABI_REPLACE2(short idle, u8 idle, u8 period_active)
 	RH_KABI_REPLACE2(short period_active, u8 distribute_running, u8 slack_started)
@@ -557,8 +557,8 @@ struct cfs_rq {
 
 #ifdef CONFIG_CFS_BANDWIDTH
 	int			runtime_enabled;
-	int			expires_seq;
-	u64			runtime_expires;
+	RH_KABI_DEPRECATE(int, expires_seq)
+	RH_KABI_DEPRECATE(u64, runtime_expires)
 	s64			runtime_remaining;
 
 	u64			throttled_clock;
