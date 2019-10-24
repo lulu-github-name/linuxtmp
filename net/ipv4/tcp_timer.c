@@ -190,8 +190,8 @@ static bool retransmits_timed_out(struct sock *sk,
 				  unsigned int boundary,
 				  unsigned int timeout)
 {
-	const unsigned int rto_base = TCP_RTO_MIN;
 	unsigned int linear_backoff_thresh, start_ts;
+	unsigned int rto_base = TCP_RTO_MIN;
 
 	if (!inet_csk(sk)->icsk_retransmits)
 		return false;
@@ -201,6 +201,9 @@ static bool retransmits_timed_out(struct sock *sk,
 		return false;
 
 	if (likely(timeout == 0)) {
+		if ((1 << sk->sk_state) & (TCPF_SYN_SENT | TCPF_SYN_RECV))
+			rto_base = tcp_timeout_init(sk);
+
 		linear_backoff_thresh = ilog2(TCP_RTO_MAX/rto_base);
 
 		if (boundary <= linear_backoff_thresh)
