@@ -314,6 +314,11 @@ static inline void flow_block_cb_remove(struct flow_block_cb *block_cb,
 	list_move(&block_cb->list, &offload->cb_list);
 }
 
+/* RHEL: Increase the version of flow_block_cb_setup_simple() when TC subsystem
+ * is changed in a kABI incompatible way. This includes changes to ndo_setup_tc,
+ * inline function changes and TC structs changes.
+ */
+RH_KABI_FORCE_CHANGE(1)
 int flow_block_cb_setup_simple(struct flow_block_offload *f,
 			       struct list_head *driver_list, tc_setup_cb_t *cb,
 			       void *cb_ident, void *cb_priv, bool ingress_only);
