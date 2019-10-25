@@ -510,11 +510,11 @@ int mlx5e_tc_tun_init_encap_attr(struct net_device *tunnel_dev,
 
 static int mlx5e_tc_tun_parse_vxlan(struct mlx5e_priv *priv,
 				    struct mlx5_flow_spec *spec,
-				    struct tc_cls_flower_offload *f,
+				    struct flow_cls_offload *f,
 				    void *headers_c,
 				    void *headers_v)
 {
-	struct flow_rule *rule = tc_cls_flower_offload_flow_rule(f);
+	struct flow_rule *rule = flow_cls_offload_flow_rule(f);
 	struct netlink_ext_ack *extack = f->common.extack;
 	void *misc_c = MLX5_ADDR_OF(fte_match_param,
 				    spec->match_criteria,
@@ -576,7 +576,7 @@ static int mlx5e_tc_tun_parse_vxlan(struct mlx5e_priv *priv,
 
 static int mlx5e_tc_tun_parse_gretap(struct mlx5e_priv *priv,
 				     struct mlx5_flow_spec *spec,
-				     struct tc_cls_flower_offload *f,
+				     struct flow_cls_offload *f,
 				     void *outer_headers_c,
 				     void *outer_headers_v)
 {
@@ -584,7 +584,7 @@ static int mlx5e_tc_tun_parse_gretap(struct mlx5e_priv *priv,
 				    misc_parameters);
 	void *misc_v = MLX5_ADDR_OF(fte_match_param, spec->match_value,
 				    misc_parameters);
-	struct flow_rule *rule = tc_cls_flower_offload_flow_rule(f);
+	struct flow_rule *rule = flow_cls_offload_flow_rule(f);
 
 	if (!MLX5_CAP_ESW(priv->mdev, nvgre_encap_decap)) {
 		NL_SET_ERR_MSG_MOD(f->common.extack,
@@ -618,7 +618,7 @@ static int mlx5e_tc_tun_parse_gretap(struct mlx5e_priv *priv,
 int mlx5e_tc_tun_parse(struct net_device *filter_dev,
 		       struct mlx5e_priv *priv,
 		       struct mlx5_flow_spec *spec,
-		       struct tc_cls_flower_offload *f,
+		       struct flow_cls_offload *f,
 		       void *headers_c,
 		       void *headers_v, u8 *match_level)
 {

@@ -267,17 +267,17 @@ void nfp_flower_metadata_cleanup(struct nfp_app *app);
 int nfp_flower_setup_tc(struct nfp_app *app, struct net_device *netdev,
 			enum tc_setup_type type, void *type_data);
 int nfp_flower_compile_flow_match(struct nfp_app *app,
-				  struct tc_cls_flower_offload *flow,
+				  struct flow_cls_offload *flow,
 				  struct nfp_fl_key_ls *key_ls,
 				  struct net_device *netdev,
 				  struct nfp_fl_payload *nfp_flow,
 				  enum nfp_flower_tun_type tun_type);
 int nfp_flower_compile_action(struct nfp_app *app,
-			      struct tc_cls_flower_offload *flow,
+			      struct flow_cls_offload *flow,
 			      struct net_device *netdev,
 			      struct nfp_fl_payload *nfp_flow);
 int nfp_compile_flow_metadata(struct nfp_app *app,
-			      struct tc_cls_flower_offload *flow,
+			      struct flow_cls_offload *flow,
 			      struct nfp_fl_payload *nfp_flow,
 			      struct net_device *netdev);
 int nfp_modify_flow_metadata(struct nfp_app *app,
