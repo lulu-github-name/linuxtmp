@@ -1386,8 +1386,8 @@ static ssize_t fuse_dev_splice_read(struct file *in, loff_t *ppos,
 	if (!fud)
 		return -EPERM;
 
-	bufs = kmalloc_array(pipe->buffers, sizeof(struct pipe_buffer),
-			     GFP_KERNEL);
+	bufs = kvmalloc_array(pipe->buffers, sizeof(struct pipe_buffer),
+			      GFP_KERNEL);
 	if (!bufs)
 		return -ENOMEM;
 
@@ -1420,7 +1420,7 @@ out:
 	for (; page_nr < cs.nr_segs; page_nr++)
 		put_page(bufs[page_nr].page);
 
-	kfree(bufs);
+	kvfree(bufs);
 	return ret;
 }
 
@@ -1976,8 +1976,8 @@ static ssize_t fuse_dev_splice_write(struct pipe_inode_info *pipe,
 
 	pipe_lock(pipe);
 
-	bufs = kmalloc_array(pipe->buffers, sizeof(struct pipe_buffer),
-			     GFP_KERNEL);
+	bufs = kvmalloc_array(pipe->buffers, sizeof(struct pipe_buffer),
+			      GFP_KERNEL);
 	if (!bufs) {
 		pipe_unlock(pipe);
 		return -ENOMEM;
@@ -2038,7 +2038,7 @@ out_free:
 		pipe_buf_release(pipe, &bufs[idx]);
 	pipe_unlock(pipe);
 
-	kfree(bufs);
+	kvfree(bufs);
 	return ret;
 }
 
