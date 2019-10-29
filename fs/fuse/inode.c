@@ -998,11 +998,12 @@ void fuse_send_init(struct fuse_conn *fc)
 }
 EXPORT_SYMBOL_GPL(fuse_send_init);
 
-static void fuse_free_conn(struct fuse_conn *fc)
+void fuse_free_conn(struct fuse_conn *fc)
 {
 	WARN_ON(!list_empty(&fc->devices));
 	kfree_rcu(fc, rcu);
 }
+EXPORT_SYMBOL_GPL(fuse_free_conn);
 
 static int fuse_bdi_init(struct fuse_conn *fc, struct super_block *sb)
 {
@@ -1165,7 +1166,7 @@ int fuse_fill_super_common(struct super_block *sb, struct fuse_fs_context *d)
 	fc->user_id = d->user_id;
 	fc->group_id = d->group_id;
 	fc->max_read = max_t(unsigned, 4096, d->max_read);
-	fc->destroy = d->is_bdev;
+	fc->destroy = d->destroy;
 
 	err = -ENOMEM;
 	root = fuse_get_root_inode(sb, d->rootmode);
@@ -1226,6 +1227,8 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
 		goto err_fput;
 	d.fudptr = &file->private_data;
 	d.is_bdev = is_bdev;
+	if (is_bdev)
+		d.destroy = true;
 
 	fc = kmalloc(sizeof(*fc), GFP_KERNEL);
 	err = -ENOMEM;
@@ -1281,11 +1284,12 @@ static void fuse_sb_destroy(struct super_block *sb)
 	}
 }
 
-static void fuse_kill_sb_anon(struct super_block *sb)
+void fuse_kill_sb_anon(struct super_block *sb)
 {
 	fuse_sb_destroy(sb);
 	kill_anon_super(sb);
 }
+EXPORT_SYMBOL_GPL(fuse_kill_sb_anon);
 
 static struct file_system_type fuse_fs_type = {
 	.owner		= THIS_MODULE,
