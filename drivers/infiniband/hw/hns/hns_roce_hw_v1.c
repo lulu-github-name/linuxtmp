@@ -796,6 +796,7 @@ static int hns_roce_v1_rsv_lp_qp(struct hns_roce_dev *hr_dev)
 		free_mr->mr_free_qp[i] = hns_roce_v1_create_lp_qp(hr_dev, pd);
 		if (!free_mr->mr_free_qp[i]) {
 			dev_err(dev, "Create loop qp failed!\n");
+			ret = -ENOMEM;
 			goto create_lp_qp_failed;
 		}
 		hr_qp = free_mr->mr_free_qp[i];
@@ -866,7 +867,7 @@ alloc_pd_failed:
 alloc_mem_failed:
 	hns_roce_ib_destroy_cq(cq, NULL);
 
-	return -EINVAL;
+	return ret;
 }
 
 static void hns_roce_v1_release_lp_qp(struct hns_roce_dev *hr_dev)
