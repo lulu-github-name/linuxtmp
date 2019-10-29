@@ -827,10 +827,9 @@ err_mtt:
 	hns_roce_mtt_cleanup(hr_dev, &hr_qp->mtt);
 
 err_buf:
-	if (hr_qp->umem)
-		ib_umem_release(hr_qp->umem);
-	else
+	if (!hr_qp->umem)
 		hns_roce_buf_free(hr_dev, hr_qp->buff_size, &hr_qp->hr_buf);
+	ib_umem_release(hr_qp->umem);
 
 err_db:
 	if (!udata && hns_roce_qp_has_rq(init_attr) &&
