@@ -363,7 +363,10 @@ void fuse_unlock_inode(struct inode *inode, bool locked)
 
 static void fuse_umount_begin(struct super_block *sb)
 {
-	fuse_abort_conn(get_fuse_conn_super(sb));
+	struct fuse_conn *fc = get_fuse_conn_super(sb);
+
+	if (!fc->no_force_umount)
+		fuse_abort_conn(fc);
 }
 
 static void fuse_send_destroy(struct fuse_conn *fc)
@@ -1167,6 +1170,8 @@ int fuse_fill_super_common(struct super_block *sb, struct fuse_fs_context *d)
 	fc->group_id = d->group_id;
 	fc->max_read = max_t(unsigned, 4096, d->max_read);
 	fc->destroy = d->destroy;
+	fc->no_control = d->no_control;
+	fc->no_force_umount = d->no_force_umount;
 
 	err = -ENOMEM;
 	root = fuse_get_root_inode(sb, d->rootmode);
