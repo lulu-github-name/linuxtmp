@@ -1083,9 +1083,8 @@ int mlx5_ib_post_recv(struct ib_qp *ibqp, const struct ib_recv_wr *wr,
 int mlx5_ib_read_user_wqe(struct mlx5_ib_qp *qp, int send, int wqe_index,
 			  void *buffer, u32 length,
 			  struct mlx5_ib_qp_base *base);
-struct ib_cq *mlx5_ib_create_cq(struct ib_device *ibdev,
-				const struct ib_cq_init_attr *attr,
-				struct ib_udata *udata);
+int mlx5_ib_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+		      struct ib_udata *udata);
 void mlx5_ib_destroy_cq(struct ib_cq *cq, struct ib_udata *udata);
 int mlx5_ib_poll_cq(struct ib_cq *ibcq, int num_entries, struct ib_wc *wc);
 int mlx5_ib_arm_cq(struct ib_cq *ibcq, enum ib_cq_notify_flags flags);
