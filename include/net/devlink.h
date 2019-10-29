@@ -48,6 +48,10 @@ struct devlink_port_phys_attrs {
 	u32 split_subport_number;
 };
 
+struct devlink_port_pci_pf_attrs {
+	u16 pf;	/* Associated PCI PF for this port. */
+};
+
 struct devlink_port_attrs {
 	u8 set:1,
 	   split:1,
@@ -56,6 +60,7 @@ struct devlink_port_attrs {
 	struct netdev_phys_item_id switch_id;
 	union {
 		struct devlink_port_phys_attrs phys;
+		struct devlink_port_pci_pf_attrs pci_pf;
 	};
 };
 
@@ -598,6 +603,9 @@ void devlink_port_attrs_set(struct devlink_port *devlink_port,
 			    unsigned char switch_id_len);
 int devlink_port_get_phys_port_name(struct devlink_port *devlink_port,
 				    char *name, size_t len);
+void devlink_port_attrs_pci_pf_set(struct devlink_port *devlink_port,
+				   const unsigned char *switch_id,
+				   unsigned char switch_id_len, u16 pf);
 int devlink_sb_register(struct devlink *devlink, unsigned int sb_index,
 			u32 size, u16 ingress_pools_count,
 			u16 egress_pools_count, u16 ingress_tc_count,
