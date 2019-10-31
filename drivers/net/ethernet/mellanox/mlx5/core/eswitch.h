@@ -38,6 +38,7 @@
 #include <net/devlink.h>
 #include <linux/mlx5/device.h>
 #include <linux/mlx5/eswitch.h>
+#include <linux/mlx5/vport.h>
 #include <linux/mlx5/fs.h>
 #include "lib/mpfs.h"
 
@@ -204,6 +205,7 @@ struct mlx5_eswitch {
 	struct mlx5_esw_offload offloads;
 	int                     mode;
 	int                     nvports;
+	u16                     manager_vport;
 };
 
 void esw_offloads_cleanup(struct mlx5_eswitch *esw, int nvports);
@@ -365,6 +367,13 @@ bool mlx5_esw_multipath_prereq(struct mlx5_core_dev *dev0,
 
 #define esw_debug(dev, format, ...)				\
 	mlx5_core_dbg_mask(dev, MLX5_DEBUG_ESWITCH_MASK, format, ##__VA_ARGS__)
+
+/* The returned number is valid only when the dev is eswitch manager. */
+static inline u16 mlx5_eswitch_manager_vport(struct mlx5_core_dev *dev)
+{
+	return mlx5_core_is_ecpf_esw_manager(dev) ?
+		MLX5_VPORT_ECPF : MLX5_VPORT_PF;
+}
 
 /* TODO: This mlx5e_tc function shouldn't be called by eswitch */
 void mlx5e_tc_clean_fdb_peer_flows(struct mlx5_eswitch *esw);
