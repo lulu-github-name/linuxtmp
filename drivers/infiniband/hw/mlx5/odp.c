@@ -582,7 +582,7 @@ static int pagefault_mr(struct mlx5_ib_dev *dev, struct mlx5_ib_mr *mr,
 	bool prefetch = flags & MLX5_PF_FLAGS_PREFETCH;
 	int npages = 0, current_seq, page_shift, ret, np;
 	bool implicit = false;
-	u64 access_mask = ODP_READ_ALLOWED_BIT;
+	u64 access_mask;
 	u64 start_idx, page_mask;
 	struct ib_umem_odp *odp;
 	size_t size;
@@ -604,6 +604,7 @@ next_mr:
 	page_shift = odp->page_shift;
 	page_mask = ~(BIT(page_shift) - 1);
 	start_idx = (io_virt - (mr->mmkey.iova & page_mask)) >> page_shift;
+	access_mask = ODP_READ_ALLOWED_BIT;
 
 	if (prefetch && !downgrade && !mr->umem->writable) {
 		/* prefetch with write-access must
