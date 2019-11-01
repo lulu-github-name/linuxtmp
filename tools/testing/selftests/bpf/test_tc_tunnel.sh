@@ -171,6 +171,18 @@ readonly datalen=$4
 
 echo "encap ${addr1} to ${addr2}, type ${tuntype}, mac ${mac} len ${datalen}"
 
+if [[ "$tuntype" =~ "udp" ]]; then
+	# RHEL 8 does not have FOU enabled, skip the FOU tests
+	echo SKIP
+	exit 0
+fi
+if [[ "$tuntype" == "ip6gre" && "$mac" == "mpls" ]]; then
+	# RHEL 8 does not have upstream commit d8e2262a5044 ("mpls: allow
+	# routes on ip6gre devices"), skip the MPLS over GREv6 test.
+	echo SKIP
+	exit 0
+fi
+
 trap cleanup EXIT
 
 setup
