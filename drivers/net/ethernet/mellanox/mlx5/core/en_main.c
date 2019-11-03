@@ -1792,7 +1792,7 @@ static int mlx5e_open_channel(struct mlx5e_priv *priv, int ix,
 	c->tstamp   = &priv->tstamp;
 	c->ix       = ix;
 	c->cpu      = cpu;
-	c->pdev     = &priv->mdev->pdev->dev;
+	c->pdev     = priv->mdev->device;
 	c->netdev   = priv->netdev;
 	c->mkey_be  = cpu_to_be32(priv->mdev->mlx5e_res.mkey.key);
 	c->num_tc   = params->num_tc;
@@ -2045,7 +2045,7 @@ static void mlx5e_build_rq_param(struct mlx5e_priv *priv,
 	MLX5_SET(rqc, rqc, vsd,            params->vlan_strip_disable);
 	MLX5_SET(rqc, rqc, scatter_fcs,    params->scatter_fcs_en);
 
-	param->wq.buf_numa_node = dev_to_node(&mdev->pdev->dev);
+	param->wq.buf_numa_node = dev_to_node(mdev->device);
 }
 
 static void mlx5e_build_drop_rq_param(struct mlx5e_priv *priv,
@@ -2060,7 +2060,7 @@ static void mlx5e_build_drop_rq_param(struct mlx5e_priv *priv,
 		 mlx5e_get_rqwq_log_stride(MLX5_WQ_TYPE_CYCLIC, 1));
 	MLX5_SET(rqc, rqc, counter_set_id, priv->drop_rq_q_counter);
 
-	param->wq.buf_numa_node = dev_to_node(&mdev->pdev->dev);
+	param->wq.buf_numa_node = dev_to_node(mdev->device);
 }
 
 static void mlx5e_build_sq_param_common(struct mlx5e_priv *priv,
@@ -2072,7 +2072,7 @@ static void mlx5e_build_sq_param_common(struct mlx5e_priv *priv,
 	MLX5_SET(wq, wq, log_wq_stride, ilog2(MLX5_SEND_WQE_BB));
 	MLX5_SET(wq, wq, pd,            priv->mdev->mlx5e_res.pdn);
 
-	param->wq.buf_numa_node = dev_to_node(&priv->mdev->pdev->dev);
+	param->wq.buf_numa_node = dev_to_node(priv->mdev->device);
 }
 
 static void mlx5e_build_sq_param(struct mlx5e_priv *priv,
@@ -2999,8 +2999,8 @@ static int mlx5e_alloc_drop_cq(struct mlx5_core_dev *mdev,
 			       struct mlx5e_cq *cq,
 			       struct mlx5e_cq_param *param)
 {
-	param->wq.buf_numa_node = dev_to_node(&mdev->pdev->dev);
-	param->wq.db_numa_node  = dev_to_node(&mdev->pdev->dev);
+	param->wq.buf_numa_node = dev_to_node(mdev->device);
+	param->wq.db_numa_node  = dev_to_node(mdev->device);
 
 	return mlx5e_alloc_cq_common(mdev, param, cq);
 }
@@ -4586,7 +4586,7 @@ static void mlx5e_build_nic_netdev(struct net_device *netdev)
 	bool fcs_supported;
 	bool fcs_enabled;
 
-	SET_NETDEV_DEV(netdev, &mdev->pdev->dev);
+	SET_NETDEV_DEV(netdev, mdev->device);
 
 	netdev->netdev_ops = &mlx5e_netdev_ops;
 
