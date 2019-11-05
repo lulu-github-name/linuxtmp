@@ -619,6 +619,7 @@ struct xfrm_policy {
 	RH_KABI_EXTEND(u32	if_id)
 	RH_KABI_EXTEND(u32	pos)
 	RH_KABI_EXTEND(struct hlist_node	bydst_inexact_list)
+	RH_KABI_EXTEND(bool	bydst_reinsert)
 };
 
 static inline struct net *xp_net(const struct xfrm_policy *xp)
