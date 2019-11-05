@@ -1372,6 +1372,10 @@ static int init_one(struct pci_dev *pdev, const struct pci_device_id *id)
 	if (err)
 		goto clean_load;
 
+	err = mlx5_crdump_enable(dev);
+	if (err)
+		dev_err(&pdev->dev, "mlx5_crdump_enable failed with error code %d\n", err);
+
 	pci_save_state(pdev);
 	return 0;
 
@@ -1393,6 +1397,7 @@ static void remove_one(struct pci_dev *pdev)
 	struct mlx5_core_dev *dev  = pci_get_drvdata(pdev);
 	struct devlink *devlink = priv_to_devlink(dev);
 
+	mlx5_crdump_disable(dev);
 	mlx5_devlink_unregister(devlink);
 	mlx5_unregister_device(dev);
 
