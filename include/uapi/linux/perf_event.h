@@ -372,9 +372,13 @@ struct perf_event_attr {
 				context_switch :  1, /* context switch data */
 				write_backward :  1, /* Write ring buffer from end to beginning */
 				namespaces     :  1, /* include namespaces data */
+#ifndef __GENKSYMS__
 				ksymbol        :  1, /* include ksymbol events */
 				bpf_event      :  1, /* include bpf events */
 				__reserved_1   : 33;
+#else
+				__reserved_1   : 35;
+#endif /*  __GENKSYMS__ */
 
 	union {
 		__u32		wakeup_events;	  /* wakeup every n events */
@@ -965,6 +969,7 @@ enum perf_event_type {
 	 */
 	PERF_RECORD_NAMESPACES			= 16,
 
+#ifndef __GENKSYMS__
 	/*
 	 * Record ksymbol register/unregister events:
 	 *
@@ -998,6 +1003,7 @@ enum perf_event_type {
 	 * };
 	 */
 	PERF_RECORD_BPF_EVENT			= 18,
+#endif /* __GENKSYMS__ */
 
 	PERF_RECORD_MAX,			/* non-ABI */
 };
