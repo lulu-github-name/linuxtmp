@@ -66,6 +66,7 @@
 #include "lib/vxlan.h"
 #include "lib/geneve.h"
 #include "lib/devcom.h"
+#include "lib/pci_vsc.h"
 #include "diag/fw_tracer.h"
 #include "ecpf.h"
 
@@ -1037,6 +1038,8 @@ static int mlx5_function_setup(struct mlx5_core_dev *dev, bool boot)
 		mlx5_core_err(dev, "query hca failed\n");
 		goto stop_health;
 	}
+
+	mlx5_pci_vsc_init(dev);
 
 	return 0;
 
