@@ -646,6 +646,7 @@ struct mlx5_clock {
 };
 
 struct mlx5_vxlan;
+struct mlx5_geneve;
 
 struct mlx5_fw_tracer;
 
@@ -682,6 +683,7 @@ struct mlx5_core_dev {
 	u32			issi;
 	struct mlx5e_resources  mlx5e_res;
 	struct mlx5_vxlan       *vxlan;
+	struct mlx5_geneve      *geneve;
 	struct {
 		struct mlx5_rsvd_gids	reserved_gids;
 		u32			roce_en;
