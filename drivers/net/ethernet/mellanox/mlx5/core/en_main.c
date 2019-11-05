@@ -40,6 +40,7 @@
 #include <net/page_pool.h>
 #include "eswitch.h"
 #include "en.h"
+#include "en/txrx.h"
 #include "en_tc.h"
 #include "en_rep.h"
 #include "en_accel/ipsec.h"
@@ -56,6 +57,7 @@
 #include "en/monitor_stats.h"
 #include "en/reporter.h"
 #include "en/params.h"
+
 
 bool mlx5e_check_fragmented_striding_rq_cap(struct mlx5_core_dev *mdev)
 {
