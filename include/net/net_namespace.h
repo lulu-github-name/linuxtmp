@@ -172,6 +172,7 @@ struct net {
 	RH_KABI_EXTEND(u32	hash_mix)
 	RH_KABI_EXTEND_WITH_SIZE(struct netns_xdp xdp, 21)
 	RH_KABI_EXTEND(int	sctp_ecn_enable)
+	RH_KABI_EXTEND(struct list_head        xfrm_inexact_bins)
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
