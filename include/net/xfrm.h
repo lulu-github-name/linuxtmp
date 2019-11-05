@@ -617,6 +617,7 @@ struct xfrm_policy {
 	struct xfrm_tmpl       	xfrm_vec[XFRM_MAX_DEPTH];
 	struct rcu_head		rcu;
 	RH_KABI_EXTEND(u32	if_id)
+	RH_KABI_EXTEND(u32	pos)
 	RH_KABI_EXTEND(struct hlist_node	bydst_inexact_list)
 };
 
