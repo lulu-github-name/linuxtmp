@@ -74,14 +74,6 @@ int stack_trace_snprint(char *buf, size_t size, unsigned long *entries,
 }
 EXPORT_SYMBOL_GPL(stack_trace_snprint);
 
-int snprint_stack_trace(char *buf, size_t size,
-			struct stack_trace *trace, int spaces)
-{
-	return stack_trace_snprint(buf, size, trace->entries,
-				   trace->nr_entries, spaces);
-}
-EXPORT_SYMBOL_GPL(snprint_stack_trace);
-
 #ifdef CONFIG_ARCH_STACKWALK
 
 struct stacktrace_cookie {
