@@ -30,6 +30,7 @@
 #include <linux/of.h>
 #include <linux/perf/arm_pmu.h>
 #include <linux/platform_device.h>
+#include <linux/smp.h>
 
 /*
  * ARMv8 PMUv3 Performance Events handling code.
