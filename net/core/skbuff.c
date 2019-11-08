@@ -5852,11 +5852,8 @@ void *skb_ext_add(struct sk_buff *skb, enum skb_ext_id id)
 		if (!new)
 			return NULL;
 
-		if (__skb_ext_exist(new, id)) {
-			if (old != new)
-				skb->extensions = new;
+		if (__skb_ext_exist(new, id))
 			goto set_active;
-		}
 
 		newoff = new->chunks;
 	} else {
@@ -5870,8 +5867,8 @@ void *skb_ext_add(struct sk_buff *skb, enum skb_ext_id id)
 	newlen = newoff + skb_ext_type_len[id];
 	new->chunks = newlen;
 	new->offset[id] = newoff;
-	skb->extensions = new;
 set_active:
+	skb->extensions = new;
 	skb->active_extensions |= 1 << id;
 	return skb_ext_get_ptr(new, id);
 }
