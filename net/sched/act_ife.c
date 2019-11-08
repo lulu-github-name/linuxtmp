@@ -487,6 +487,11 @@ static int tcf_ife_init(struct net *net, struct nlattr *nla,
 	u32 index;
 	int err;
 
+	if (!nla) {
+		NL_SET_ERR_MSG_MOD(extack, "IFE requires attributes to be passed");
+		return -EINVAL;
+	}
+
 	err = nla_parse_nested_deprecated(tb, TCA_IFE_MAX, nla, ife_policy,
 					  NULL);
 	if (err < 0)
