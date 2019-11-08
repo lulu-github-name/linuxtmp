@@ -234,6 +234,7 @@ ACPI SUBSYSTEM
 M:	Al Stone <ahs3@redhat.com>
 M:	Lenny Szubowicz <lszubowi@redhat.com>
 M:	Prarit Bhargava <prarit@redhat.com>
+M:	David Arcari <darcari@redhat.com>
 S:	Maintained
 F:	drivers/acpi/
 F:	drivers/pnp/pnpacpi/
@@ -435,17 +436,25 @@ CPU FREQUENCY DRIVERS
 M:	Al Stone <ahs3@redhat.com>
 M:	Lenny Szubowicz <lszubowi@redhat.com>
 M:	Prarit Bhargava <prarit@redhat.com>
+M:	David Arcari <darcari@redhat.com>
 S:	Maintained
 F:	drivers/cpufreq/
 F:	arch/x86/kernel/cpu/cpufreq/
 
+CPU IDLE DRIVERS
+M:	Al Stone <ahs3@redhat.com>
+M:	Prarit Bhargava <prarit@redhat.com>
+M:	David Arcari <darcari@redhat.com>
+S:	Maintained
+F:	drivers/cpuidle/
+
 CXGB3 ETHERNET DRIVER (cxgb3)
-M:	Venkatesh Pottem <vpottem@redhat.com>
+M:	Vishal Kulkarni <viskulka@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/chelsio/cxgb3/
 
 CXGB4 ETHERNET DRIVER (cxgb4)
-M:	Venkatesh Pottem <vpottem@redhat.com>
+M:	Vishal Kulkarni <viskulka@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/chelsio/cxgb4/
 
@@ -1330,6 +1339,7 @@ F:	include/uapi/linux/tipc_config.h
 F:	include/uapi/linux/tipc_socket_diag.h
 
 X86 ARCHITECTURE
+M:	David Arcari <darcari@redhat.com>
 M:	Prarit Bhargava <prarit@redhat.com>
 S:	Maintained
 F:	arch/x86/
@@ -1511,8 +1521,7 @@ S:	Maintained
 F:	mm/zswap.c
 
 ZRAM COMPRESSED RAM BLOCK DEVICE DRVIER
-M:	Seth Jennings <sjenning@redhat.com>
 M:	Jerome Marchand <jmarchan@redhat.com>
 S:	Maintained
-F:	drivers/staging/zram/
+F:	drivers/block/zram/
 F:	Documentation/ABI/testing/sysfs-block-zram
