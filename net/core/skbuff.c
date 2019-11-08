@@ -3950,11 +3950,17 @@ EXPORT_SYMBOL_GPL(skb_gro_receive);
 #define SKB_EXT_CHUNKSIZEOF(x)	(ALIGN((sizeof(x)), SKB_EXT_ALIGN_VALUE) / SKB_EXT_ALIGN_VALUE)
 
 static const u8 skb_ext_type_len[] = {
+#if IS_ENABLED(CONFIG_NET_TC_SKB_EXT)
+	[TC_SKB_EXT] = SKB_EXT_CHUNKSIZEOF(struct tc_skb_ext),
+#endif
 };
 
 static __always_inline unsigned int skb_ext_total_length(void)
 {
 	return SKB_EXT_CHUNKSIZEOF(struct skb_ext) +
+#if IS_ENABLED(CONFIG_NET_TC_SKB_EXT)
+		skb_ext_type_len[TC_SKB_EXT] +
+#endif
 		0;
 }
 
