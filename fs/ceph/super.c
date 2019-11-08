@@ -717,6 +717,7 @@ static void destroy_fs_client(struct ceph_fs_client *fsc)
 {
 	dout("destroy_fs_client %p\n", fsc);
 
+	ceph_mdsc_destroy(fsc);
 	destroy_workqueue(fsc->inode_wq);
 	destroy_workqueue(fsc->cap_wq);
 
@@ -1090,7 +1091,6 @@ static struct dentry *ceph_mount(struct file_system_type *fs_type,
 	}
 
 	if (ceph_sb_to_client(sb) != fsc) {
-		ceph_mdsc_destroy(fsc);
 		destroy_fs_client(fsc);
 		fsc = ceph_sb_to_client(sb);
 		dout("get_sb got existing client %p\n", fsc);
@@ -1116,7 +1116,6 @@ out_splat:
 	goto out_final;
 
 out:
-	ceph_mdsc_destroy(fsc);
 	destroy_fs_client(fsc);
 out_final:
 	dout("ceph_mount fail %ld\n", PTR_ERR(res));
@@ -1139,8 +1138,6 @@ static void ceph_kill_sb(struct super_block *s)
 	ceph_fs_debugfs_cleanup(fsc);
 
 	ceph_fscache_unregister_fs(fsc);
-
-	ceph_mdsc_destroy(fsc);
 
 	destroy_fs_client(fsc);
 	free_anon_bdev(dev);
