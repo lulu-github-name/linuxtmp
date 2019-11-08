@@ -9,6 +9,7 @@
 #include <linux/namei.h>
 #include <linux/writeback.h>
 #include <linux/falloc.h>
+#include <linux/iversion.h>
 
 #include "super.h"
 #include "mds_client.h"
@@ -1434,6 +1435,8 @@ retry_snap:
 	err = file_update_time(file);
 	if (err)
 		goto out;
+
+	inode_inc_iversion_raw(inode);
 
 	if (ci->i_inline_version != CEPH_INLINE_NONE) {
 		err = ceph_uninline_data(file, NULL);
