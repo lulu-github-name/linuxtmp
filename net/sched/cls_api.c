@@ -1423,6 +1423,8 @@ static int tcf_block_bind(struct tcf_block *block,
 						  bo->extack);
 		if (err)
 			goto err_unroll;
+		if (!bo->unlocked_driver_cb)
+			block->lockeddevcnt++;
 
 		i++;
 	}
@@ -1438,6 +1440,8 @@ err_unroll:
 						    block_cb->cb_priv, false,
 						    tcf_block_offload_in_use(block),
 						    NULL);
+			if (!bo->unlocked_driver_cb)
+				block->lockeddevcnt--;
 		}
 		flow_block_cb_free(block_cb);
 	}
@@ -1459,6 +1463,8 @@ static void tcf_block_unbind(struct tcf_block *block,
 					    NULL);
 		list_del(&block_cb->list);
 		flow_block_cb_free(block_cb);
+		if (!bo->unlocked_driver_cb)
+			block->lockeddevcnt--;
 	}
 }
 
