@@ -1064,14 +1064,15 @@ out:
 
 static int devlink_sb_pool_set(struct devlink *devlink, unsigned int sb_index,
 			       u16 pool_index, u32 size,
-			       enum devlink_sb_threshold_type threshold_type)
+			       enum devlink_sb_threshold_type threshold_type,
+			       struct netlink_ext_ack *extack)
 
 {
 	const struct devlink_ops *ops = devlink->ops;
 
 	if (ops->sb_pool_set)
 		return ops->sb_pool_set(devlink, sb_index, pool_index,
-					size, threshold_type);
+					size, threshold_type, extack);
 	return -EOPNOTSUPP;
 }
 
@@ -1099,7 +1100,8 @@ static int devlink_nl_cmd_sb_pool_set_doit(struct sk_buff *skb,
 
 	size = nla_get_u32(info->attrs[DEVLINK_ATTR_SB_POOL_SIZE]);
 	return devlink_sb_pool_set(devlink, devlink_sb->index,
-				   pool_index, size, threshold_type);
+				   pool_index, size, threshold_type,
+				   info->extack);
 }
 
 static int devlink_nl_sb_port_pool_fill(struct sk_buff *msg,
@@ -1260,14 +1262,15 @@ out:
 
 static int devlink_sb_port_pool_set(struct devlink_port *devlink_port,
 				    unsigned int sb_index, u16 pool_index,
-				    u32 threshold)
+				    u32 threshold,
+				    struct netlink_ext_ack *extack)
 
 {
 	const struct devlink_ops *ops = devlink_port->devlink->ops;
 
 	if (ops->sb_port_pool_set)
 		return ops->sb_port_pool_set(devlink_port, sb_index,
-					     pool_index, threshold);
+					     pool_index, threshold, extack);
 	return -EOPNOTSUPP;
 }
 
@@ -1290,7 +1293,7 @@ static int devlink_nl_cmd_sb_port_pool_set_doit(struct sk_buff *skb,
 
 	threshold = nla_get_u32(info->attrs[DEVLINK_ATTR_SB_THRESHOLD]);
 	return devlink_sb_port_pool_set(devlink_port, devlink_sb->index,
-					pool_index, threshold);
+					pool_index, threshold, info->extack);
 }
 
 static int
@@ -1489,7 +1492,8 @@ out:
 static int devlink_sb_tc_pool_bind_set(struct devlink_port *devlink_port,
 				       unsigned int sb_index, u16 tc_index,
 				       enum devlink_sb_pool_type pool_type,
-				       u16 pool_index, u32 threshold)
+				       u16 pool_index, u32 threshold,
+				       struct netlink_ext_ack *extack)
 
 {
 	const struct devlink_ops *ops = devlink_port->devlink->ops;
@@ -1497,7 +1501,7 @@ static int devlink_sb_tc_pool_bind_set(struct devlink_port *devlink_port,
 	if (ops->sb_tc_pool_bind_set)
 		return ops->sb_tc_pool_bind_set(devlink_port, sb_index,
 						tc_index, pool_type,
-						pool_index, threshold);
+						pool_index, threshold, extack);
 	return -EOPNOTSUPP;
 }
 
@@ -1532,7 +1536,7 @@ static int devlink_nl_cmd_sb_tc_pool_bind_set_doit(struct sk_buff *skb,
 	threshold = nla_get_u32(info->attrs[DEVLINK_ATTR_SB_THRESHOLD]);
 	return devlink_sb_tc_pool_bind_set(devlink_port, devlink_sb->index,
 					   tc_index, pool_type,
-					   pool_index, threshold);
+					   pool_index, threshold, info->extack);
 }
 
 static int devlink_nl_cmd_sb_occ_snapshot_doit(struct sk_buff *skb,
