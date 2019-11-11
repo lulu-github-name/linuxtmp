@@ -91,6 +91,7 @@ static bool test_intel(int idx)
 	case INTEL_FAM6_KABYLAKE:
 	case INTEL_FAM6_COMETLAKE_L:
 	case INTEL_FAM6_COMETLAKE:
+	case INTEL_FAM6_ICELAKE_L:
 		if (idx == PERF_MSR_SMI || idx == PERF_MSR_PPERF)
 			return true;
 		break;
