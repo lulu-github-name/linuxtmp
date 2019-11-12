@@ -298,8 +298,6 @@ struct tls_context {
 
 	struct list_head list;
 	refcount_t refcount;
-
-	struct work_struct gc;
 };
 
 enum tls_offload_sync_type {
