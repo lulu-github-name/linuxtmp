@@ -139,7 +139,6 @@ int __ref arch_add_memory(int nid, u64 start, u64 size,
 	return __add_pages(nid, start_pfn, nr_pages, restrictions);
 }
 
-#ifdef CONFIG_MEMORY_HOTREMOVE
 void __ref arch_remove_memory(int nid, u64 start, u64 size,
 			     struct vmem_altmap *altmap)
 {
@@ -173,7 +172,6 @@ void __ref arch_remove_memory(int nid, u64 start, u64 size,
 		pr_warn("Hash collision while resizing HPT\n");
 }
 #endif
-#endif /* CONFIG_MEMORY_HOTPLUG */
 
 /*
  * walk_memory_resource() needs to make sure there is no holes in a given
