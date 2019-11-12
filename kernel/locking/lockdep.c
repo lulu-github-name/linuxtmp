@@ -4271,7 +4271,7 @@ out_restore:
 	raw_local_irq_restore(flags);
 }
 
-void __init lockdep_info(void)
+void __init lockdep_init(void)
 {
 	printk("Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar\n");
 
