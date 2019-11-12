@@ -64,6 +64,7 @@
 #define TLS_DEVICE_NAME_MAX		32
 
 #define MAX_IV_SIZE			16
+#define TLS_MAX_REC_SEQ_SIZE		8
 
 /* For AES-CCM, the full 16-bytes of IV is made of '4' fields of given sizes.
  *
@@ -584,6 +585,6 @@ int tls_sw_fallback_init(struct sock *sk,
 int tls_set_device_offload_rx(struct sock *sk, struct tls_context *ctx);
 
 void tls_device_offload_cleanup_rx(struct sock *sk);
-void handle_device_resync(struct sock *sk, u32 seq, u64 rcd_sn);
+void handle_device_resync(struct sock *sk, u32 seq);
 
 #endif /* _TLS_OFFLOAD_H */

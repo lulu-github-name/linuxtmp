@@ -968,7 +968,7 @@ struct tlsdev_ops {
 
 	RH_KABI_USE(1, void (*tls_dev_resync_rx)(struct net_device *netdev,
 						 struct sock *sk, u32 seq,
-						 u64 rcd_sn))
+						 u8 *rcd_sn))
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
