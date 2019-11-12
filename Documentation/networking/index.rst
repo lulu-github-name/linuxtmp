@@ -18,6 +18,7 @@ Contents:
    z8530book
    msg_zerocopy
    tls
+   tls-offload
 
 .. only::  subproject
 
