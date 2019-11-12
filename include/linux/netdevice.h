@@ -966,10 +966,10 @@ struct tlsdev_ops {
 			    struct tls_context *ctx,
 			    enum tls_offload_ctx_dir direction);
 
-	RH_KABI_USE(1, void (*tls_dev_resync)(struct net_device *netdev,
-					      struct sock *sk, u32 seq,
-					      u8 *rcd_sn,
-					      enum tls_offload_ctx_dir direction))
+	RH_KABI_USE(1, int (*tls_dev_resync)(struct net_device *netdev,
+					     struct sock *sk, u32 seq,
+					     u8 *rcd_sn,
+					     enum tls_offload_ctx_dir direction))
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
