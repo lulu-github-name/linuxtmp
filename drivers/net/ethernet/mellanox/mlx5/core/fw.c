@@ -616,7 +616,8 @@ static const struct mlxfw_dev_ops mlx5_mlxfw_dev_ops = {
 };
 
 int mlx5_firmware_flash(struct mlx5_core_dev *dev,
-			const struct firmware *firmware)
+			const struct firmware *firmware,
+			struct netlink_ext_ack *extack)
 {
 	struct mlx5_mlxfw_dev mlx5_mlxfw_dev = {
 		.mlxfw_dev = {
@@ -635,7 +636,8 @@ int mlx5_firmware_flash(struct mlx5_core_dev *dev,
 		return -EOPNOTSUPP;
 	}
 
-	return mlxfw_firmware_flash(&mlx5_mlxfw_dev.mlxfw_dev, firmware);
+	return mlxfw_firmware_flash(&mlx5_mlxfw_dev.mlxfw_dev,
+				    firmware, extack);
 }
 
 static int mlx5_reg_mcqi_version_query(struct mlx5_core_dev *dev,
