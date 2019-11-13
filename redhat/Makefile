@@ -129,7 +129,7 @@ rh-kabi-dw-check: rh-kabi
 	@rm -rf $(KABIDW)/base/$(CURARCH).tmp
 
 rh-configs: rh-configs-prep
-	@cd $(REDHAT)/configs; VERSION=$(KVERSION) ./generate_all_configs.sh; \
+	@cd $(REDHAT)/configs; VERSION=$(KVERSION) NAME=$(PACKAGE_NAME) ./generate_all_configs.sh; \
 	./process_configs.sh -w -c $(PACKAGE_NAME) $(KVERSION)
 
 rh-configs-check: rh-configs-prep
@@ -199,7 +199,7 @@ setup-source: rh-git-version-check rh-clean-sources
 		cp $(REDHAT)/$(CHANGELOG_PREV) $(REDHAT)/$(CHANGELOG); \
 	fi
 	@cp $(REDHAT)/$(CHANGELOG) $(SOURCES)/$(CHANGELOG)
-	@$(REDHAT)/genspec.sh $(SOURCES) $(SOURCES)/$(SPECFILE) $(SOURCES)/$(CHANGELOG) $(PKGRELEASE) $(RPMKVERSION) $(RPMKPATCHLEVEL) $(RPMKSUBLEVEL) $(DISTRO_BUILD) $(RELEASED_KERNEL) $(SPECRELEASE) $(__ZSTREAM) "$(BUILDOPTS)" $(MARKER)
+	@$(REDHAT)/genspec.sh $(SOURCES) $(SOURCES)/$(SPECFILE) $(SOURCES)/$(CHANGELOG) $(PKGRELEASE) $(RPMKVERSION) $(RPMKPATCHLEVEL) $(RPMKSUBLEVEL) $(DISTRO_BUILD) $(RELEASED_KERNEL) $(SPECRELEASE) $(__ZSTREAM) "$(BUILDOPTS)" $(PACKAGE_NAME) $(MARKER)
 	@cp $(SOURCES)/$(SPECFILE) $(SOURCES)/../SPECS/
 
 sources-rh: $(TARBALL)
@@ -229,6 +229,7 @@ sources-rh: $(TARBALL)
 	    mod-extra.list			\
 	    mod-blacklist.sh			\
 	    mod-internal.list			\
+	    mod-kvm.list			\
 	    mod-sign.sh				\
 	    configs/generate_all_configs.sh	\
 	    configs/process_configs.sh		\

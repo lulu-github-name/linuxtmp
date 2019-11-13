@@ -12,7 +12,8 @@ RELEASED_KERNEL=$9
 SPECRELEASE=${10}
 ZSTREAM_FLAG=${11}
 BUILDOPTS=${12}
-MARKER=${13}
+PACKAGE_NAME=${13}
+MARKER=${14}
 RPMVERSION=${KVERSION}.${KPATCHLEVEL}.${KSUBLEVEL}
 clogf="$SOURCES/changelog"
 # hide [redhat] entries from changelog
@@ -26,7 +27,7 @@ RPM_VERSION="$RPMVERSION-$PKGRELEASE";
 
 echo >$clogf
 
-lasttag=$(git rev-list --first-parent --grep="^\[redhat\] kernel-${RPMVERSION}" --max-count=1 HEAD)
+lasttag=$(git rev-list --first-parent --grep="^\[redhat\] ${PACKAGE_NAME}-${RPMVERSION}" --max-count=1 HEAD)
 # if we didn't find the proper tag, assume this is the first release
 if [ -z "$lasttag" ]; then
 	lasttag=$(git describe --match="$MARKER" --abbrev=0)
@@ -188,6 +189,7 @@ test -n "$SPECFILE" &&
         sed -i -e "
 	/%%CHANGELOG%%/r $CHANGELOG
 	/%%CHANGELOG%%/d
+	s/%%PACKAGE_NAME%%/$PACKAGE_NAME/
 	s/%%KVERSION%%/$KVERSION/
 	s/%%KPATCHLEVEL%%/$KPATCHLEVEL/
 	s/%%KSUBLEVEL%%/$KSUBLEVEL/
