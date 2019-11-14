@@ -446,8 +446,8 @@ static int parse_sched_entry(struct nlattr *n, struct sched_entry *entry,
 	struct nlattr *tb[TCA_TAPRIO_SCHED_ENTRY_MAX + 1] = { };
 	int err;
 
-	err = nla_parse_nested(tb, TCA_TAPRIO_SCHED_ENTRY_MAX, n,
-			       entry_policy, NULL);
+	err = nla_parse_nested_deprecated(tb, TCA_TAPRIO_SCHED_ENTRY_MAX, n,
+					  entry_policy, NULL);
 	if (err < 0) {
 		NL_SET_ERR_MSG(extack, "Could not parse nested entry");
 		return -EINVAL;
@@ -719,8 +719,8 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
 	unsigned long flags;
 	ktime_t start;
 
-	err = nla_parse_nested(tb, TCA_TAPRIO_ATTR_MAX, opt,
-			       taprio_policy, extack);
+	err = nla_parse_nested_deprecated(tb, TCA_TAPRIO_ATTR_MAX, opt,
+					  taprio_policy, extack);
 	if (err < 0)
 		return err;
 

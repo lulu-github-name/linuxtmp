@@ -961,7 +961,7 @@ static int ctnetlink_parse_tuple_ip(struct nlattr *attr,
 	struct nf_conntrack_l3proto *l3proto;
 	int ret = 0;
 
-	ret = nla_parse_nested(tb, CTA_IP_MAX, attr, NULL, NULL);
+	ret = nla_parse_nested_deprecated(tb, CTA_IP_MAX, attr, NULL, NULL);
 	if (ret < 0)
 		return ret;
 
@@ -969,8 +969,9 @@ static int ctnetlink_parse_tuple_ip(struct nlattr *attr,
 	l3proto = __nf_ct_l3proto_find(tuple->src.l3num);
 
 	if (likely(l3proto->nlattr_to_tuple)) {
-		ret = nla_validate_nested(attr, CTA_IP_MAX,
-					  l3proto->nla_policy, NULL);
+		ret = nla_validate_nested_deprecated(attr, CTA_IP_MAX,
+						     l3proto->nla_policy,
+						     NULL);
 		if (ret == 0)
 			ret = l3proto->nlattr_to_tuple(tb, tuple);
 	}
@@ -991,8 +992,8 @@ static int ctnetlink_parse_tuple_proto(struct nlattr *attr,
 	struct nlattr *tb[CTA_PROTO_MAX+1];
 	int ret = 0;
 
-	ret = nla_parse_nested(tb, CTA_PROTO_MAX, attr, proto_nla_policy,
-			       NULL);
+	ret = nla_parse_nested_deprecated(tb, CTA_PROTO_MAX, attr,
+					  proto_nla_policy, NULL);
 	if (ret < 0)
 		return ret;
 
@@ -1004,8 +1005,9 @@ static int ctnetlink_parse_tuple_proto(struct nlattr *attr,
 	l4proto = __nf_ct_l4proto_find(tuple->src.l3num, tuple->dst.protonum);
 
 	if (likely(l4proto->nlattr_to_tuple)) {
-		ret = nla_validate_nested(attr, CTA_PROTO_MAX,
-					  l4proto->nla_policy, NULL);
+		ret = nla_validate_nested_deprecated(attr, CTA_PROTO_MAX,
+						     l4proto->nla_policy,
+						     NULL);
 		if (ret == 0)
 			ret = l4proto->nlattr_to_tuple(tb, tuple);
 	}
@@ -1068,8 +1070,8 @@ ctnetlink_parse_tuple(const struct nlattr * const cda[],
 
 	memset(tuple, 0, sizeof(*tuple));
 
-	err = nla_parse_nested(tb, CTA_TUPLE_MAX, cda[type], tuple_nla_policy,
-			       NULL);
+	err = nla_parse_nested_deprecated(tb, CTA_TUPLE_MAX, cda[type],
+					  tuple_nla_policy, NULL);
 	if (err < 0)
 		return err;
 
@@ -1119,7 +1121,8 @@ static int ctnetlink_parse_help(const struct nlattr *attr, char **helper_name,
 	int err;
 	struct nlattr *tb[CTA_HELP_MAX+1];
 
-	err = nla_parse_nested(tb, CTA_HELP_MAX, attr, help_nla_policy, NULL);
+	err = nla_parse_nested_deprecated(tb, CTA_HELP_MAX, attr,
+					  help_nla_policy, NULL);
 	if (err < 0)
 		return err;
 
@@ -1644,8 +1647,8 @@ static int ctnetlink_change_protoinfo(struct nf_conn *ct,
 	struct nlattr *tb[CTA_PROTOINFO_MAX+1];
 	int err = 0;
 
-	err = nla_parse_nested(tb, CTA_PROTOINFO_MAX, attr, protoinfo_policy,
-			       NULL);
+	err = nla_parse_nested_deprecated(tb, CTA_PROTOINFO_MAX, attr,
+					  protoinfo_policy, NULL);
 	if (err < 0)
 		return err;
 
@@ -1670,7 +1673,8 @@ static int change_seq_adj(struct nf_ct_seqadj *seq,
 	int err;
 	struct nlattr *cda[CTA_SEQADJ_MAX+1];
 
-	err = nla_parse_nested(cda, CTA_SEQADJ_MAX, attr, seqadj_policy, NULL);
+	err = nla_parse_nested_deprecated(cda, CTA_SEQADJ_MAX, attr,
+					  seqadj_policy, NULL);
 	if (err < 0)
 		return err;
 
@@ -1747,8 +1751,9 @@ static int ctnetlink_change_synproxy(struct nf_conn *ct,
 	if (!synproxy)
 		return 0;
 
-	err = nla_parse_nested(tb, CTA_SYNPROXY_MAX, cda[CTA_SYNPROXY],
-			       synproxy_policy, NULL);
+	err = nla_parse_nested_deprecated(tb, CTA_SYNPROXY_MAX,
+					  cda[CTA_SYNPROXY], synproxy_policy,
+					  NULL);
 	if (err < 0)
 		return err;
 
@@ -2485,7 +2490,8 @@ ctnetlink_glue_parse(const struct nlattr *attr, struct nf_conn *ct)
 	struct nlattr *cda[CTA_MAX+1];
 	int ret;
 
-	ret = nla_parse_nested(cda, CTA_MAX, attr, ct_nla_policy, NULL);
+	ret = nla_parse_nested_deprecated(cda, CTA_MAX, attr, ct_nla_policy,
+					  NULL);
 	if (ret < 0)
 		return ret;
 
@@ -2518,8 +2524,8 @@ ctnetlink_glue_attach_expect(const struct nlattr *attr, struct nf_conn *ct,
 	struct nf_conntrack_expect *exp;
 	int err;
 
-	err = nla_parse_nested(cda, CTA_EXPECT_MAX, attr, exp_nla_policy,
-			       NULL);
+	err = nla_parse_nested_deprecated(cda, CTA_EXPECT_MAX, attr,
+					  exp_nla_policy, NULL);
 	if (err < 0)
 		return err;
 
@@ -3144,8 +3150,8 @@ ctnetlink_parse_expect_nat(const struct nlattr *attr,
 	struct nf_conntrack_tuple nat_tuple = {};
 	int err;
 
-	err = nla_parse_nested(tb, CTA_EXPECT_NAT_MAX, attr,
-			       exp_nat_nla_policy, NULL);
+	err = nla_parse_nested_deprecated(tb, CTA_EXPECT_NAT_MAX, attr,
+					  exp_nat_nla_policy, NULL);
 	if (err < 0)
 		return err;
 
