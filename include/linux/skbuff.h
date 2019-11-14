@@ -329,26 +329,49 @@ struct skb_frag_struct {
 #endif
 };
 
+/**
+ * skb_frag_size - Returns the size of a skb fragment
+ * @frag: skb fragment
+ */
 static inline unsigned int skb_frag_size(const skb_frag_t *frag)
 {
 	return frag->size;
 }
 
+/**
+ * skb_frag_size_set - Sets the size of a skb fragment
+ * @frag: skb fragment
+ * @size: size of fragment
+ */
 static inline void skb_frag_size_set(skb_frag_t *frag, unsigned int size)
 {
 	frag->size = size;
 }
 
+/**
+ * skb_frag_size_add - Incrementes the size of a skb fragment by %delta
+ * @frag: skb fragment
+ * @delta: value to add
+ */
 static inline void skb_frag_size_add(skb_frag_t *frag, int delta)
 {
 	frag->size += delta;
 }
 
+/**
+ * skb_frag_size_sub - Decrements the size of a skb fragment by %delta
+ * @frag: skb fragment
+ * @delta: value to subtract
+ */
 static inline void skb_frag_size_sub(skb_frag_t *frag, int delta)
 {
 	frag->size -= delta;
 }
 
+/**
+ * skb_frag_must_loop - Test if %p is a high memory page
+ * @p: fragment's page
+ */
 static inline bool skb_frag_must_loop(struct page *p)
 {
 #if defined(CONFIG_HIGHMEM)
@@ -593,7 +616,7 @@ typedef unsigned char *sk_buff_data_t;
 
 #define RH_KABI_SKBUFF_RESERVED	16
 
-/** 
+/**
  *	struct sk_buff - socket buffer
  *	@next: Next buffer in list
  *	@prev: Previous buffer in list
@@ -649,7 +672,7 @@ typedef unsigned char *sk_buff_data_t;
  *	@csum_not_inet: use CRC32c to resolve CHECKSUM_PARTIAL
  *	@dst_pending_confirm: need to confirm neighbour
  *	@decrypted: Decrypted SKB
-  *	@napi_id: id of the NAPI struct this skb came from
+ *	@napi_id: id of the NAPI struct this skb came from
  *	@secmark: security marking
  *	@mark: Generic packet mark
  *	@vlan_proto: vlan encapsulation protocol
@@ -907,7 +930,10 @@ struct sk_buff {
 #define SKB_ALLOC_RX		0x02
 #define SKB_ALLOC_NAPI		0x04
 
-/* Returns true if the skb was allocated from PFMEMALLOC reserves */
+/**
+ * skb_pfmemalloc - Test if the skb was allocated from PFMEMALLOC reserves
+ * @skb: buffer
+ */
 static inline bool skb_pfmemalloc(const struct sk_buff *skb)
 {
 	return unlikely(skb->pfmemalloc);
@@ -929,7 +955,7 @@ static inline bool skb_pfmemalloc(const struct sk_buff *skb)
  */
 static inline struct dst_entry *skb_dst(const struct sk_buff *skb)
 {
-	/* If refdst was not refcounted, check we still are in a 
+	/* If refdst was not refcounted, check we still are in a
 	 * rcu_read_lock section
 	 */
 	WARN_ON((skb->_skb_refdst & SKB_DST_NOREF) &&
@@ -976,6 +1002,10 @@ static inline bool skb_dst_is_noref(const struct sk_buff *skb)
 	return (skb->_skb_refdst & SKB_DST_NOREF) && skb_dst(skb);
 }
 
+/**
+ * skb_rtable - Returns the skb &rtable
+ * @skb: buffer
+ */
 static inline struct rtable *skb_rtable(const struct sk_buff *skb)
 {
 	return (struct rtable *)skb_dst(skb);
@@ -990,6 +1020,10 @@ static inline bool skb_pkt_type_ok(u32 ptype)
 	return ptype <= PACKET_OTHERHOST;
 }
 
+/**
+ * skb_napi_id - Returns the skb's NAPI id
+ * @skb: buffer
+ */
 static inline unsigned int skb_napi_id(const struct sk_buff *skb)
 {
 #ifdef CONFIG_NET_RX_BUSY_POLL
@@ -999,7 +1033,12 @@ static inline unsigned int skb_napi_id(const struct sk_buff *skb)
 #endif
 }
 
-/* decrement the reference count and return true if we can free the skb */
+/**
+ * skb_unref - decrement the skb's reference count
+ * @skb: buffer
+ *
+ * Returns true if we can free the skb.
+ */
 static inline bool skb_unref(struct sk_buff *skb)
 {
 	if (unlikely(!skb))
@@ -1029,6 +1068,14 @@ struct sk_buff *__alloc_skb(unsigned int size, gfp_t priority, int flags,
 			    int node);
 struct sk_buff *__build_skb(void *data, unsigned int frag_size);
 struct sk_buff *build_skb(void *data, unsigned int frag_size);
+
+/**
+ * alloc_skb - allocate a network buffer
+ * @size: size to allocate
+ * @priority: allocation mask
+ *
+ * This function is a convenient wrapper around __alloc_skb().
+ */
 static inline struct sk_buff *alloc_skb(unsigned int size,
 					gfp_t priority)
 {
@@ -1071,6 +1118,13 @@ static inline bool skb_fclone_busy(const struct sock *sk,
 	       fclones->skb2.sk == sk;
 }
 
+/**
+ * alloc_skb_fclone - allocate a network buffer from fclone cache
+ * @size: size to allocate
+ * @priority: allocation mask
+ *
+ * This function is a convenient wrapper around __alloc_skb().
+ */
 static inline struct sk_buff *alloc_skb_fclone(unsigned int size,
 					       gfp_t priority)
 {
