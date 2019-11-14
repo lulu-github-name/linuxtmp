@@ -14,6 +14,7 @@
 #include <linux/percpu.h>
 #include <linux/list.h>
 #include <linux/hrtimer.h>
+#include <linux/rh_kabi.h>
 
 #define CPUIDLE_STATE_MAX	10
 #define CPUIDLE_NAME_LEN	16
@@ -97,6 +98,7 @@ struct cpuidle_device {
 	struct cpuidle_coupled	*coupled;
 #endif
 	RH_KABI_EXTEND(u64			poll_limit_ns)
+	RH_KABI_EXTEND(ktime_t			next_hrtimer)
 };
 
 DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
