@@ -1096,6 +1096,13 @@ static const struct dmi_system_id elantech_dmi_has_middle_button[] = {
 			DMI_MATCH(DMI_PRODUCT_NAME, "CELSIUS H760"),
 		},
 	},
+	{
+		/* Fujitsu H780 also has a middle button */
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU"),
+			DMI_MATCH(DMI_PRODUCT_NAME, "CELSIUS H780"),
+		},
+	},
 #endif
 	{ }
 };
