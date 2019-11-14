@@ -1503,7 +1503,12 @@ struct net_device_ops {
 	RH_KABI_USE(1, int	(*ndo_get_port_parent_id)(struct net_device *dev,
 							  struct netdev_phys_item_id *ppid))
 	RH_KABI_USE(2, struct devlink_port *(*ndo_get_devlink_port)(struct net_device *dev))
-	RH_KABI_RESERVE(3)
+	RH_KABI_USE(3, int	(*ndo_fdb_get)(struct sk_buff *skb,
+					       struct nlattr *tb[],
+					       struct net_device *dev,
+					       const unsigned char *addr,
+					       u16 vid, u32 portid, u32 seq,
+					       struct netlink_ext_ack *extack))
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
