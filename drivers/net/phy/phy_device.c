@@ -36,8 +36,6 @@
 #include <linux/io.h>
 #include <linux/uaccess.h>
 
-#include <asm/irq.h>
-
 MODULE_DESCRIPTION("PHY library");
 MODULE_AUTHOR("Andy Fleming");
 MODULE_LICENSE("GPL");
