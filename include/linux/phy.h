@@ -75,9 +75,8 @@ extern const int phy_10gbit_features_array[1];
 #define PHY_POLL		-1
 #define PHY_IGNORE_INTERRUPT	-2
 
-#define PHY_HAS_INTERRUPT	0x00000001
-#define PHY_IS_INTERNAL		0x00000002
-#define PHY_RST_AFTER_CLK_EN	0x00000004
+#define PHY_IS_INTERNAL		0x00000001
+#define PHY_RST_AFTER_CLK_EN	0x00000002
 #define MDIO_DEVICE_IS_PHY	0x80000000
 
 /* Interface Mode definitions */
