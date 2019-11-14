@@ -1739,6 +1739,14 @@ int genphy_read_status(struct phy_device *phydev)
 			if (adv < 0)
 				return adv;
 
+			if (lpagb & LPA_1000MSFAIL) {
+				if (adv & CTL1000_ENABLE_MASTER)
+					phydev_err(phydev, "Master/Slave resolution failed, maybe conflicting manual settings?\n");
+				else
+					phydev_err(phydev, "Master/Slave resolution failed\n");
+				return -ENOLINK;
+			}
+
 			mii_stat1000_mod_linkmode_lpa_t(phydev->lp_advertising,
 							lpagb);
 			common_adv_gb = lpagb & adv << 2;
