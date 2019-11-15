@@ -385,10 +385,9 @@ nouveau_dmem_pages_alloc(struct nouveau_drm *drm,
 			ret = nouveau_dmem_chunk_alloc(drm);
 			if (ret) {
 				if (c)
-					return 0;
+					break;
 				return ret;
 			}
-			mutex_lock(&drm->dmem->mutex);
 			continue;
 		}
 

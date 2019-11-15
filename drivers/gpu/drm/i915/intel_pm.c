@@ -35,6 +35,9 @@
 
 #include "i915_drv.h"
 #include "intel_drv.h"
+#include "intel_fbc.h"
+#include "intel_pm.h"
+#include "intel_sprite.h"
 #include "../../../platform/x86/intel_ips.h"
 
 /**
@@ -338,12 +341,12 @@ static void chv_set_memory_pm5(struct drm_i915_private *dev_priv, bool enable)
 
 	mutex_lock(&dev_priv->pcu_lock);
 
-	val = vlv_punit_read(dev_priv, PUNIT_REG_DSPFREQ);
+	val = vlv_punit_read(dev_priv, PUNIT_REG_DSPSSPM);
 	if (enable)
 		val |= DSP_MAXFIFO_PM5_ENABLE;
 	else
 		val &= ~DSP_MAXFIFO_PM5_ENABLE;
-	vlv_punit_write(dev_priv, PUNIT_REG_DSPFREQ, val);
+	vlv_punit_write(dev_priv, PUNIT_REG_DSPSSPM, val);
 
 	mutex_unlock(&dev_priv->pcu_lock);
 }
@@ -2817,7 +2820,7 @@ static void intel_read_wm_latency(struct drm_i915_private *dev_priv,
 		mutex_lock(&dev_priv->pcu_lock);
 		ret = sandybridge_pcode_read(dev_priv,
 					     GEN9_PCODE_READ_MEM_LATENCY,
-					     &val, NULL);
+					     &val);
 		mutex_unlock(&dev_priv->pcu_lock);
 
 		if (ret) {
@@ -2838,7 +2841,7 @@ static void intel_read_wm_latency(struct drm_i915_private *dev_priv,
 		mutex_lock(&dev_priv->pcu_lock);
 		ret = sandybridge_pcode_read(dev_priv,
 					     GEN9_PCODE_READ_MEM_LATENCY,
-					     &val, NULL);
+					     &val);
 		mutex_unlock(&dev_priv->pcu_lock);
 		if (ret) {
 			DRM_ERROR("SKL Mailbox read error = %d\n", ret);
@@ -4006,7 +4009,7 @@ skl_ddb_get_hw_plane_state(struct drm_i915_private *dev_priv,
 		val = I915_READ(PLANE_BUF_CFG(pipe, plane_id));
 		val2 = I915_READ(PLANE_NV12_BUF_CFG(pipe, plane_id));
 
-		if (fourcc == DRM_FORMAT_NV12)
+		if (is_planar_yuv_format(fourcc))
 			swap(val, val2);
 
 		skl_ddb_entry_init_from_hw(dev_priv, ddb_y, val);
@@ -4216,7 +4219,7 @@ skl_plane_relative_data_rate(const struct intel_crtc_state *cstate,
 
 	if (intel_plane->id == PLANE_CURSOR)
 		return 0;
-	if (plane == 1 && format != DRM_FORMAT_NV12)
+	if (plane == 1 && !is_planar_yuv_format(format))
 		return 0;
 
 	/*
@@ -4228,7 +4231,7 @@ skl_plane_relative_data_rate(const struct intel_crtc_state *cstate,
 	height = drm_rect_height(&intel_pstate->base.src) >> 16;
 
 	/* UV plane does 1/2 pixel sub-sampling */
-	if (plane == 1 && format == DRM_FORMAT_NV12) {
+	if (plane == 1 && is_planar_yuv_format(format)) {
 		width /= 2;
 		height /= 2;
 	}
@@ -4527,10 +4530,10 @@ skl_allocate_pipe_ddb(struct intel_crtc_state *cstate,
 				memset(&wm->wm[level], 0, sizeof(wm->wm[level]));
 
 			/*
-			 * Wa_1408961008:icl
+			 * Wa_1408961008:icl, ehl
 			 * Underruns with WM1+ disabled
 			 */
-			if (IS_ICELAKE(dev_priv) &&
+			if (IS_GEN(dev_priv, 11) &&
 			    level == 1 && wm->wm[0].plane_en) {
 				wm->wm[level].plane_res_b = wm->wm[0].plane_res_b;
 				wm->wm[level].plane_res_l = wm->wm[0].plane_res_l;
@@ -4650,9 +4653,9 @@ skl_compute_wm_params(const struct intel_crtc_state *crtc_state,
 	struct drm_i915_private *dev_priv = to_i915(crtc->base.dev);
 	u32 interm_pbpl;
 
-	/* only NV12 format has two planes */
-	if (color_plane == 1 && format->format != DRM_FORMAT_NV12) {
-		DRM_DEBUG_KMS("Non NV12 format have single plane\n");
+	/* only planar format has two planes */
+	if (color_plane == 1 && !is_planar_yuv_format(format->format)) {
+		DRM_DEBUG_KMS("Non planar format have single plane\n");
 		return -EINVAL;
 	}
 
@@ -4663,7 +4666,7 @@ skl_compute_wm_params(const struct intel_crtc_state *crtc_state,
 	wp->x_tiled = modifier == I915_FORMAT_MOD_X_TILED;
 	wp->rc_surface = modifier == I915_FORMAT_MOD_Y_TILED_CCS ||
 			 modifier == I915_FORMAT_MOD_Yf_TILED_CCS;
-	wp->is_planar = format->format == DRM_FORMAT_NV12;
+	wp->is_planar = is_planar_yuv_format(format->format);
 
 	wp->width = width;
 	if (color_plane == 1 && wp->is_planar)
@@ -5251,7 +5254,7 @@ static inline bool skl_ddb_entries_overlap(const struct skl_ddb_entry *a,
 }
 
 bool skl_ddb_allocation_overlaps(const struct skl_ddb_entry *ddb,
-				 const struct skl_ddb_entry entries[],
+				 const struct skl_ddb_entry *entries,
 				 int num_entries, int ignore_idx)
 {
 	int i;
@@ -6138,7 +6141,7 @@ void vlv_wm_get_hw_state(struct drm_i915_private *dev_priv)
 	if (IS_CHERRYVIEW(dev_priv)) {
 		mutex_lock(&dev_priv->pcu_lock);
 
-		val = vlv_punit_read(dev_priv, PUNIT_REG_DSPFREQ);
+		val = vlv_punit_read(dev_priv, PUNIT_REG_DSPSSPM);
 		if (val & DSP_MAXFIFO_PM5_ENABLE)
 			wm->level = VLV_WM_LEVEL_PM5;
 
@@ -6781,9 +6784,9 @@ static void vlv_set_rps_idle(struct drm_i915_private *dev_priv)
 	 * punit into committing the voltage change) as that takes a lot less
 	 * power than the render powerwell.
 	 */
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_MEDIA);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_MEDIA);
 	err = valleyview_set_rps(dev_priv, val);
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_MEDIA);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_MEDIA);
 
 	if (err)
 		DRM_ERROR("Failed to set RPS for idle\n");
@@ -6843,8 +6846,7 @@ void gen6_rps_idle(struct drm_i915_private *dev_priv)
 	mutex_unlock(&dev_priv->pcu_lock);
 }
 
-void gen6_rps_boost(struct i915_request *rq,
-		    struct intel_rps_client *rps_client)
+void gen6_rps_boost(struct i915_request *rq)
 {
 	struct intel_rps *rps = &rq->i915->gt_pm.rps;
 	unsigned long flags;
@@ -6873,7 +6875,7 @@ void gen6_rps_boost(struct i915_request *rq,
 	if (READ_ONCE(rps->cur_freq) < rps->boost_freq)
 		schedule_work(&rps->work);
 
-	atomic_inc(rps_client ? &rps_client->boosts : &rps->boosts);
+	atomic_inc(&rps->boosts);
 }
 
 int intel_set_rps(struct drm_i915_private *dev_priv, u8 val)
@@ -6934,11 +6936,11 @@ static void valleyview_disable_rc6(struct drm_i915_private *dev_priv)
 {
 	/* We're doing forcewake before Disabling RC6,
 	 * This what the BIOS expects when going into suspend */
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	I915_WRITE(GEN6_RC_CONTROL, 0);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void valleyview_disable_rps(struct drm_i915_private *dev_priv)
@@ -7058,7 +7060,9 @@ static void gen6_init_rps_frequencies(struct drm_i915_private *dev_priv)
 	    IS_GEN9_BC(dev_priv) || INTEL_GEN(dev_priv) >= 10) {
 		u32 ddcc_status = 0;
 
-		if (sandybridge_pcode_read(dev_priv, HSW_PCODE_DYNAMIC_DUTY_CYCLE_CONTROL, &ddcc_status, NULL) == 0)
+		if (sandybridge_pcode_read(dev_priv,
+					   HSW_PCODE_DYNAMIC_DUTY_CYCLE_CONTROL,
+					   &ddcc_status) == 0)
 			rps->efficient_freq =
 				clamp_t(u8,
 					((ddcc_status >> 8) & 0xff),
@@ -7095,7 +7099,7 @@ static void reset_rps(struct drm_i915_private *dev_priv,
 /* See the Gen9_GT_PM_Programming_Guide doc for the below */
 static void gen9_enable_rps(struct drm_i915_private *dev_priv)
 {
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/* Program defaults and thresholds for RPS */
 	if (IS_GEN(dev_priv, 9))
@@ -7113,7 +7117,7 @@ static void gen9_enable_rps(struct drm_i915_private *dev_priv)
 	 * RP_INTERRUPT_LIMITS & RPNSWREQ registers */
 	reset_rps(dev_priv, gen6_set_rps);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void gen11_enable_rc6(struct drm_i915_private *dev_priv)
@@ -7128,7 +7132,7 @@ static void gen11_enable_rc6(struct drm_i915_private *dev_priv)
 	 * 1b: Get forcewake during program sequence. Although the driver
 	 * hasn't enabled a state yet where we need forcewake, BIOS may have.
 	 */
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/* 2a: Disable RC states. */
 	I915_WRITE(GEN6_RC_CONTROL, 0);
@@ -7185,7 +7189,7 @@ static void gen11_enable_rc6(struct drm_i915_private *dev_priv)
 		   GEN9_MEDIA_PG_ENABLE |
 		   GEN11_MEDIA_SAMPLER_PG_ENABLE);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void gen9_enable_rc6(struct drm_i915_private *dev_priv)
@@ -7199,7 +7203,7 @@ static void gen9_enable_rc6(struct drm_i915_private *dev_priv)
 
 	/* 1b: Get forcewake during program sequence. Although the driver
 	 * hasn't enabled a state yet where we need forcewake, BIOS may have.*/
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/* 2a: Disable RC states. */
 	I915_WRITE(GEN6_RC_CONTROL, 0);
@@ -7276,7 +7280,7 @@ static void gen9_enable_rc6(struct drm_i915_private *dev_priv)
 		I915_WRITE(GEN9_PG_ENABLE,
 			   GEN9_RENDER_PG_ENABLE | GEN9_MEDIA_PG_ENABLE);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void gen8_enable_rc6(struct drm_i915_private *dev_priv)
@@ -7289,7 +7293,7 @@ static void gen8_enable_rc6(struct drm_i915_private *dev_priv)
 
 	/* 1b: Get forcewake during program sequence. Although the driver
 	 * hasn't enabled a state yet where we need forcewake, BIOS may have.*/
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/* 2a: Disable RC states. */
 	I915_WRITE(GEN6_RC_CONTROL, 0);
@@ -7310,14 +7314,14 @@ static void gen8_enable_rc6(struct drm_i915_private *dev_priv)
 		   GEN7_RC_CTL_TO_MODE |
 		   GEN6_RC_CTL_RC6_ENABLE);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void gen8_enable_rps(struct drm_i915_private *dev_priv)
 {
 	struct intel_rps *rps = &dev_priv->gt_pm.rps;
 
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/* 1 Program defaults and thresholds for RPS*/
 	I915_WRITE(GEN6_RPNSWREQ,
@@ -7350,7 +7354,7 @@ static void gen8_enable_rps(struct drm_i915_private *dev_priv)
 
 	reset_rps(dev_priv, gen6_set_rps);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void gen6_enable_rc6(struct drm_i915_private *dev_priv)
@@ -7370,7 +7374,7 @@ static void gen6_enable_rc6(struct drm_i915_private *dev_priv)
 		I915_WRITE(GTFIFODBG, gtfifodbg);
 	}
 
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/* disable the counters and set deterministic thresholds */
 	I915_WRITE(GEN6_RC_CONTROL, 0);
@@ -7405,8 +7409,7 @@ static void gen6_enable_rc6(struct drm_i915_private *dev_priv)
 		   GEN6_RC_CTL_HW_ENABLE);
 
 	rc6vids = 0;
-	ret = sandybridge_pcode_read(dev_priv, GEN6_PCODE_READ_RC6VIDS,
-				     &rc6vids, NULL);
+	ret = sandybridge_pcode_read(dev_priv, GEN6_PCODE_READ_RC6VIDS, &rc6vids);
 	if (IS_GEN(dev_priv, 6) && ret) {
 		DRM_DEBUG_DRIVER("Couldn't check for BIOS workaround\n");
 	} else if (IS_GEN(dev_priv, 6) && (GEN6_DECODE_RC6_VID(rc6vids & 0xff) < 450)) {
@@ -7419,7 +7422,7 @@ static void gen6_enable_rc6(struct drm_i915_private *dev_priv)
 			DRM_ERROR("Couldn't fix incorrect rc6 voltage\n");
 	}
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void gen6_enable_rps(struct drm_i915_private *dev_priv)
@@ -7430,7 +7433,7 @@ static void gen6_enable_rps(struct drm_i915_private *dev_priv)
 	 * Perhaps there might be some value in exposing these to
 	 * userspace...
 	 */
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/* Power down if completely idle for over 50ms */
 	I915_WRITE(GEN6_RP_DOWN_TIMEOUT, 50000);
@@ -7438,7 +7441,7 @@ static void gen6_enable_rps(struct drm_i915_private *dev_priv)
 
 	reset_rps(dev_priv, gen6_set_rps);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void gen6_update_ring_freq(struct drm_i915_private *dev_priv)
@@ -7861,7 +7864,7 @@ static void cherryview_enable_rc6(struct drm_i915_private *dev_priv)
 
 	/* 1a & 1b: Get forcewake during program sequence. Although the driver
 	 * hasn't enabled a state yet where we need forcewake, BIOS may have.*/
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/*  Disable RC states. */
 	I915_WRITE(GEN6_RC_CONTROL, 0);
@@ -7893,14 +7896,14 @@ static void cherryview_enable_rc6(struct drm_i915_private *dev_priv)
 		rc6_mode = GEN7_RC_CTL_TO_MODE;
 	I915_WRITE(GEN6_RC_CONTROL, rc6_mode);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void cherryview_enable_rps(struct drm_i915_private *dev_priv)
 {
 	u32 val;
 
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/* 1: Program defaults and thresholds for RPS*/
 	I915_WRITE(GEN6_RP_DOWN_TIMEOUT, 1000000);
@@ -7935,7 +7938,7 @@ static void cherryview_enable_rps(struct drm_i915_private *dev_priv)
 
 	reset_rps(dev_priv, valleyview_set_rps);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void valleyview_enable_rc6(struct drm_i915_private *dev_priv)
@@ -7953,7 +7956,7 @@ static void valleyview_enable_rc6(struct drm_i915_private *dev_priv)
 		I915_WRITE(GTFIFODBG, gtfifodbg);
 	}
 
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	/*  Disable RC states. */
 	I915_WRITE(GEN6_RC_CONTROL, 0);
@@ -7978,14 +7981,14 @@ static void valleyview_enable_rc6(struct drm_i915_private *dev_priv)
 	I915_WRITE(GEN6_RC_CONTROL,
 		   GEN7_RC_CTL_TO_MODE | VLV_RC_CTL_CTX_RST_PARALLEL);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static void valleyview_enable_rps(struct drm_i915_private *dev_priv)
 {
 	u32 val;
 
-	intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_get(&dev_priv->uncore, FORCEWAKE_ALL);
 
 	I915_WRITE(GEN6_RP_DOWN_TIMEOUT, 1000000);
 	I915_WRITE(GEN6_RP_UP_THRESHOLD, 59400);
@@ -8019,7 +8022,7 @@ static void valleyview_enable_rps(struct drm_i915_private *dev_priv)
 
 	reset_rps(dev_priv, valleyview_set_rps);
 
-	intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+	intel_uncore_forcewake_put(&dev_priv->uncore, FORCEWAKE_ALL);
 }
 
 static unsigned long intel_pxfreq(u32 vidfreq)
@@ -8260,14 +8263,14 @@ unsigned long i915_gfx_val(struct drm_i915_private *dev_priv)
 	return val;
 }
 
-static struct drm_i915_private *i915_mch_dev;
+static struct drm_i915_private __rcu *i915_mch_dev;
 
 static struct drm_i915_private *mchdev_get(void)
 {
 	struct drm_i915_private *i915;
 
 	rcu_read_lock();
-	i915 = i915_mch_dev;
+	i915 = rcu_dereference(i915_mch_dev);
 	if (!kref_get_unless_zero(&i915->drm.ref))
 		i915 = NULL;
 	rcu_read_unlock();
@@ -8542,8 +8545,7 @@ void intel_init_gt_powersave(struct drm_i915_private *dev_priv)
 	    IS_IVYBRIDGE(dev_priv) || IS_HASWELL(dev_priv)) {
 		u32 params = 0;
 
-		sandybridge_pcode_read(dev_priv, GEN6_READ_OC_PARAMS, &params,
-				       NULL);
+		sandybridge_pcode_read(dev_priv, GEN6_READ_OC_PARAMS, &params);
 		if (params & BIT(31)) { /* OC supported */
 			DRM_DEBUG_DRIVER("Overclocking supported, max: %dMHz, overclock: %dMHz\n",
 					 (rps->max_freq & 0xff) * 50,
@@ -8565,22 +8567,6 @@ void intel_cleanup_gt_powersave(struct drm_i915_private *dev_priv)
 
 	if (!HAS_RC6(dev_priv))
 		pm_runtime_put(&dev_priv->drm.pdev->dev);
-}
-
-/**
- * intel_suspend_gt_powersave - suspend PM work and helper threads
- * @dev_priv: i915 device
- *
- * We don't want to disable RC6 or other features here, we just want
- * to make sure any work we've queued has finished and won't bother
- * us while we're suspended.
- */
-void intel_suspend_gt_powersave(struct drm_i915_private *dev_priv)
-{
-	if (INTEL_GEN(dev_priv) < 6)
-		return;
-
-	/* gen6_rps_idle() will be called later to disable interrupts */
 }
 
 void intel_sanitize_gt_powersave(struct drm_i915_private *dev_priv)
@@ -9587,7 +9573,7 @@ static void nop_init_clock_gating(struct drm_i915_private *dev_priv)
  */
 void intel_init_clock_gating_hooks(struct drm_i915_private *dev_priv)
 {
-	if (IS_ICELAKE(dev_priv))
+	if (IS_GEN(dev_priv, 11))
 		dev_priv->display.init_clock_gating = icl_init_clock_gating;
 	else if (IS_CANNONLAKE(dev_priv))
 		dev_priv->display.init_clock_gating = cnl_init_clock_gating;
@@ -9757,8 +9743,7 @@ static inline int gen7_check_mailbox_status(struct drm_i915_private *dev_priv)
 	}
 }
 
-int sandybridge_pcode_read(struct drm_i915_private *dev_priv, u32 mbox,
-			   u32 *val, u32 *val1)
+int sandybridge_pcode_read(struct drm_i915_private *dev_priv, u32 mbox, u32 *val)
 {
 	int status;
 
@@ -9776,10 +9761,10 @@ int sandybridge_pcode_read(struct drm_i915_private *dev_priv, u32 mbox,
 	}
 
 	I915_WRITE_FW(GEN6_PCODE_DATA, *val);
-	I915_WRITE_FW(GEN6_PCODE_DATA1, val1 ? *val1 : 0);
+	I915_WRITE_FW(GEN6_PCODE_DATA1, 0);
 	I915_WRITE_FW(GEN6_PCODE_MAILBOX, GEN6_PCODE_READY | mbox);
 
-	if (__intel_wait_for_register_fw(dev_priv,
+	if (__intel_wait_for_register_fw(&dev_priv->uncore,
 					 GEN6_PCODE_MAILBOX, GEN6_PCODE_READY, 0,
 					 500, 0, NULL)) {
 		DRM_ERROR("timeout waiting for pcode read (from mbox %x) to finish for %ps\n",
@@ -9788,8 +9773,7 @@ int sandybridge_pcode_read(struct drm_i915_private *dev_priv, u32 mbox,
 	}
 
 	*val = I915_READ_FW(GEN6_PCODE_DATA);
-	if (val1)
-		*val1 = I915_READ_FW(GEN6_PCODE_DATA1);
+	I915_WRITE_FW(GEN6_PCODE_DATA, 0);
 
 	if (INTEL_GEN(dev_priv) > 6)
 		status = gen7_check_mailbox_status(dev_priv);
@@ -9828,7 +9812,7 @@ int sandybridge_pcode_write_timeout(struct drm_i915_private *dev_priv,
 	I915_WRITE_FW(GEN6_PCODE_DATA1, 0);
 	I915_WRITE_FW(GEN6_PCODE_MAILBOX, GEN6_PCODE_READY | mbox);
 
-	if (__intel_wait_for_register_fw(dev_priv,
+	if (__intel_wait_for_register_fw(&dev_priv->uncore,
 					 GEN6_PCODE_MAILBOX, GEN6_PCODE_READY, 0,
 					 fast_timeout_us, slow_timeout_ms,
 					 NULL)) {
@@ -9859,7 +9843,7 @@ static bool skl_pcode_try_request(struct drm_i915_private *dev_priv, u32 mbox,
 {
 	u32 val = request;
 
-	*status = sandybridge_pcode_read(dev_priv, mbox, &val, NULL);
+	*status = sandybridge_pcode_read(dev_priv, mbox, &val);
 
 	return *status || ((val & reply_mask) == reply);
 }
@@ -10052,6 +10036,7 @@ static u64 vlv_residency_raw(struct drm_i915_private *dev_priv,
 u64 intel_rc6_residency_ns(struct drm_i915_private *dev_priv,
 			   const i915_reg_t reg)
 {
+	struct intel_uncore *uncore = &dev_priv->uncore;
 	u64 time_hw, prev_hw, overflow_hw;
 	unsigned int fw_domains;
 	unsigned long flags;
@@ -10073,10 +10058,10 @@ u64 intel_rc6_residency_ns(struct drm_i915_private *dev_priv,
 	if (WARN_ON_ONCE(i >= ARRAY_SIZE(dev_priv->gt_pm.rc6.cur_residency)))
 		return 0;
 
-	fw_domains = intel_uncore_forcewake_for_reg(dev_priv, reg, FW_REG_READ);
+	fw_domains = intel_uncore_forcewake_for_reg(uncore, reg, FW_REG_READ);
 
-	spin_lock_irqsave(&dev_priv->uncore.lock, flags);
-	intel_uncore_forcewake_get__locked(dev_priv, fw_domains);
+	spin_lock_irqsave(&uncore->lock, flags);
+	intel_uncore_forcewake_get__locked(uncore, fw_domains);
 
 	/* On VLV and CHV, residency time is in CZ units rather than 1.28us */
 	if (IS_VALLEYVIEW(dev_priv) || IS_CHERRYVIEW(dev_priv)) {
@@ -10095,7 +10080,7 @@ u64 intel_rc6_residency_ns(struct drm_i915_private *dev_priv,
 		}
 
 		overflow_hw = BIT_ULL(32);
-		time_hw = I915_READ_FW(reg);
+		time_hw = intel_uncore_read_fw(uncore, reg);
 	}
 
 	/*
@@ -10117,8 +10102,8 @@ u64 intel_rc6_residency_ns(struct drm_i915_private *dev_priv,
 	time_hw += dev_priv->gt_pm.rc6.cur_residency[i];
 	dev_priv->gt_pm.rc6.cur_residency[i] = time_hw;
 
-	intel_uncore_forcewake_put__locked(dev_priv, fw_domains);
-	spin_unlock_irqrestore(&dev_priv->uncore.lock, flags);
+	intel_uncore_forcewake_put__locked(uncore, fw_domains);
+	spin_unlock_irqrestore(&uncore->lock, flags);
 
 	return mul_u64_u32_div(time_hw, mul, div);
 }

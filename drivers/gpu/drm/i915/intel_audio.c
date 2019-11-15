@@ -21,14 +21,16 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <linux/kernel.h>
 #include <linux/component.h>
-#include <drm/i915_component.h>
-#include <drm/intel_lpe_audio.h>
-#include "intel_drv.h"
+#include <linux/kernel.h>
 
 #include <drm/drm_edid.h>
+#include <drm/i915_component.h>
+#include <drm/intel_lpe_audio.h>
+
 #include "i915_drv.h"
+#include "intel_audio.h"
+#include "intel_drv.h"
 
 /**
  * DOC: High Definition Audio over HDMI and Display Port
@@ -787,19 +789,19 @@ retry:
 static unsigned long i915_audio_component_get_power(struct device *kdev)
 {
 	struct drm_i915_private *dev_priv = kdev_to_i915(kdev);
-	intel_wakeref_t wakeref;
+	intel_wakeref_t ret;
 
 	/* Catch potential impedance mismatches before they occur! */
 	BUILD_BUG_ON(sizeof(intel_wakeref_t) > sizeof(unsigned long));
 
-	wakeref = intel_display_power_get(dev_priv, POWER_DOMAIN_AUDIO);
+	ret = intel_display_power_get(dev_priv, POWER_DOMAIN_AUDIO);
 
 	/* Force CDCLK to 2*BCLK as long as we need audio to be powered. */
 	if (dev_priv->audio_power_refcount++ == 0)
 		if (IS_CANNONLAKE(dev_priv) || IS_GEMINILAKE(dev_priv))
 			glk_force_audio_cdclk(dev_priv, true);
 
-	return wakeref;
+	return ret;
 }
 
 static void i915_audio_component_put_power(struct device *kdev,
@@ -1045,7 +1047,7 @@ static const struct component_ops i915_audio_component_bind_ops = {
  * We ignore any error during registration and continue with reduced
  * functionality (i.e. without HDMI audio).
  */
-void i915_audio_component_init(struct drm_i915_private *dev_priv)
+static void i915_audio_component_init(struct drm_i915_private *dev_priv)
 {
 	int ret;
 
@@ -1068,7 +1070,7 @@ void i915_audio_component_init(struct drm_i915_private *dev_priv)
  * Deregisters the audio component, breaking any existing binding to the
  * corresponding snd_hda_intel driver's master component.
  */
-void i915_audio_component_cleanup(struct drm_i915_private *dev_priv)
+static void i915_audio_component_cleanup(struct drm_i915_private *dev_priv)
 {
 	if (!dev_priv->audio_component_registered)
 		return;

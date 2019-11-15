@@ -25,10 +25,26 @@
 #include "i915_vma.h"
 
 #include "i915_drv.h"
+#include "i915_globals.h"
 #include "intel_ringbuffer.h"
 #include "intel_frontbuffer.h"
 
 #include <drm/drm_gem.h>
+
+static struct i915_global_vma {
+	struct i915_global base;
+	struct kmem_cache *slab_vmas;
+} global;
+
+struct i915_vma *i915_vma_alloc(void)
+{
+	return kmem_cache_zalloc(global.slab_vmas, GFP_KERNEL);
+}
+
+void i915_vma_free(struct i915_vma *vma)
+{
+	return kmem_cache_free(global.slab_vmas, vma);
+}
 
 #if IS_ENABLED(CONFIG_DRM_I915_ERRLOG_GEM) && IS_ENABLED(CONFIG_DRM_DEBUG_MM)
 
@@ -112,7 +128,7 @@ vma_create(struct drm_i915_gem_object *obj,
 	/* The aliasing_ppgtt should never be used directly! */
 	GEM_BUG_ON(vm == &vm->i915->mm.aliasing_ppgtt->vm);
 
-	vma = kmem_cache_zalloc(vm->i915->vmas, GFP_KERNEL);
+	vma = i915_vma_alloc();
 	if (vma == NULL)
 		return ERR_PTR(-ENOMEM);
 
@@ -138,9 +154,6 @@ vma_create(struct drm_i915_gem_object *obj,
 			GEM_BUG_ON(vma->size > obj->base.size);
 		} else if (view->type == I915_GGTT_VIEW_ROTATED) {
 			vma->size = intel_rotation_info_size(&view->rotated);
-			vma->size <<= PAGE_SHIFT;
-		} else if (view->type == I915_GGTT_VIEW_REMAPPED) {
-			vma->size = intel_remapped_info_size(&view->remapped);
 			vma->size <<= PAGE_SHIFT;
 		}
 	}
@@ -190,7 +203,7 @@ vma_create(struct drm_i915_gem_object *obj,
 		cmp = i915_vma_compare(pos, vm, view);
 		if (cmp == 0) {
 			spin_unlock(&obj->vma.lock);
-			kmem_cache_free(vm->i915->vmas, vma);
+			i915_vma_free(vma);
 			return pos;
 		}
 
@@ -222,7 +235,7 @@ vma_create(struct drm_i915_gem_object *obj,
 	return vma;
 
 err_vma:
-	kmem_cache_free(vm->i915->vmas, vma);
+	i915_vma_free(vma);
 	return ERR_PTR(-E2BIG);
 }
 
@@ -462,6 +475,13 @@ void __i915_vma_set_map_and_fenceable(struct i915_vma *vma)
 
 	GEM_BUG_ON(!i915_vma_is_ggtt(vma));
 	GEM_BUG_ON(!vma->fence_size);
+
+	/*
+	 * Explicitly disable for rotated VMA since the display does not
+	 * need the fence and the VMA is not accessible to other users.
+	 */
+	if (vma->ggtt_view.type == I915_GGTT_VIEW_ROTATED)
+		return;
 
 	fenceable = (vma->node.size >= vma->fence_size &&
 		     IS_ALIGNED(vma->node.start, vma->fence_alignment));
@@ -796,8 +816,6 @@ void i915_vma_reopen(struct i915_vma *vma)
 
 static void __i915_vma_destroy(struct i915_vma *vma)
 {
-	struct drm_i915_private *i915 = vma->vm->i915;
-
 	GEM_BUG_ON(vma->node.allocated);
 	GEM_BUG_ON(vma->fence);
 
@@ -818,7 +836,7 @@ static void __i915_vma_destroy(struct i915_vma *vma)
 
 	i915_active_fini(&vma->active);
 
-	kmem_cache_free(i915->vmas, vma);
+	i915_vma_free(vma);
 }
 
 void i915_vma_destroy(struct i915_vma *vma)
@@ -1034,3 +1052,28 @@ unpin:
 #if IS_ENABLED(CONFIG_DRM_I915_SELFTEST)
 #include "selftests/i915_vma.c"
 #endif
+
+static void i915_global_vma_shrink(void)
+{
+	kmem_cache_shrink(global.slab_vmas);
+}
+
+static void i915_global_vma_exit(void)
+{
+	kmem_cache_destroy(global.slab_vmas);
+}
+
+static struct i915_global_vma global = { {
+	.shrink = i915_global_vma_shrink,
+	.exit = i915_global_vma_exit,
+} };
+
+int __init i915_global_vma_init(void)
+{
+	global.slab_vmas = KMEM_CACHE(i915_vma, SLAB_HWCACHE_ALIGN);
+	if (!global.slab_vmas)
+		return -ENOMEM;
+
+	i915_global_register(&global.base);
+	return 0;
+}

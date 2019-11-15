@@ -277,11 +277,8 @@ i915_vma_compare(struct i915_vma *vma,
 	 */
 	BUILD_BUG_ON(I915_GGTT_VIEW_NORMAL >= I915_GGTT_VIEW_PARTIAL);
 	BUILD_BUG_ON(I915_GGTT_VIEW_PARTIAL >= I915_GGTT_VIEW_ROTATED);
-	BUILD_BUG_ON(I915_GGTT_VIEW_ROTATED >= I915_GGTT_VIEW_REMAPPED);
 	BUILD_BUG_ON(offsetof(typeof(*view), rotated) !=
 		     offsetof(typeof(*view), partial));
-	BUILD_BUG_ON(offsetof(typeof(*view), rotated) !=
-		     offsetof(typeof(*view), remapped));
 	return memcmp(&vma->ggtt_view.partial, &view->partial, view->type);
 }
 
@@ -442,5 +439,8 @@ void i915_vma_parked(struct drm_i915_private *i915);
 #define for_each_ggtt_vma(V, OBJ) \
 	list_for_each_entry(V, &(OBJ)->vma.list, obj_link)		\
 		for_each_until(!i915_vma_is_ggtt(V))
+
+struct i915_vma *i915_vma_alloc(void);
+void i915_vma_free(struct i915_vma *vma);
 
 #endif

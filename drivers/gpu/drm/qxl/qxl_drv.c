@@ -59,11 +59,6 @@ module_param_named(num_heads, qxl_num_crtc, int, 0400);
 static struct drm_driver qxl_driver;
 static struct pci_driver qxl_pci_driver;
 
-static bool is_vga(struct pci_dev *pdev)
-{
-	return pdev->class == PCI_CLASS_DISPLAY_VGA << 8;
-}
-
 static int
 qxl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
@@ -88,17 +83,9 @@ qxl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	if (ret)
 		goto disable_pci;
 
-	if (is_vga(pdev)) {
-		ret = vga_get_interruptible(pdev, VGA_RSRC_LEGACY_IO);
-		if (ret) {
-			DRM_ERROR("can't get legacy vga ioports\n");
-			goto disable_pci;
-		}
-	}
-
 	ret = qxl_device_init(qdev, &qxl_driver, pdev);
 	if (ret)
-		goto put_vga;
+		goto disable_pci;
 
 	ret = qxl_modeset_init(qdev);
 	if (ret)
@@ -118,9 +105,6 @@ modeset_cleanup:
 	qxl_modeset_fini(qdev);
 unload:
 	qxl_device_fini(qdev);
-put_vga:
-	if (is_vga(pdev))
-		vga_put(pdev, VGA_RSRC_LEGACY_IO);
 disable_pci:
 	pci_disable_device(pdev);
 free_dev:
@@ -138,8 +122,6 @@ qxl_pci_remove(struct pci_dev *pdev)
 
 	qxl_modeset_fini(qdev);
 	qxl_device_fini(qdev);
-	if (is_vga(pdev))
-		vga_put(pdev, VGA_RSRC_LEGACY_IO);
 
 	dev->dev_private = NULL;
 	kfree(qdev);

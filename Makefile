@@ -9,8 +9,8 @@ NAME = Merciless Moray
 # DRM backport version
 #
 RHEL_DRM_VERSION = 5
-RHEL_DRM_PATCHLEVEL = 1
-RHEL_DRM_SUBLEVEL = 21
+RHEL_DRM_PATCHLEVEL = 2
+RHEL_DRM_SUBLEVEL = 0
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
