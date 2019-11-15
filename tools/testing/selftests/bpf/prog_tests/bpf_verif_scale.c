@@ -95,6 +95,9 @@ void test_bpf_verif_scale(void)
 	err = check_load("./test_xdp_loop.o", BPF_PROG_TYPE_XDP);
 	printf("test_scale:test_xdp_loop:%s\n", err ? "FAIL" : "OK");
 
+#if 0
+	/* CONFIG_IPV6_SEG6_LWTUNNEL is disabled in RHEL 8 */
 	err = check_load("./test_seg6_loop.o", BPF_PROG_TYPE_LWT_SEG6LOCAL);
 	printf("test_scale:test_seg6_loop:%s\n", err ? "FAIL" : "OK");
+#endif
 }
