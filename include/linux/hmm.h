@@ -467,12 +467,12 @@ struct hmm_devmem_ops {
 	 * Note that mmap semaphore is held in read mode at least when this
 	 * callback occurs, hence the vma is valid upon callback entry.
 	 */
-	int (*fault)(struct hmm_devmem *devmem,
-		     struct vm_area_struct *vma,
-		     unsigned long addr,
-		     const struct page *page,
-		     unsigned int flags,
-		     pmd_t *pmdp);
+	vm_fault_t (*fault)(struct hmm_devmem *devmem,
+			    struct vm_area_struct *vma,
+			    unsigned long addr,
+			    const struct page *page,
+			    unsigned int flags,
+			    pmd_t *pmdp);
 };
 
 /*
