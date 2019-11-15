@@ -279,7 +279,7 @@ int main(int args, char **argv)
 	if ((pthread_create(&tid, NULL, server_thread,
 			    (void *)&server_fd))) {
 		err = EXIT_FAILURE;
-		goto cleanup_cgroup;
+		goto close_server_fd;
 	}
 
 	pthread_mutex_lock(&server_started_mtx);
@@ -289,11 +289,11 @@ int main(int args, char **argv)
 	if (run_test(cgroup_fd, server_fd))
 		err = EXIT_FAILURE;
 
-	close(server_fd);
-
 	printf("test_sockopt_sk: %s\n",
 	       err == EXIT_SUCCESS ? "PASSED" : "FAILED");
 
+close_server_fd:
+	close(server_fd);
 cleanup_cgroup:
 	close(cgroup_fd);
 cleanup_cgroup_env:
