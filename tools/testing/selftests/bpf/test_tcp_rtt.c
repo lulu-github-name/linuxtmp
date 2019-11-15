@@ -218,14 +218,24 @@ static int start_server(void)
 	return fd;
 }
 
+static pthread_mutex_t server_started_mtx = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t server_started = PTHREAD_COND_INITIALIZER;
+
 static void *server_thread(void *arg)
 {
 	struct sockaddr_storage addr;
 	socklen_t len = sizeof(addr);
 	int fd = *(int *)arg;
 	int client_fd;
+	int err;
 
-	if (listen(fd, 1) < 0)
+	err = listen(fd, 1);
+
+	pthread_mutex_lock(&server_started_mtx);
+	pthread_cond_signal(&server_started);
+	pthread_mutex_unlock(&server_started_mtx);
+
+	if (err < 0)
 		error(1, errno, "Failed to listed on socket");
 
 	client_fd = accept(fd, (struct sockaddr *)&addr, &len);
@@ -266,7 +276,15 @@ int main(int args, char **argv)
 		goto cleanup_cgroup;
 	}
 
-	pthread_create(&tid, NULL, server_thread, (void *)&server_fd);
+	if ((pthread_create(&tid, NULL, server_thread,
+			    (void *)&server_fd))) {
+		err = EXIT_FAILURE;
+		goto cleanup_cgroup;
+	}
+
+	pthread_mutex_lock(&server_started_mtx);
+	pthread_cond_wait(&server_started, &server_started_mtx);
+	pthread_mutex_unlock(&server_started_mtx);
 
 	if (run_test(cgroup_fd, server_fd))
 		err = EXIT_FAILURE;
