@@ -3871,7 +3871,7 @@ static int __qeth_xmit(struct qeth_card *card, struct qeth_qdio_out_q *queue,
 	queue->prev_hdr = hdr;
 
 	flush = __netdev_tx_sent_queue(txq, bytes,
-				       !stopped && skb->xmit_more);
+				       !stopped && netdev_xmit_more());
 
 	if (flush || next_element >= queue->max_elements) {
 		atomic_set(&buffer->state, QETH_QDIO_BUF_PRIMED);
