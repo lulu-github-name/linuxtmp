@@ -306,6 +306,7 @@ static int hpwdt_init_one(struct pci_dev *dev,
 	if (retval != 0)
 		goto error_init_nmi_decoding;
 
+	watchdog_stop_on_unregister(&hpwdt_dev);
 	watchdog_set_nowayout(&hpwdt_dev, nowayout);
 	if (watchdog_init_timeout(&hpwdt_dev, soft_margin, NULL))
 		dev_warn(&dev->dev, "Invalid soft_margin: %d.\n", soft_margin);
@@ -344,9 +345,6 @@ error_pci_iomap:
 
 static void hpwdt_exit(struct pci_dev *dev)
 {
-	if (!nowayout)
-		hpwdt_stop();
-
 	watchdog_unregister_device(&hpwdt_dev);
 	hpwdt_exit_nmi_decoding();
 	pci_iounmap(dev, pci_mem_addr);
