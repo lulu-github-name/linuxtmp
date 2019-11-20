@@ -39,7 +39,7 @@ struct mdio_device {
 	/* Bus address of the MDIO device (0-31) */
 	int addr;
 	int flags;
-	struct gpio_desc *reset;
+	struct gpio_desc *RH_KABI_RENAME(reset, reset_gpio);
 	/* RHEL: when changing struct mdio_device in a kABI incompatible way,
 	 * be sure to increase the forced kABI version on phy_driver_register.
 	 */
