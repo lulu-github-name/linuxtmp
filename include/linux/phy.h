@@ -187,7 +187,6 @@ static inline const char *phy_modes(phy_interface_t interface)
 #define PHY_INIT_TIMEOUT	100000
 #define PHY_STATE_TIME		1
 #define PHY_FORCE_TIMEOUT	10
-#define PHY_AN_TIMEOUT		10
 
 #define PHY_MAX_ADDR	32
 
@@ -306,24 +305,10 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
  *
  * UP: The PHY and attached device are ready to do work.
  * Interrupts should be started here.
- * - timer moves to AN
- *
- * AN: The PHY is currently negotiating the link state.  Link is
- * therefore down for now.  phy_timer will set this state when it
- * detects the state is UP.  config_aneg will set this state
- * whenever called with phydev->autoneg set to AUTONEG_ENABLE.
- * - If autonegotiation finishes, but there's no link, it sets
- *   the state to NOLINK.
- * - If aneg finishes with link, it sets the state to RUNNING,
- *   and calls adjust_link
- * - If autonegotiation did not finish after an arbitrary amount
- *   of time, autonegotiation should be tried again if the PHY
- *   supports "magic" autonegotiation (back to AN)
- * - If it didn't finish, and no magic_aneg, move to FORCING.
+ * - timer moves to NOLINK or RUNNING
  *
  * NOLINK: PHY is up, but not currently plugged in.
  * - If the timer notes that the link comes back, we move to RUNNING
- * - config_aneg moves to AN
  * - phy_stop moves to HALTED
  *
  * FORCING: PHY is being configured with forced settings
@@ -338,7 +323,6 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
  *   link state is polled every other cycle of this state machine,
  *   which makes it every other second)
  * - irq will set CHANGELINK
- * - config_aneg will set AN
  * - phy_stop moves to HALTED
  *
  * CHANGELINK: PHY experienced a change in link state
@@ -356,6 +340,12 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
  * - If aneg is not done, timer moves to AN
  * - phy_stop moves to HALTED
  */
+
+/* RHEL: If you change the enum in an incompatible way,
+ * increase RH_KABI_FORCE_CHANGE on phy_driver_register and
+ * phy_drivers_register.
+*/
+#ifdef __GENKSYMS__
 enum phy_state {
 	PHY_DOWN = 0,
 	PHY_STARTING,
@@ -370,6 +360,21 @@ enum phy_state {
 	PHY_HALTED,
 	PHY_RESUMING
 };
+#else /* __GENKSYMS__ */
+enum phy_state {
+	PHY_DOWN = 0,
+	PHY_STARTING,
+	PHY_READY,
+	PHY_PENDING,
+	PHY_UP,
+	PHY_RUNNING,
+	PHY_NOLINK,
+	PHY_FORCING,
+	PHY_CHANGELINK,
+	PHY_HALTED,
+	PHY_RESUMING
+};
+#endif /* __GENKSYMS__ */
 
 /**
  * struct phy_c45_device_ids - 802.3-c45 Device Identifiers
@@ -1102,9 +1107,9 @@ void phy_drivers_unregister(struct phy_driver *drv, int n);
  * used in phy_driver hide checksum change and old driver loaded with new
  * kernel will crash. We need change phy_driver{s}_register
  */
-RH_KABI_FORCE_CHANGE(2)
+RH_KABI_FORCE_CHANGE(3)
 int phy_driver_register(struct phy_driver *new_driver, struct module *owner);
-RH_KABI_FORCE_CHANGE(2)
+RH_KABI_FORCE_CHANGE(3)
 int phy_drivers_register(struct phy_driver *new_driver, int n,
 			 struct module *owner);
 void phy_state_machine(struct work_struct *work);
