@@ -40,6 +40,10 @@ struct mdio_device {
 	int addr;
 	int flags;
 	struct gpio_desc *reset;
+	/* RHEL: when changing struct mdio_device in a kABI incompatible way,
+	 * be sure to increase the forced kABI version on phy_driver_register.
+	 */
+	RH_KABI_EXTEND(struct reset_control *reset_ctrl)
 	unsigned int reset_assert_delay;
 	unsigned int reset_deassert_delay;
 };
