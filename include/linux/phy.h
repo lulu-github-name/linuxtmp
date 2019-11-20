@@ -369,6 +369,7 @@ struct phy_c45_device_ids {
  * is_c45:  Set to true if this phy uses clause 45 addressing.
  * is_internal: Set to true if this phy is internal to a MAC.
  * is_pseudo_fixed_link: Set to true if this phy is an Ethernet switch, etc.
+ * is_gigabit_capable: Set to true if PHY supports 1000Mbps
  * has_fixups: Set to true if this phy has fixups/quirks.
  * suspended: Set to true if this phy has been suspended successfully.
  * sysfs_links: Internal boolean tracking sysfs symbolic links setup/removal.
@@ -415,11 +416,12 @@ struct phy_device {
 	/* The most recently read link state */
 	unsigned link:1;
 
+	RH_KABI_FILL_HOLE(unsigned is_gigabit_capable:1)
 	RH_KABI_FILL_HOLE(unsigned autoneg_complete:1)
 	/* Interrupts are enabled */
 	RH_KABI_FILL_HOLE(unsigned interrupts:1)
 
-	/* 21 bits hole remain */
+	/* 20 bits hole remain */
 
 	enum phy_state state;
 
