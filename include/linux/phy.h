@@ -415,10 +415,11 @@ struct phy_device {
 	/* The most recently read link state */
 	unsigned link:1;
 
+	RH_KABI_FILL_HOLE(unsigned autoneg_complete:1)
 	/* Interrupts are enabled */
 	RH_KABI_FILL_HOLE(unsigned interrupts:1)
 
-	/* 22 bits hole remain */
+	/* 21 bits hole remain */
 
 	enum phy_state state;
 
