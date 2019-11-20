@@ -1881,6 +1881,8 @@ struct net_device_extended_rh {
  *			switch driver and used to set the phys state of the
  *			switch port.
  *
+ *	@wol_enabled:	Wake-on-LAN is enabled
+ *
  *	FIXME: cleanup struct net_device such that network protocol info
  *	moves out.
  */
@@ -2168,6 +2170,10 @@ struct net_device {
 	struct lock_class_key	*qdisc_tx_busylock;
 	struct lock_class_key	*qdisc_running_key;
 	bool			proto_down;
+	RH_KABI_FILL_HOLE(unsigned	wol_enabled:1)
+
+	/* 23 bits hole remain and... */
+	/* 4 bytes hole remain prior RH_KABI reservations below */
 
 	RH_KABI_USE(1, struct mpls_dev __rcu   *mpls_ptr)
 	RH_KABI_RESERVE(2)
