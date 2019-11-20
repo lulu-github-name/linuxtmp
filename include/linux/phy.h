@@ -271,8 +271,8 @@ static inline struct mii_bus *devm_mdiobus_alloc(struct device *dev)
 void devm_mdiobus_free(struct device *dev, struct mii_bus *bus);
 struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
 
-#define PHY_INTERRUPT_DISABLED	0x0
-#define PHY_INTERRUPT_ENABLED	0x80000000
+#define PHY_INTERRUPT_DISABLED	false
+#define PHY_INTERRUPT_ENABLED	true
 
 /* PHY state machine states:
  *
@@ -440,6 +440,11 @@ struct phy_device {
 	/* The most recently read link state */
 	unsigned link:1;
 
+	/* Interrupts are enabled */
+	RH_KABI_FILL_HOLE(unsigned interrupts:1)
+
+	/* 22 bits hole remain */
+
 	enum phy_state state;
 
 	u32 dev_flags;
@@ -455,8 +460,8 @@ struct phy_device {
 	int pause;
 	int asym_pause;
 
-	/* Enabled Interrupts */
-	u32 interrupts;
+	/* RHEL: changed to a bit flag with the same name */
+	RH_KABI_DEPRECATE(u32, interrupts)
 
 	/* RHEL specific: fileds are deprecated.
 	 * PHY now using bitmaps declared later by RH_KABI_EXTEND macro
