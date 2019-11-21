@@ -2161,15 +2161,13 @@ fi\
 %kernel_variant_preun
 %kernel_variant_post -r kernel-smp
 %if %{with_realtime}
-%kernel_kvm_variant_post
-%kernel_kvm_variant_postun
+%kernel_kvm_post
 %endif
 
 %kernel_variant_preun debug
 %kernel_variant_post -v debug
 %if %{with_realtime}
-%kernel_kvm_variant_post debug
-%kernel_kvm_variant_postun debug
+%kernel_kvm_post debug
 %endif
 
 %if %{with_zfcpdump}
