@@ -132,6 +132,7 @@ int eeh_send_failure_event(struct eeh_pe *pe)
 	 * while the PE is sitting in the event queue.
 	 */
 	if (pe) {
+#ifdef CONFIG_STACKTRACE
 		/*
 		 * Save the current stack trace so we can dump it from the
 		 * event handler thread.
@@ -144,6 +145,7 @@ int eeh_send_failure_event(struct eeh_pe *pe)
 
 		save_stack_trace(&trace);
 		pe->trace_entries = trace.nr_entries;
+#endif /* CONFIG_STACKTRACE */
 
 		eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
 	}
