@@ -844,8 +844,8 @@ static bool valid_amd_processor(__u8 family, const char *model_id, bool guest)
 			if (!strncmp(model_id, "AMD EPYC 7", len)) {
 				len += 3;
 				/*
-				 * AMD EPYC 7xx1 == NAPLES
-				 * AMD EPYC 7xx2 == ROME
+				 * AMD EPYC 7xx1 == NAPLES (8.0)
+				 * AMD EPYC 7xx2 == ROME   (8.1/8.0z)
 				 */
 				if (strlen(model_id) >= len) {
 					if (model_id[len-1] == '1' ||
@@ -876,40 +876,39 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 		return false;
 
 	switch(model) {
-	case INTEL_FAM6_KABYLAKE:
+	case INTEL_FAM6_KABYLAKE: /* 8.0, 8.1 CFL(s13) */
 		valid = (stepping <= 13);
 		break;
 
-	case INTEL_FAM6_KABYLAKE_L:
+	case INTEL_FAM6_KABYLAKE_L: /* 8.0, 8.1 WHL(s12) */
 		valid = (stepping <= 12);
 		break;
 
-	case INTEL_FAM6_XEON_PHI_KNM:
-	case INTEL_FAM6_ATOM_GOLDMONT:
-	case INTEL_FAM6_ATOM_GOLDMONT_PLUS:
-	case INTEL_FAM6_ATOM_GOLDMONT_D:
-	case INTEL_FAM6_XEON_PHI_KNL:
-	case INTEL_FAM6_BROADWELL_D:
-	case INTEL_FAM6_BROADWELL_X:
-	case INTEL_FAM6_ATOM_SILVERMONT_D:
-	case INTEL_FAM6_BROADWELL_G:
-	case INTEL_FAM6_HASWELL_G:
-	case INTEL_FAM6_HASWELL_L:
+	case INTEL_FAM6_XEON_PHI_KNM: /* 8.0 */
+	case INTEL_FAM6_ATOM_GOLDMONT: /* 8.0 */
+	case INTEL_FAM6_ATOM_GOLDMONT_PLUS: /* 8.0 */
+	case INTEL_FAM6_ATOM_GOLDMONT_D: /* 8.0 */
+	case INTEL_FAM6_XEON_PHI_KNL: /* 8.0 */
+	case INTEL_FAM6_BROADWELL_D: /* 8.0 */
+	case INTEL_FAM6_BROADWELL_X: /* 8.0 */
+	case INTEL_FAM6_ATOM_SILVERMONT_D: /* 8.0 */
+	case INTEL_FAM6_BROADWELL_G: /* 8.0 */
+	case INTEL_FAM6_HASWELL_G: /* 8.0 */
+	case INTEL_FAM6_HASWELL_L: /* 8.0 */
 		valid = true;
 		break;
 
-	case INTEL_FAM6_SKYLAKE_L:
-	case INTEL_FAM6_SKYLAKE:
-		/* stepping > 4 is Cascade Lake and is not supported */
+	case INTEL_FAM6_SKYLAKE_L: /* 8.0 */
+	case INTEL_FAM6_SKYLAKE: /* 8.0 */
 		valid = (stepping <= 4);
 		break;
 
-	case INTEL_FAM6_SKYLAKE_X:
+	case INTEL_FAM6_SKYLAKE_X: /* 8.0 */
 		valid = (stepping <= 7);
 		break;
 
 	default:
-		valid = (model <= INTEL_FAM6_HASWELL_X);
+		valid = (model <= INTEL_FAM6_HASWELL_X); /* 8.0 */
 		break;
 	}
 
