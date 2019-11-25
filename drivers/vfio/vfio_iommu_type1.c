@@ -1390,7 +1390,10 @@ static int vfio_mdev_attach_domain(struct device *dev, void *data)
 
 	iommu_device = vfio_mdev_get_iommu_device(dev);
 	if (iommu_device) {
-		return iommu_attach_device(domain, iommu_device);
+		if (iommu_dev_feature_enabled(iommu_device, IOMMU_DEV_FEAT_AUX))
+			return iommu_aux_attach_device(domain, iommu_device);
+		else
+			return iommu_attach_device(domain, iommu_device);
 	}
 
 	return -EINVAL;
@@ -1403,7 +1406,10 @@ static int vfio_mdev_detach_domain(struct device *dev, void *data)
 
 	iommu_device = vfio_mdev_get_iommu_device(dev);
 	if (iommu_device) {
-		iommu_detach_device(domain, iommu_device);
+		if (iommu_dev_feature_enabled(iommu_device, IOMMU_DEV_FEAT_AUX))
+			iommu_aux_detach_device(domain, iommu_device);
+		else
+			iommu_detach_device(domain, iommu_device);
 	}
 
 	return 0;
