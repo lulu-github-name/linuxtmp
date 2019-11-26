@@ -417,7 +417,7 @@ void auxtrace_queues__free(struct auxtrace_queues *queues)
 
 			buffer = list_entry(queues->queue_array[i].head.next,
 					    struct auxtrace_buffer, list);
-			list_del(&buffer->list);
+			list_del_init(&buffer->list);
 			auxtrace_buffer__free(buffer);
 		}
 	}
@@ -621,7 +621,7 @@ void auxtrace_index__free(struct list_head *head)
 	struct auxtrace_index *auxtrace_index, *n;
 
 	list_for_each_entry_safe(auxtrace_index, n, head, list) {
-		list_del(&auxtrace_index->list);
+		list_del_init(&auxtrace_index->list);
 		free(auxtrace_index);
 	}
 }
