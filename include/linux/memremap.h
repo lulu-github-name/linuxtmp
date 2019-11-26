@@ -3,6 +3,7 @@
 #define _LINUX_MEMREMAP_H_
 #include <linux/ioport.h>
 #include <linux/percpu-refcount.h>
+#include <linux/mm_types.h>  /* needed in RHEL8 for dev_pagemap & vm_fault_t */
 
 struct resource;
 struct device;
@@ -73,7 +74,7 @@ enum memory_type {
  * (ZONE_DEVICE pages never reach 0 refcount unless there is a refcount bug.
  * This allows the device driver to implement its own memory management.)
  */
-typedef int (*dev_page_fault_t)(struct vm_area_struct *vma,
+typedef vm_fault_t (*dev_page_fault_t)(struct vm_area_struct *vma,
 				unsigned long addr,
 				const struct page *page,
 				unsigned int flags,
