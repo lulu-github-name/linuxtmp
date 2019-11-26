@@ -389,7 +389,7 @@ void __put_devmap_managed_page(struct page *page)
 		if (is_device_private_page(page))
 			page->mapping = NULL;
 
-		page->pgmap->ops->page_free(page, page->pgmap->data);
+		page->pgmap->ops->page_free(page);
 	} else if (!count)
 		__put_page(page);
 }
