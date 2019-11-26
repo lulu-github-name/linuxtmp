@@ -75,37 +75,44 @@ enum memory_type {
 #endif /* __GENKSYMS__ */
 };
 
-/*
- * Additional notes about MEMORY_DEVICE_PRIVATE may be found in
- * include/linux/hmm.h and Documentation/vm/hmm.rst. There is also a brief
- * explanation in include/linux/memory_hotplug.h.
- *
- * The page_free() callback is called once the page refcount reaches 1
- * (ZONE_DEVICE pages never reach 0 refcount unless there is a refcount bug.
- * This allows the device driver to implement its own memory management.)
- */
 typedef vm_fault_t (*dev_page_fault_t)(struct vm_area_struct *vma,
 				unsigned long addr,
 				const struct page *page,
 				unsigned int flags,
 				pmd_t *pmdp);
 typedef void (*dev_page_free_t)(struct page *page, void *data);
+struct dev_pagemap_ops {
+	/*
+	 * Called once the page refcount reaches 1.  (ZONE_DEVICE pages never
+	 * reach 0 refcount unless there is a refcount bug. This allows the
+	 * device driver to implement its own memory management.)
+	 */
+	void (*page_free)(struct page *page, void *data);
+
+	/*
+	 * Transition the refcount in struct dev_pagemap to the dead state.
+	 */
+	void (*kill)(struct percpu_ref *ref);
+
+	/*
+	 * Wait for refcount in struct dev_pagemap to be idle and reap it.
+	 */
+	void (*cleanup)(struct percpu_ref *ref);
+};
 
 /**
  * struct dev_pagemap - metadata for ZONE_DEVICE mappings
- * @page_free: free page callback when page refcount reaches 1
  * @altmap: pre-allocated/reserved memory for vmemmap allocations
  * @res: physical address range covered by @ref
  * @ref: reference count that pins the devm_memremap_pages() mapping
- * @kill: callback to transition @ref to the dead state
- * @cleanup: callback to wait for @ref to be idle and reap it
  * @dev: host device of the mapping for debug
  * @data: private data pointer for page_free()
  * @type: memory type: see MEMORY_* in memory_hotplug.h
+ * @ops: method table
  */
 struct dev_pagemap {
 	RH_KABI_DEPRECATE(dev_page_fault_t, page_fault)
-	dev_page_free_t page_free;
+	RH_KABI_DEPRECATE(dev_page_free_t, page_free)
 	struct vmem_altmap altmap;
 	bool altmap_valid;
 	struct resource res;
@@ -114,8 +121,7 @@ struct dev_pagemap {
 	void *data;
 	enum memory_type type;
 	u64 pci_p2pdma_bus_offset;
-	RH_KABI_EXTEND(void (*kill)(struct percpu_ref *ref))
-	RH_KABI_EXTEND(void (*cleanup)(struct percpu_ref *ref))
+	RH_KABI_EXTEND(const struct dev_pagemap_ops *ops)
 };
 
 #ifdef CONFIG_ZONE_DEVICE

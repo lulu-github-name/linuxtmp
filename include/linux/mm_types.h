@@ -27,6 +27,7 @@
 struct address_space;
 struct mem_cgroup;
 struct hmm;
+struct dev_pagemap;
 
 /*
  * Each physical page in the system has a struct page associated with
