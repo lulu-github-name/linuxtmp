@@ -10,6 +10,7 @@ perf-y += evlist.o
 perf-y += evsel.o
 perf-y += evsel_fprintf.o
 perf-y += find_bit.o
+perf-y += get_current_dir_name.o
 perf-y += kallsyms.o
 perf-y += levenshtein.o
 perf-y += llvm-utils.o
