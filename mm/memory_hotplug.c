@@ -546,8 +546,7 @@ void __remove_pages(struct zone *zone, unsigned long pfn,
 	unsigned long map_offset = 0;
 	unsigned long nr, start_sec, end_sec;
 
-	if (altmap)
-		map_offset = vmem_altmap_offset(altmap);
+	map_offset = vmem_altmap_offset(altmap);
 
 	clear_zone_contiguous(zone);
 

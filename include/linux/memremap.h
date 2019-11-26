@@ -106,6 +106,8 @@ struct dev_pagemap_ops {
 	vm_fault_t (*migrate_to_ram)(struct vm_fault *vmf);
 };
 
+#define PGMAP_ALTMAP_VALID	(1 << 0)
+
 /**
  * struct dev_pagemap - metadata for ZONE_DEVICE mappings
  * @altmap: pre-allocated/reserved memory for vmemmap allocations
@@ -114,13 +116,14 @@ struct dev_pagemap_ops {
  * @dev: host device of the mapping for debug
  * @data: private data pointer for page_free()
  * @type: memory type: see MEMORY_* in memory_hotplug.h
+ * @flags: PGMAP_* flags to specify defailed behavior
  * @ops: method table
  */
 struct dev_pagemap {
 	RH_KABI_DEPRECATE(dev_page_fault_t, page_fault)
 	RH_KABI_DEPRECATE(dev_page_free_t, page_free)
 	struct vmem_altmap altmap;
-	bool altmap_valid;
+	RH_KABI_DEPRECATE(bool, altmap_valid)
 	struct resource res;
 	struct percpu_ref *ref;
 	struct device *dev;
@@ -128,7 +131,15 @@ struct dev_pagemap {
 	enum memory_type type;
 	u64 pci_p2pdma_bus_offset;
 	RH_KABI_EXTEND(const struct dev_pagemap_ops *ops)
+	RH_KABI_EXTEND(unsigned int flags)
 };
+
+static inline struct vmem_altmap *pgmap_altmap(struct dev_pagemap *pgmap)
+{
+	if (pgmap->flags & PGMAP_ALTMAP_VALID)
+		return &pgmap->altmap;
+	return NULL;
+}
 
 #ifdef CONFIG_ZONE_DEVICE
 void *devm_memremap_pages(struct device *dev, struct dev_pagemap *pgmap);
