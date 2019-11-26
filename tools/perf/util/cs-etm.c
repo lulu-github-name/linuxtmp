@@ -2011,7 +2011,7 @@ err_free_etm:
 err_free_metadata:
 	/* No need to check @metadata[j], free(NULL) is supported */
 	for (j = 0; j < num_cpu; j++)
-		free(metadata[j]);
+		zfree(&metadata[j]);
 	zfree(&metadata);
 err_free_traceid_list:
 	intlist__delete(traceid_list);
