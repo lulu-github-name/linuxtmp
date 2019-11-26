@@ -571,13 +571,15 @@ int get_spectre_v2_workaround_state(void);
 static inline bool system_supports_address_auth(void)
 {
 	return IS_ENABLED(CONFIG_ARM64_PTR_AUTH) &&
-		cpus_have_const_cap(ARM64_HAS_ADDRESS_AUTH);
+		(cpus_have_const_cap(ARM64_HAS_ADDRESS_AUTH_ARCH) ||
+		 cpus_have_const_cap(ARM64_HAS_ADDRESS_AUTH_IMP_DEF));
 }
 
 static inline bool system_supports_generic_auth(void)
 {
 	return IS_ENABLED(CONFIG_ARM64_PTR_AUTH) &&
-		cpus_have_const_cap(ARM64_HAS_GENERIC_AUTH);
+		(cpus_have_const_cap(ARM64_HAS_GENERIC_AUTH_ARCH) ||
+		 cpus_have_const_cap(ARM64_HAS_GENERIC_AUTH_IMP_DEF));
 }
 
 #define ARM64_SSBD_UNKNOWN		-1
