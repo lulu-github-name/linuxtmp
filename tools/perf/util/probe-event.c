@@ -33,7 +33,6 @@
 #include <limits.h>
 #include <elf.h>
 
-#include "util.h"
 #include "event.h"
 #include "namespaces.h"
 #include "strlist.h"
@@ -54,6 +53,7 @@
 #include "string2.h"
 
 #include <linux/ctype.h>
+#include <linux/zalloc.h>
 
 #define PERFPROBE_GROUP "probe"
 

@@ -18,6 +18,7 @@
 #include <linux/perf_event.h>
 #include <linux/compiler.h>
 #include <linux/err.h>
+#include <linux/zalloc.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/types.h>
@@ -28,7 +29,6 @@
 #include "event.h"
 #include "evsel.h"
 #include "evlist.h"
-#include "util.h"
 #include "cpumap.h"
 #include "thread_map.h"
 #include "target.h"
