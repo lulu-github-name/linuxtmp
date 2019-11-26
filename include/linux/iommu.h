@@ -304,6 +304,8 @@ struct iommu_ops {
 	RH_KABI_EXTEND(void (*sva_unbind)(struct iommu_sva *handle))
 	RH_KABI_EXTEND(int (*sva_get_pasid)(struct iommu_sva *handle))
 
+	RH_KABI_EXTEND(void (*iotlb_sync_map)(struct iommu_domain *domain))
+
 	unsigned long pgsize_bitmap;
 };
 
