@@ -113,6 +113,8 @@ struct dev_pagemap_ops {
  * @altmap: pre-allocated/reserved memory for vmemmap allocations
  * @res: physical address range covered by @ref
  * @ref: reference count that pins the devm_memremap_pages() mapping
+ * @internal_ref: internal reference if @ref is not provided by the caller
+ * @done: completion for @internal_ref
  * @dev: host device of the mapping for debug
  * @data: private data pointer for page_free()
  * @type: memory type: see MEMORY_* in memory_hotplug.h
@@ -132,6 +134,8 @@ struct dev_pagemap {
 	u64 pci_p2pdma_bus_offset;
 	RH_KABI_EXTEND(const struct dev_pagemap_ops *ops)
 	RH_KABI_EXTEND(unsigned int flags)
+	RH_KABI_EXTEND(struct percpu_ref internal_ref)
+	RH_KABI_EXTEND(struct completion done)
 };
 
 static inline struct vmem_altmap *pgmap_altmap(struct dev_pagemap *pgmap)
