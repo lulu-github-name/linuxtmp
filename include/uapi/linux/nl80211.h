@@ -4232,6 +4232,27 @@ enum nl80211_channel_type {
 };
 
 /**
+ * enum nl80211_key_mode - Key mode
+ *
+ * @NL80211_KEY_RX_TX: (Default)
+ *	Key can be used for Rx and Tx immediately
+ *
+ * The following modes can only be selected for unicast keys and when the
+ * driver supports @NL80211_EXT_FEATURE_EXT_KEY_ID:
+ *
+ * @NL80211_KEY_NO_TX: Only allowed in combination with @NL80211_CMD_NEW_KEY:
+ *	Unicast key can only be used for Rx, Tx not allowed, yet
+ * @NL80211_KEY_SET_TX: Only allowed in combination with @NL80211_CMD_SET_KEY:
+ *	The unicast key identified by idx and mac is cleared for Tx and becomes
+ *	the preferred Tx key for the station.
+ */
+enum nl80211_key_mode {
+	NL80211_KEY_RX_TX,
+	NL80211_KEY_NO_TX,
+	NL80211_KEY_SET_TX
+};
+
+/**
  * enum nl80211_chan_width - channel width definitions
  *
  * These values are used with the %NL80211_ATTR_CHANNEL_WIDTH
@@ -4475,6 +4496,9 @@ enum nl80211_key_default_types {
  * @NL80211_KEY_DEFAULT_TYPES: A nested attribute containing flags
  *	attributes, specifying what a key should be set as default as.
  *	See &enum nl80211_key_default_types.
+ * @NL80211_KEY_MODE: the mode from enum nl80211_key_mode.
+ *	Defaults to @NL80211_KEY_RX_TX.
+ *
  * @__NL80211_KEY_AFTER_LAST: internal
  * @NL80211_KEY_MAX: highest key attribute
  */
@@ -4488,6 +4512,7 @@ enum nl80211_key_attributes {
 	NL80211_KEY_DEFAULT_MGMT,
 	NL80211_KEY_TYPE,
 	NL80211_KEY_DEFAULT_TYPES,
+	NL80211_KEY_MODE,
 
 	/* keep last */
 	__NL80211_KEY_AFTER_LAST,
@@ -5435,6 +5460,8 @@ enum nl80211_feature_flags {
  *      able to rekey an in-use key correctly. Userspace must not rekey PTK keys
  *      if this flag is not set. Ignoring this can leak clear text packets and/or
  *      freeze the connection.
+ * @NL80211_EXT_FEATURE_EXT_KEY_ID: Driver supports "Extended Key ID for
+ *      Individually Addressed Frames" from IEEE802.11-2016.
  *
  * @NL80211_EXT_FEATURE_AIRTIME_FAIRNESS: Driver supports getting airtime
  *	fairness for transmitted packets and has enabled airtime fairness
@@ -5494,6 +5521,7 @@ enum nl80211_ext_feature_index {
 	NL80211_EXT_FEATURE_AIRTIME_FAIRNESS,
 	NL80211_EXT_FEATURE_AP_PMKSA_CACHING,
 	NL80211_EXT_FEATURE_SCHED_SCAN_BAND_SPECIFIC_RSSI_THOLD,
+	NL80211_EXT_FEATURE_EXT_KEY_ID,
 	NL80211_EXT_FEATURE_STA_TX_PWR,
 	NL80211_EXT_FEATURE_SAE_OFFLOAD,
 
