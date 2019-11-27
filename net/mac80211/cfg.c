@@ -351,7 +351,6 @@ static int ieee80211_set_noack_map(struct wiphy *wiphy,
 	return 0;
 }
 
-#if 0 /* Not in RHEL */
 static int ieee80211_set_tx(struct ieee80211_sub_if_data *sdata,
 			    const u8 *mac_addr, u8 key_idx)
 {
@@ -381,7 +380,6 @@ static int ieee80211_set_tx(struct ieee80211_sub_if_data *sdata,
 	mutex_unlock(&local->key_mtx);
 	return ret;
 }
-#endif
 
 static int ieee80211_add_key(struct wiphy *wiphy, struct net_device *dev,
 			     u8 key_idx, bool pairwise, const u8 *mac_addr,
@@ -397,10 +395,8 @@ static int ieee80211_add_key(struct wiphy *wiphy, struct net_device *dev,
 	if (!ieee80211_sdata_running(sdata))
 		return -ENETDOWN;
 
-#if 0 /* Not in RHEL */
 	if (pairwise && params->mode == NL80211_KEY_SET_TX)
 		return ieee80211_set_tx(sdata, mac_addr, key_idx);
-#endif
 
 	/* reject WEP and TKIP keys if WEP failed to initialize */
 	switch (params->cipher) {
@@ -432,10 +428,8 @@ static int ieee80211_add_key(struct wiphy *wiphy, struct net_device *dev,
 	if (pairwise)
 		key->conf.flags |= IEEE80211_KEY_FLAG_PAIRWISE;
 
-#if 0 /* Not in RHEL */
 	if (params->mode == NL80211_KEY_NO_TX)
 		key->conf.flags |= IEEE80211_KEY_FLAG_NO_AUTO_TX;
-#endif
 
 	mutex_lock(&local->sta_mtx);
 

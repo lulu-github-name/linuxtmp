@@ -1048,7 +1048,6 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
 		}
 	}
 
-#if 0  /* Not in RHEL */
 	/* Enable Extended Key IDs when driver allowed it, or when it
 	 * supports neither HW crypto nor A-MPDUs
 	 */
@@ -1057,7 +1056,6 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
 	    ieee80211_hw_check(&local->hw, EXT_KEY_ID_NATIVE))
 		wiphy_ext_feature_set(local->hw.wiphy,
 				      NL80211_EXT_FEATURE_EXT_KEY_ID);
-#endif
 
 	/* Mac80211 and therefore all cards only using SW crypto are able to
 	 * handle PTK rekeys correctly
