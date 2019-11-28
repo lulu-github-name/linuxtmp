@@ -185,4 +185,7 @@ LIBBPF_0.0.4 {
 		perf_buffer__poll;
 		bpf_object__open_file;
 		bpf_object__open_mem;
+		bpf_map__get_pin_path;
+		bpf_map__is_pinned;
+		bpf_map__set_pin_path;
 } LIBBPF_0.0.3;
