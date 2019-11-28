@@ -190,4 +190,5 @@ LIBBPF_0.0.4 {
 		bpf_map__set_pin_path;
 		bpf_program__get_expected_attach_type;
 		bpf_program__get_type;
+		bpf_get_link_xdp_info;
 } LIBBPF_0.0.3;
