@@ -183,4 +183,6 @@ LIBBPF_0.0.4 {
 		perf_buffer__new;
 		perf_buffer__new_raw;
 		perf_buffer__poll;
+		bpf_object__open_file;
+		bpf_object__open_mem;
 } LIBBPF_0.0.3;
