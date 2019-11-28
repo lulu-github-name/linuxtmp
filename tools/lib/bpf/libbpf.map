@@ -191,4 +191,5 @@ LIBBPF_0.0.4 {
 		bpf_program__get_expected_attach_type;
 		bpf_program__get_type;
 		bpf_get_link_xdp_info;
+		bpf_program__size;
 } LIBBPF_0.0.3;
