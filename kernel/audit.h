@@ -69,6 +69,7 @@ struct audit_cap_data {
 		kernel_cap_t	effective;	/* effective set of process */
 	};
 	kernel_cap_t		ambient;
+	RH_KABI_EXTEND(kuid_t			rootid;)
 };
 
 /* When fs/namei.c:getname() is called, we store the pointer in name and bump
