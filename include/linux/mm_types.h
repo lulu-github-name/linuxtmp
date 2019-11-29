@@ -214,6 +214,9 @@ struct page {
 #define PAGE_FRAG_CACHE_MAX_SIZE	__ALIGN_MASK(32768, ~PAGE_MASK)
 #define PAGE_FRAG_CACHE_MAX_ORDER	get_order(PAGE_FRAG_CACHE_MAX_SIZE)
 
+#define page_private(page)		((page)->private)
+#define set_page_private(page, v)	((page)->private = (v))
+
 struct page_frag_cache {
 	void * va;
 #if (PAGE_SIZE < PAGE_FRAG_CACHE_MAX_SIZE)
@@ -410,7 +413,20 @@ struct mm_struct {
 
 		unsigned long total_vm;	   /* Total pages mapped */
 		unsigned long locked_vm;   /* Pages that have PG_mlocked set */
-		RH_KABI_REPLACE(
+		/*
+		 * RHEL KABI NOTE: due to changes for BZ#1620349 mm_types.h is
+		 * being exposed to the vdso32 object build, thus we need the
+		 * _UNSAFE variant of RH_KABI_REPLACE in order to placate the
+		 * static assertion check embedded into the safe macro.
+		 * Although unsigned long and atomic64_t do not have a type size
+		 * match in the vdso32 object build case, it is, actually, safe
+		 * to keep the inline type replacement here as there are no
+		 * dependencies, direct or indirect, between the vdso32 code and
+		 * struct mm_struct fields. On every other compilation unit that
+		 * struct mm_struct is required, the type sizes and aligment are
+		 * a perfect match, as expected.
+		 */
+		RH_KABI_REPLACE_UNSAFE(
 		unsigned long pinned_vm,
 		atomic64_t    pinned_vm
 		)			   /* Refcount permanently increased */
