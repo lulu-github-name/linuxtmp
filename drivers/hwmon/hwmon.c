@@ -720,8 +720,12 @@ EXPORT_SYMBOL_GPL(hwmon_device_register_with_info);
  */
 struct device *hwmon_device_register(struct device *dev)
 {
-	dev_warn(dev,
-		 "hwmon_device_register() is deprecated. Please convert the driver to use hwmon_device_register_with_info().\n");
+	/* RHEL8: Upstream drivers have not been converted to use this
+	 * new interface.  Comment this message out to avoid support calls.
+	 *
+	 * dev_warn(dev,
+	 *	 "hwmon_device_register() is deprecated. Please convert the driver to use hwmon_device_register_with_info().\n");
+	 */
 
 	return __hwmon_device_register(dev, NULL, NULL, NULL, NULL);
 }
