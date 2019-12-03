@@ -1,0 +1,3 @@
+# These devices exist primarily in access points and routers, not
+# commonly found in laptops or desktops, so disable unless we get an RFE
+# CONFIG_MT7615E is not set
