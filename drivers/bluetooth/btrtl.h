@@ -47,7 +47,8 @@ struct rtl_epatch_header {
 
 #if IS_ENABLED(CONFIG_BT_RTL)
 
-struct btrtl_device_info *btrtl_initialize(struct hci_dev *hdev);
+struct btrtl_device_info *btrtl_initialize(struct hci_dev *hdev,
+					   const char *postfix);
 void btrtl_free(struct btrtl_device_info *btrtl_dev);
 int btrtl_download_firmware(struct hci_dev *hdev,
 			    struct btrtl_device_info *btrtl_dev);
@@ -55,7 +56,8 @@ int btrtl_setup_realtek(struct hci_dev *hdev);
 
 #else
 
-static inline struct btrtl_device_info *btrtl_initialize(struct hci_dev *hdev)
+static inline struct btrtl_device_info *btrtl_initialize(struct hci_dev *hdev,
+							 const char *postfix)
 {
 	return ERR_PTR(-EOPNOTSUPP);
 }
