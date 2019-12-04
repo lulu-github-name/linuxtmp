@@ -402,8 +402,6 @@ static int btmtksdio_rx_packet(struct btmtksdio_dev *bdev, u16 rx_size)
 	if (err < 0)
 		goto err_kfree_skb;
 
-	bdev->hdev->stat.byte_rx += rx_size;
-
 	sdio_hdr = (void *)skb->data;
 
 	/* We assume the default error as -EILSEQ simply to make the error path
@@ -467,6 +465,8 @@ static int btmtksdio_rx_packet(struct btmtksdio_dev *bdev, u16 rx_size)
 
 	/* Complete frame */
 	(&pkts[i])->recv(bdev->hdev, skb);
+
+	bdev->hdev->stat.byte_rx += rx_size;
 
 	return 0;
 
