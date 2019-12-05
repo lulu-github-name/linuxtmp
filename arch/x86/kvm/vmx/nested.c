@@ -1811,15 +1811,6 @@ static int copy_vmcs12_to_enlightened(struct vcpu_vmx *vmx)
 	return 0;
 }
 
-static void nested_taint(void)
-{
-	static atomic_t tainted;
-	if (atomic_read(&tainted) || atomic_xchg(&tainted, 1))
-		return;
-
-	mark_tech_preview("nested virtualization", THIS_MODULE);
-}
-
 /*
  * This is an equivalent of the nested hypervisor executing the vmptrld
  * instruction.
@@ -1837,7 +1828,6 @@ static int nested_vmx_handle_enlightened_vmptrld(struct kvm_vcpu *vcpu,
 	if (!nested_enlightened_vmentry(vcpu, &evmcs_gpa))
 		return 1;
 
-	nested_taint();
 	if (unlikely(evmcs_gpa != vmx->nested.hv_evmcs_vmptr)) {
 		if (!vmx->nested.hv_evmcs)
 			vmx->nested.current_vmptr = -1ull;
@@ -4824,7 +4814,6 @@ static int handle_vmptrld(struct kvm_vcpu *vcpu)
 	if (nested_vmx_get_vmptr(vcpu, &vmptr))
 		return 1;
 
-	nested_taint();
 	if (!page_address_valid(vcpu, vmptr))
 		return nested_vmx_failValid(vcpu,
 			VMXERR_VMPTRLD_INVALID_ADDRESS);
