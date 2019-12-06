@@ -246,6 +246,7 @@ struct perf_event;
 #define PERF_PMU_CAP_ITRACE			0x20
 #define PERF_PMU_CAP_HETEROGENEOUS_CPUS		0x40
 #define PERF_PMU_CAP_NO_EXCLUDE			0x80
+#define PERF_PMU_CAP_AUX_OUTPUT			0x100
 
 /**
  * struct pmu - generic performance monitoring unit
@@ -443,6 +444,16 @@ struct pmu {
 	 * caller provides necessary serialization.
 	 */
 	void (*addr_filters_sync)	(struct perf_event *event);
+					/* optional */
+
+	/*
+	 * Check if event can be used for aux_output purposes for
+	 * events of this PMU.
+	 *
+	 * Runs from perf_event_open(). Should return 0 for "no match"
+	 * or non-zero for "match".
+	 */
+	RH_KABI_EXTEND(int (*aux_output_match)		(struct perf_event *event))
 					/* optional */
 
 	/*
@@ -681,6 +692,9 @@ struct perf_event {
 	/* vma address array for file-based filders */
 	RH_KABI_REPLACE(unsigned long *addr_filters_offs, struct perf_addr_filter_range	*addr_filter_ranges)
 	unsigned long			addr_filters_gen;
+
+	/* for aux_output events */
+	RH_KABI_EXTEND(struct perf_event        *aux_event)
 
 	void (*destroy)(struct perf_event *);
 	struct rcu_head			rcu_head;

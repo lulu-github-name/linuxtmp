@@ -375,7 +375,8 @@ struct perf_event_attr {
 #ifndef __GENKSYMS__
 				ksymbol        :  1, /* include ksymbol events */
 				bpf_event      :  1, /* include bpf events */
-				__reserved_1   : 33;
+				aux_output     :  1, /* generate AUX records instead of events */
+				__reserved_1   : 32;
 #else
 				__reserved_1   : 35;
 #endif /*  __GENKSYMS__ */
