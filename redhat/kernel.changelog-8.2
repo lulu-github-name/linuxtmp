@@ -1,3 +1,93 @@
+* Fri Dec 06 2019 Bruno Meneguele <bmeneg@redhat.com> [4.18.0-161.el8]
+- [fs] binfmt_elf: Do not move brk for INTERP-less ET_EXEC (Waiman Long) [1749633]
+- [fs] binfmt_elf: move brk out of mmap when doing direct loader exec (Waiman Long) [1749633]
+- [gpu] drm/i915/cmdparser: Fix jump whitelist clearing (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915/gen8+: Add RC6 CTX corruption WA (Dave Airlie) [1756805] {CVE-2019-0154}
+- [gpu] drm/i915: Lower RM timeout to avoid DSI hard hangs (Dave Airlie) [1756805] {CVE-2019-0154}
+- [gpu] drm/i915/cmdparser: Ignore Length operands during command matching (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915/cmdparser: Add support for backward jumps (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915/cmdparser: Use explicit goto for error paths (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915: Add gen9 BCS cmdparsing (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915: Allow parsing of unsized batches (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915: Support ro ppgtt mapped cmdparser shadow buffers (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915: Add support for mandatory cmdparsing (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915: Remove Master tables from cmdparser (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915: Disable Secure Batches for gen6+ (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] drm/i915: Rename gen7 cmdparser tables (Dave Airlie) [1756873] {CVE-2019-0155}
+- [gpu] [drm] radeon: fix bad DMA from INTERRUPT_CNTL2 (Sam Bobroff) [1293697]
+- [netdrv] mwifiex: Fix heap overflow in mmwifiex_process_tdls_action_frame() (Jarod Wilson) [1776162] {CVE-2019-14901}
+- [netdrv] mlx4_en: Fix wrong limitation for number of TX rings (Mohammad Heib) [1776822]
+- [netdrv] mlx4_en: fix mlx4 ethtool -N insertion (Mohammad Heib) [1776822]
+- [netdrv] mlx4_core: fix wrong comment about the reason of subtract one from the max_cqes (Mohammad Heib) [1776822]
+- [netdrv] ibmvnic: Serialize device queries (Steve Best) [1778037]
+- [netdrv] ibmvnic: Bound waits for device queries (Steve Best) [1778037]
+- [netdrv] ibmvnic: Terminate waiting device threads after loss of service (Steve Best) [1778037]
+- [netdrv] ibmvnic: Fix completion structure initialization (Steve Best) [1778037]
+- [netdrv] ibmvnic: Ignore H_FUNCTION return from H_EOI to tolerate XIVE mode (Steve Best) [1778037]
+- [netdrv] revert "net/ibmvnic: Fix EOI when running in XIVE mode" (Steve Best) [1778037]
+- [netdrv] cnic: Set fp_hsi_ver as part of CLIENT_SETUP ramrod (Manish Chopra) [1770797]
+- [netdrv] bnx2x: Fix PF-VF communication over multi-cos queues (Manish Chopra) [1770797]
+- [netdrv] bnx2x: Enable Multi-Cos feature (Manish Chopra) [1770797]
+- [netdrv] bnx2x: Utilize FW 7.13.15.0 (Manish Chopra) [1770797]
+- [fs] seq_file: fix problem when seeking mid-record (Bill O'Donnell) [1753822]
+- [documentation] fs/seq_file.c: simplify seq_file iteration code and interface (Bill O'Donnell) [1753822]
+- [scripts] kbuild: replace BASH-specific ${@:2} with shift and ${@} (Jiri Olsa) [1739493]
+- [scripts] btf: do not use CONFIG_OUTPUT_FORMAT (Jiri Olsa) [1739493]
+- [kernel] btf: fix return value check in btf_vmlinux_init() (Jiri Olsa) [1739493]
+- [kernel] btf: rename /sys/kernel/btf/kernel into /sys/kernel/btf/vmlinux (Jiri Olsa) [1739493]
+- [scripts] btf: expose BTF info through sysfs (Jiri Olsa) [1739493]
+- [netdrv] qede: fix NULL pointer deref in __qede_remove() (Manish Chopra) [1769203]
+- [gpu] cleanup: Remove .rej files (Prarit Bhargava) [1779738]
+- [lib] string: Add strscpy_pad() function (Josef Oskera) [1764588]
+- [char] virtio_console: allocate inbufs in add_port() only if it is needed (Pankaj Gupta) [1612795]
+- [fs] xfs: add kmem_alloc_io() (Bill O'Donnell) [1583556]
+- [fs] xfs: make mem_to_page available outside of xfs_buf.c (Bill O'Donnell) [1583556]
+- [fs] xfs: get allocation alignment from the buftarg (Bill O'Donnell) [1583556]
+- [fs] xfs: add kmem_alloc_io() (Bill O'Donnell) [1583556]
+- [fs] cifs: Fix cifsInodeInfo lock_sem deadlock when reconnect occurs (Leif Sahlberg) [1765979]
+- [fs] cifs: avoid using MID 0xFFFF (Leif Sahlberg) [1765979]
+- [fs] cifs: Fix retry mid list corruption on reconnects (Leif Sahlberg) [1765979]
+- [fs] nfsd: allow fh_want_write to be called twice ("J. Bruce Fields") [1699222]
+- [net] revert "sunrpc: Fix up task signalling" (Dave Wysochanski) [1776067]
+- [s390] kasan: support memcpy_real with TRACE_IRQFLAGS (Philipp Rudo) [1777468]
+- [s390] kasan: add kdump support (Philipp Rudo) [1777468]
+- [s390] idle: fix cpu idle time calculation (Philipp Rudo) [1777361]
+- [s390] kaslr: add support for R_390_GLOB_DAT relocation type (Philipp Rudo) [1777467]
+- [x86] jump_label: Make tp_vec_nr static (Daniel Bristot de Oliveira) [1731860]
+- [x86] jump_label: Batch jump label updates (Daniel Bristot de Oliveira) [1731860]
+- [kernel] jump_label: Batch updates if arch supports it (Daniel Bristot de Oliveira) [1731860]
+- [x86] alternative: Batch of patch operations (Daniel Bristot de Oliveira) [1731860]
+- [kernel] jump_label: Sort entries of the same key by the code (Daniel Bristot de Oliveira) [1731860]
+- [x86] jump_label: Add a __jump_label_set_jump_code() helper (Daniel Bristot de Oliveira) [1731860]
+- [kernel] jump_label: Don't warn on __exit jump entries (Daniel Bristot de Oliveira) [1731860]
+- [kernel] jump_label: Add a jump_label_can_update() helper (Daniel Bristot de Oliveira) [1731860]
+- [x86] alternatives: Remove the return value of text_poke_*() (Daniel Bristot de Oliveira) [1731860]
+- [x86] jump-label: Remove support for custom text poker (Daniel Bristot de Oliveira) [1731860]
+- [x86] jump_label: Use text_poke_early() during early init (Daniel Bristot de Oliveira) [1731860]
+- [x86] alternatives: Add text_poke_kgdb() to not assert the lock when debugging (Daniel Bristot de Oliveira) [1731860]
+- [x86] kprobes: Prohibit probing on functions before kprobe_int3_handler() (Daniel Bristot de Oliveira) [1731860]
+- [kernel] jump_label: Fix NULL dereference bug in __jump_label_mod_update() (Daniel Bristot de Oliveira) [1731860]
+- [kernel] jump_label: Annotate entries that operate on __init code earlier (Daniel Bristot de Oliveira) [1731860]
+- [x86] jump_label: Switch to jump_entry accessors (Daniel Bristot de Oliveira) [1731860]
+- [kernel] jump_label: Implement generic support for relative references (Daniel Bristot de Oliveira) [1731860]
+- [kernel] jump_label: Abstract jump_entry member accessors (Daniel Bristot de Oliveira) [1731860]
+- [x86] alternatives: Lockdep-enforce text_mutex in text_poke*() (Daniel Bristot de Oliveira) [1731860]
+- [x86] revert "x86/paravirt: Set up the virt_spin_lock_key after static keys get initialized" (Daniel Bristot de Oliveira) [1731860]
+- [x86] jump_label: Initialize static branching early (Vitaly Kuznetsov) [1777260]
+- [x86] speculation: Fix redundant MDS mitigation message (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [x86] speculation: Fix incorrect MDS/TAA mitigation status (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [x86] speculation/taa: Fix printing of TAA_MSG_SMT on IBRS_ALL CPUs (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [x86] tsx: Add config options to set tsx=on|off|auto (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [documentation] x86/speculation/taa: Add documentation for TSX Async Abort (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [x86] tsx: Add "auto" option to the tsx= cmdline parameter (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [x86] speculation/taa: Add sysfs reporting for TSX Async Abort (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [x86] speculation/taa: Add mitigation for TSX Async Abort (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [x86] cpu: Add a "tsx=" cmdline option with TSX disabled by default (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [x86] cpu: Add a helper function x86_read_arch_cap_msr() (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [x86] msr: Add the IA32_TSX_CTRL MSR (Josh Poimboeuf) [1766551] {CVE-2019-11135}
+- [powerpc] xive: Prevent page fault issues in the machine crash handler (Diego Domingos) [1756116]
+- [tools] Fix memcpy_mcsafe_64.S link on selftests (Desnes Augusto Nunes do Rosario) [1775570]
+
 * Wed Dec 04 2019 Bruno Meneguele <bmeneg@redhat.com> [4.18.0-160.el8]
 - [powerpc] perf: Fix loop exit condition in nest_imc_event_init (Steve Best) [1778609]
 - [net] netfilter: nf_tables: Add missing nft_tproxy Makefile line (Phil Sutter) [1762977]
