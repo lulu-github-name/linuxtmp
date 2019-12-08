@@ -69,6 +69,7 @@ struct rh_cpuidle_state_usage {
 struct rh_cpuidle_device {
 	u64 poll_limit_ns;
 	ktime_t next_hrtimer;
+	int last_state_idx;
 	struct rh_cpuidle_state_usage rh_states_usage[CPUIDLE_STATE_MAX];
 };
 
