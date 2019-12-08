@@ -40,6 +40,38 @@ struct cpuidle_state_usage {
 #endif
 };
 
+/*
+ * RHEL8 specific 'struct rh_cpuidle_state_usage': this a struct meant to
+ * shadow any usage of 'struct cpuidle_state_usage'.  Under normal conditions,
+ * there would be a pointer to this shadow struct in the original.  However,
+ * the struct cpuidle_device was placed under kABI before it was known that
+ * cpuidle_state_usage needed to be extended, and is unfortunately used as
+ * an array of structs, vs an array of pointers to the struct.  As a result,
+ * the pointer to a shadow structure now needs to be carried in struct
+ * cpuidle_device in order to be sure it is attached to the proper device.
+ *
+ * NB: most of the fields in this struct -- so far -- are unsigned long long.
+ * Be careful when using the reserved fields since they are currently making
+ * the assumption that sizeof(unsigned long) == sizeof(unsigned long long).
+ */
+struct rh_cpuidle_state_usage {
+	unsigned long long above; /* Number of times it's been too deep */
+	unsigned long long below; /* Number of times it's been too shallow */
+};
+
+/*
+ * RHEL8 specific 'struct rh_cpuidle_device' has been created as a shadow
+ * struct to cpuidle_device since we know that this struct has changed
+ * several times since RHEL8 started, breaking kABI each time.  By using
+ * this struct, we can isolate changes to the RHEL8 specific shadow structs
+ * and preclude breaking kABI every time we need to add an element.
+ */
+struct rh_cpuidle_device {
+	u64 poll_limit_ns;
+	ktime_t next_hrtimer;
+	struct rh_cpuidle_state_usage rh_states_usage[CPUIDLE_STATE_MAX];
+};
+
 struct cpuidle_state {
 	char		name[CPUIDLE_NAME_LEN];
 	char		desc[CPUIDLE_DESC_LEN];
@@ -97,8 +129,9 @@ struct cpuidle_device {
 	cpumask_t		coupled_cpus;
 	struct cpuidle_coupled	*coupled;
 #endif
-	RH_KABI_EXTEND(u64			poll_limit_ns)
-	RH_KABI_EXTEND(ktime_t			next_hrtimer)
+
+	/* RHEL8 only: add in a shadow struct to contain new fields */
+	RH_KABI_EXTEND(struct rh_cpuidle_device rh_cpuidle_dev)
 };
 
 DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
