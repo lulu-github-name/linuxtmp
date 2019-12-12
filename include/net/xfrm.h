@@ -1120,6 +1120,11 @@ struct xfrm_offload {
 };
 
 struct sec_path {
+	/* RHEL: There is RHEL specific helper function __rh_skb_ext_put()
+	 * that assumes that this refcnt field is the 1st field in this
+	 * struct and its type is refcount_t. If you really need to break
+	 * this assumption please modify the mentioned function properly.
+	 */
 	refcount_t		refcnt;
 	int			len;
 	int			olen;
@@ -1127,6 +1132,11 @@ struct sec_path {
 	struct xfrm_state	*xvec[XFRM_MAX_DEPTH];
 	struct xfrm_offload	ovec[XFRM_MAX_OFFLOAD_DEPTH];
 };
+
+static_assert(offsetof(struct sec_path, refcnt) == 0,
+	      "The position of field refcnt in struct sec_path was changed. "
+	      "Please look on its declaration in " __FILE__
+	      " for more details.");
 
 static inline int secpath_exists(struct sk_buff *skb)
 {
@@ -1150,6 +1160,11 @@ void __secpath_destroy(struct sec_path *sp);
 static inline void
 secpath_put(struct sec_path *sp)
 {
+	/* RHEL: There is function __rh_skb_ext_put() defined in header
+	 * <linux/skbuff.h> that reuses the content of this function because
+	 * it cannot call it directly. If you need to modify this function
+	 * then please modify also __rh_skb_ext_put() accordingly.
+	 */
 	if (sp && refcount_dec_and_test(&sp->refcnt))
 		__secpath_destroy(sp);
 }

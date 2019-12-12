@@ -4093,6 +4093,29 @@ static inline void nf_conntrack_get(struct nf_conntrack *nfct)
 }
 #endif
 
+/* RHEL: Helper function that needs to be called when skb_ext_put() and
+ * skb_ext_reset() are called. This helper takes care of skb->sp
+ * (and maybe about skb->nf_bridge in future) that cannot be converted
+ * to SKB extension due to KABI reasons.
+ */
+struct sec_path;
+void __secpath_destroy(struct sec_path *sp);
+
+static __always_inline void __rh_skb_ext_put(struct sk_buff *skb, bool reset)
+{
+#ifdef CONFIG_XFRM
+	/* RHEL: We need to expand an implementation of secpath_reset() here
+	 * because we cannot include <net/xfrm.h> in this header. Due to this
+	 * fact we also cannot dereference .refcnt field from struct sec_path
+	 * so assume that this field is at the beginning of that struct.
+	 */
+	if (skb->sp && refcount_dec_and_test((refcount_t *)skb->sp))
+		__secpath_destroy(skb->sp);
+	if (reset)
+		skb->sp = NULL;
+#endif
+}
+
 #ifdef CONFIG_SKB_EXTENSIONS
 enum skb_ext_id {
 #if IS_ENABLED(CONFIG_NET_TC_SKB_EXT)
@@ -4124,6 +4147,9 @@ void __skb_ext_put(struct skb_ext *ext);
 
 static inline void skb_ext_put(struct sk_buff *skb)
 {
+	/* RHEL: Handle fields that were not converted to skb extensions */
+	__rh_skb_ext_put(skb, false);
+
 	if (skb->active_extensions)
 		__skb_ext_put(skb->extensions);
 }
@@ -4176,12 +4202,8 @@ static inline void *skb_ext_find(const struct sk_buff *skb, enum skb_ext_id id)
 
 static inline void skb_ext_reset(struct sk_buff *skb)
 {
-	/* RHEL: skb->sp was not converted to skb extension because it
-	 * has to be preserved due to kABI preservation. We need to call
-	 * secpath_reset() here so its callers can simply use skb_ext_reset()
-	 * like in upstream.
-	 */
-	secpath_reset(skb);
+	/* RHEL: Handle fields that were not converted to skb extensions */
+	__rh_skb_ext_put(skb, true);
 
 	if (unlikely(skb->active_extensions)) {
 		__skb_ext_put(skb->extensions);
@@ -4189,8 +4211,16 @@ static inline void skb_ext_reset(struct sk_buff *skb)
 	}
 }
 #else
-static inline void skb_ext_put(struct sk_buff *skb) {}
-static inline void skb_ext_reset(struct sk_buff *skb) {}
+static inline void skb_ext_put(struct sk_buff *skb)
+{
+	/* RHEL: Handle fields that were not converted to skb extensions */
+	__rh_skb_ext_put(skb, false);
+}
+static inline void skb_ext_reset(struct sk_buff *skb)
+{
+	/* RHEL: Handle fields that were not converted to skb extensions */
+	__rh_skb_ext_put(skb, true);
+}
 static inline void skb_ext_del(struct sk_buff *skb, int unused) {}
 static inline void __skb_ext_copy(struct sk_buff *d, const struct sk_buff *s) {}
 static inline void skb_ext_copy(struct sk_buff *dst, const struct sk_buff *s) {}
