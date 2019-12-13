@@ -192,4 +192,5 @@ LIBBPF_0.0.4 {
 		bpf_program__get_type;
 		bpf_get_link_xdp_info;
 		bpf_program__size;
+		bpf_btf_get_next_id;
 } LIBBPF_0.0.3;
