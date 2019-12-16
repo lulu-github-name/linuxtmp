@@ -1159,7 +1159,7 @@ static struct dentry *virtio_fs_mount(struct file_system_type *fs_type,
 	int err;
 
 	/* We don't support any mount options yet */
-	if (opts)
+	if (opts && *(char *)opts)
 		return ERR_PTR(-EINVAL);
 
 	/* This gets a reference on virtio_fs object. This ptr gets installed
