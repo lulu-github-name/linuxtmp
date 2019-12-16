@@ -132,7 +132,7 @@ static int br_mdb_fill_info(struct sk_buff *skb, struct netlink_callback *cb,
 					e.addr.u.ip6 = p->addr.u.ip6;
 #endif
 				e.addr.proto = p->addr.proto;
-				nest_ent = nla_nest_start(skb,
+				nest_ent = nla_nest_start_noflag(skb,
 							  MDBA_MDB_ENTRY_INFO);
 				if (!nest_ent) {
 					nla_nest_cancel(skb, nest2);
