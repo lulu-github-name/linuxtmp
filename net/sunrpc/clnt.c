@@ -2096,8 +2096,8 @@ call_transmit_status(struct rpc_task *task)
 	 * test first.
 	 */
 	if (rpc_task_transmitted(task)) {
-		if (task->tk_status == 0)
-			xprt_request_wait_receive(task);
+		task->tk_status = 0;
+		xprt_request_wait_receive(task);
 		return;
 	}
 
@@ -2181,6 +2181,9 @@ static void
 call_bc_transmit_status(struct rpc_task *task)
 {
 	struct rpc_rqst *req = task->tk_rqstp;
+
+	if (rpc_task_transmitted(task))
+		task->tk_status = 0;
 
 	dprint_status(task);
 
