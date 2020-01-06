@@ -1556,7 +1556,6 @@ call_start(struct rpc_task *task)
 	clnt->cl_stats->rpccnt++;
 	task->tk_action = call_reserve;
 	rpc_task_set_transport(task, clnt);
-	call_reserve(task);
 }
 
 /*
@@ -1570,9 +1569,6 @@ call_reserve(struct rpc_task *task)
 	task->tk_status  = 0;
 	task->tk_action  = call_reserveresult;
 	xprt_reserve(task);
-	if (rpc_task_need_resched(task))
-		return;
-	 call_reserveresult(task);
 }
 
 static void call_retry_reserve(struct rpc_task *task);
@@ -1595,7 +1591,6 @@ call_reserveresult(struct rpc_task *task)
 	if (status >= 0) {
 		if (task->tk_rqstp) {
 			task->tk_action = call_refresh;
-			call_refresh(task);
 			return;
 		}
 
@@ -1621,7 +1616,6 @@ call_reserveresult(struct rpc_task *task)
 		/* fall through */
 	case -EAGAIN:	/* woken up; retry */
 		task->tk_action = call_retry_reserve;
-		call_retry_reserve(task);
 		return;
 	case -EIO:	/* probably a shutdown */
 		break;
@@ -1644,9 +1638,6 @@ call_retry_reserve(struct rpc_task *task)
 	task->tk_status  = 0;
 	task->tk_action  = call_reserveresult;
 	xprt_retry_reserve(task);
-	if (rpc_task_need_resched(task))
-		return;
-	call_reserveresult(task);
 }
 
 /*
@@ -1661,9 +1652,6 @@ call_refresh(struct rpc_task *task)
 	task->tk_status = 0;
 	task->tk_client->cl_stats->rpcauthrefresh++;
 	rpcauth_refreshcred(task);
-	if (rpc_task_need_resched(task))
-		return;
-	call_refreshresult(task);
 }
 
 /*
@@ -1682,7 +1670,6 @@ call_refreshresult(struct rpc_task *task)
 	case 0:
 		if (rpcauth_uptodatecred(task)) {
 			task->tk_action = call_allocate;
-			call_allocate(task);
 			return;
 		}
 		/* Use rate-limiting and a max number of retries if refresh
@@ -1701,7 +1688,6 @@ call_refreshresult(struct rpc_task *task)
 		task->tk_cred_retry--;
 		dprintk("RPC: %5u %s: retry refresh creds\n",
 				task->tk_pid, __func__);
-		call_refresh(task);
 		return;
 	}
 	dprintk("RPC: %5u %s: refresh creds failed with error %d\n",
@@ -1727,10 +1713,8 @@ call_allocate(struct rpc_task *task)
 	task->tk_status = 0;
 	task->tk_action = call_encode;
 
-	if (req->rq_buffer) {
-		call_encode(task);
+	if (req->rq_buffer)
 		return;
-	}
 
 	if (proc->p_proc != 0) {
 		BUG_ON(proc->p_arglen == 0);
@@ -1756,12 +1740,8 @@ call_allocate(struct rpc_task *task)
 
 	status = xprt->ops->buf_alloc(task);
 	xprt_inject_disconnect(xprt);
-	if (status == 0) {
-		if (rpc_task_need_resched(task))
-			return;
-		call_encode(task);
+	if (status == 0)
 		return;
-	}
 	if (status != -ENOMEM) {
 		rpc_call_rpcerror(task, status);
 		return;
@@ -1843,8 +1823,12 @@ call_encode(struct rpc_task *task)
 		xprt_request_enqueue_receive(task);
 	xprt_request_enqueue_transmit(task);
 out:
-	task->tk_action = call_bind;
-	call_bind(task);
+	task->tk_action = call_transmit;
+	/* Check that the connection is OK */
+	if (!xprt_bound(task->tk_xprt))
+		task->tk_action = call_bind;
+	else if (!xprt_connected(task->tk_xprt))
+		task->tk_action = call_connect;
 }
 
 /*
@@ -1862,7 +1846,6 @@ rpc_task_handle_transmitted(struct rpc_task *task)
 {
 	xprt_end_transmit(task);
 	task->tk_action = call_transmit_status;
-	call_transmit_status(task);
 }
 
 /*
@@ -1880,7 +1863,6 @@ call_bind(struct rpc_task *task)
 
 	if (xprt_bound(xprt)) {
 		task->tk_action = call_connect;
-		call_connect(task);
 		return;
 	}
 
@@ -1911,7 +1893,6 @@ call_bind_status(struct rpc_task *task)
 		dprint_status(task);
 		task->tk_status = 0;
 		task->tk_action = call_connect;
-		call_connect(task);
 		return;
 	}
 
@@ -1996,7 +1977,6 @@ call_connect(struct rpc_task *task)
 
 	if (xprt_connected(xprt)) {
 		task->tk_action = call_transmit;
-		call_transmit(task);
 		return;
 	}
 
@@ -2066,7 +2046,6 @@ call_connect_status(struct rpc_task *task)
 	case 0:
 		clnt->cl_stats->netreconn++;
 		task->tk_action = call_transmit;
-		call_transmit(task);
 		return;
 	}
 	rpc_call_rpcerror(task, status);
@@ -2102,9 +2081,6 @@ call_transmit(struct rpc_task *task)
 		xprt_transmit(task);
 	}
 	xprt_end_transmit(task);
-	if (rpc_task_need_resched(task))
-		return;
-	call_transmit_status(task);
 }
 
 /*
@@ -2122,9 +2098,6 @@ call_transmit_status(struct rpc_task *task)
 	if (rpc_task_transmitted(task)) {
 		if (task->tk_status == 0)
 			xprt_request_wait_receive(task);
-		if (rpc_task_need_resched(task))
-			return;
-		call_status(task);
 		return;
 	}
 
@@ -2185,7 +2158,6 @@ call_bc_encode(struct rpc_task *task)
 {
 	xprt_request_enqueue_transmit(task);
 	task->tk_action = call_bc_transmit;
-	call_bc_transmit(task);
 }
 
 /*
@@ -2276,7 +2248,6 @@ call_status(struct rpc_task *task)
 	status = task->tk_status;
 	if (status >= 0) {
 		task->tk_action = call_decode;
-		call_decode(task);
 		return;
 	}
 
