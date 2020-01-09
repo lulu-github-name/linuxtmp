@@ -72,7 +72,8 @@ static __u32 vmbus_get_next_version(__u32 current_version)
 	}
 }
 
-int vmbus_negotiate_version(struct vmbus_channel_msginfo *msginfo, u32 version)
+static int vmbus_negotiate_version(struct vmbus_channel_msginfo *msginfo,
+					__u32 version)
 {
 	int ret = 0;
 	unsigned int cur_cpu;
