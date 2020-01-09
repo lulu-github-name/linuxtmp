@@ -1170,9 +1170,6 @@ struct hv_driver {
 	int (*remove)(struct hv_device *);
 	void (*shutdown)(struct hv_device *);
 
-	int (*suspend)(struct hv_device *);
-	int (*resume)(struct hv_device *);
-
 };
 
 /* Base device object */
