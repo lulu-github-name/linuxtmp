@@ -923,7 +923,6 @@ static void vmbus_shutdown(struct device *child_device)
 		drv->shutdown(dev);
 }
 
-#ifdef CONFIG_PM_SLEEP
 /*
  * vmbus_suspend - Suspend a vmbus device
  */
@@ -961,7 +960,6 @@ static int vmbus_resume(struct device *child_device)
 
 	return drv->resume(dev);
 }
-#endif /* CONFIG_PM_SLEEP */
 
 /*
  * vmbus_device_release - Final callback release of the vmbus child device
@@ -1094,7 +1092,6 @@ msg_handled:
 	vmbus_signal_eom(msg, message_type);
 }
 
-#ifdef CONFIG_PM_SLEEP
 /*
  * Fake RESCIND_CHANNEL messages to clean up hv_sock channels by force for
  * hibernation, because hv_sock connections can not persist across hibernation.
@@ -1130,7 +1127,6 @@ static void vmbus_force_channel_rescinded(struct vmbus_channel *channel)
 		      vmbus_connection.work_queue,
 		      &ctx->work);
 }
-#endif /* CONFIG_PM_SLEEP */
 
 /*
  * Direct callback for channels using other deferred processing
@@ -2143,7 +2139,6 @@ acpi_walk_err:
 	return ret_val;
 }
 
-#ifdef CONFIG_PM_SLEEP
 static int vmbus_bus_suspend(struct device *dev)
 {
 	struct vmbus_channel *channel, *sc;
@@ -2266,7 +2261,6 @@ static int vmbus_bus_resume(struct device *dev)
 
 	return 0;
 }
-#endif /* CONFIG_PM_SLEEP */
 
 static const struct acpi_device_id vmbus_acpi_device_ids[] = {
 	{"VMBUS", 0},
