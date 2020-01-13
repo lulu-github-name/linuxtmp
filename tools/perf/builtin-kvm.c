@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <linux/err.h>
 #include <linux/kernel.h>
 #include <linux/time64.h>
 #include <linux/zalloc.h>
@@ -1087,9 +1088,9 @@ static int read_events(struct perf_kvm_stat *kvm)
 
 	kvm->tool = eops;
 	kvm->session = perf_session__new(&file, false, &kvm->tool);
-	if (!kvm->session) {
+	if (IS_ERR(kvm->session)) {
 		pr_err("Initializing perf session failed\n");
-		return -1;
+		return PTR_ERR(kvm->session);
 	}
 
 	symbol__init(&kvm->session->header.env);
@@ -1442,8 +1443,8 @@ static int kvm_events_live(struct perf_kvm_stat *kvm,
 	 * perf session
 	 */
 	kvm->session = perf_session__new(&data, false, &kvm->tool);
-	if (kvm->session == NULL) {
-		err = -1;
+	if (IS_ERR(kvm->session)) {
+		err = PTR_ERR(kvm->session);
 		goto out;
 	}
 	kvm->session->evlist = kvm->evlist;

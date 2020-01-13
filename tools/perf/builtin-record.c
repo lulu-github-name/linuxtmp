@@ -52,6 +52,7 @@
 #include <signal.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
+#include <linux/err.h>
 #include <linux/time64.h>
 #include <linux/zalloc.h>
 
@@ -1337,9 +1338,9 @@ static int __cmd_record(struct record *rec, int argc, const char **argv)
 	}
 
 	session = perf_session__new(data, false, tool);
-	if (session == NULL) {
+	if (IS_ERR(session)) {
 		pr_err("Perf session creation failed.\n");
-		return -1;
+		return PTR_ERR(session);
 	}
 
 	fd = perf_data__fd(data);

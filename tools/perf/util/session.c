@@ -28,6 +28,7 @@
 #include "sample-raw.h"
 #include "stat.h"
 #include "arch/common.h"
+#include <linux/err.h>
 
 #ifdef HAVE_ZSTD_SUPPORT
 static int perf_session__process_compressed_event(struct perf_session *session,
@@ -181,6 +182,7 @@ static int ordered_events__deliver_event(struct ordered_events *oe,
 struct perf_session *perf_session__new(struct perf_data *data,
 				       bool repipe, struct perf_tool *tool)
 {
+	int ret = -ENOMEM;
 	struct perf_session *session = zalloc(sizeof(*session));
 
 	if (!session)
@@ -195,13 +197,15 @@ struct perf_session *perf_session__new(struct perf_data *data,
 
 	perf_env__init(&session->header.env);
 	if (data) {
-		if (perf_data__open(data))
+		ret = perf_data__open(data);
+		if (ret < 0)
 			goto out_delete;
 
 		session->data = data;
 
 		if (perf_data__is_read(data)) {
-			if (perf_session__open(session) < 0)
+			ret = perf_session__open(session);
+			if (ret < 0)
 				goto out_delete;
 
 			/*
@@ -216,8 +220,11 @@ struct perf_session *perf_session__new(struct perf_data *data,
 			perf_evlist__init_trace_event_sample_raw(session->evlist);
 
 			/* Open the directory data. */
-			if (data->is_dir && perf_data__open_dir(data))
+			if (data->is_dir) {
+				ret = perf_data__open_dir(data);
+			if (ret)
 				goto out_delete;
+			}
 		}
 	} else  {
 		session->machines.host.env = &perf_env;
@@ -250,7 +257,7 @@ struct perf_session *perf_session__new(struct perf_data *data,
  out_delete:
 	perf_session__delete(session);
  out:
-	return NULL;
+	return ERR_PTR(ret);
 }
 
 static void perf_session__delete_threads(struct perf_session *session)
