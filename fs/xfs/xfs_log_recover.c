@@ -301,10 +301,9 @@ xlog_recover_iodone(
 		 * We're not going to bother about retrying
 		 * this during recovery. One strike!
 		 */
-		if (!XFS_FORCED_SHUTDOWN(bp->b_target->bt_mount)) {
+		if (!XFS_FORCED_SHUTDOWN(bp->b_mount)) {
 			xfs_buf_ioerror_alert(bp, __func__);
-			xfs_force_shutdown(bp->b_target->bt_mount,
-						SHUTDOWN_META_IO_ERROR);
+			xfs_force_shutdown(bp->b_mount, SHUTDOWN_META_IO_ERROR);
 		}
 	}
 
@@ -2822,7 +2821,7 @@ xlog_recover_buffer_pass2(
 		xfs_buf_stale(bp);
 		error = xfs_bwrite(bp);
 	} else {
-		ASSERT(bp->b_target->bt_mount == mp);
+		ASSERT(bp->b_mount == mp);
 		bp->b_iodone = xlog_recover_iodone;
 		xfs_buf_delwri_queue(bp, buffer_list);
 	}
@@ -3184,7 +3183,7 @@ out_owner_change:
 	/* re-generate the checksum. */
 	xfs_dinode_calc_crc(log->l_mp, dip);
 
-	ASSERT(bp->b_target->bt_mount == mp);
+	ASSERT(bp->b_mount == mp);
 	bp->b_iodone = xlog_recover_iodone;
 	xfs_buf_delwri_queue(bp, buffer_list);
 
@@ -3323,7 +3322,7 @@ xlog_recover_dquot_pass2(
 	}
 
 	ASSERT(dq_f->qlf_size == 2);
-	ASSERT(bp->b_target->bt_mount == mp);
+	ASSERT(bp->b_mount == mp);
 	bp->b_iodone = xlog_recover_iodone;
 	xfs_buf_delwri_queue(bp, buffer_list);
 
