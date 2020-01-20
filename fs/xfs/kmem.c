@@ -3,11 +3,6 @@
  * Copyright (c) 2000-2005 Silicon Graphics, Inc.
  * All Rights Reserved.
  */
-#include <linux/mm.h>
-#include <linux/highmem.h>
-#include <linux/slab.h>
-#include <linux/swap.h>
-#include <linux/blkdev.h>
 #include "xfs.h"
 #include <linux/backing-dev.h>
 #include "xfs_message.h"
