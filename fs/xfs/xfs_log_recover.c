@@ -4877,12 +4877,11 @@ out:
  * A cancel occurs when the mount has failed and we're bailing out.
  * Release all pending log intent items so they don't pin the AIL.
  */
-STATIC int
+STATIC void
 xlog_recover_cancel_intents(
 	struct xlog		*log)
 {
 	struct xfs_log_item	*lip;
-	int			error = 0;
 	struct xfs_ail_cursor	cur;
 	struct xfs_ail		*ailp;
 
@@ -4922,7 +4921,6 @@ xlog_recover_cancel_intents(
 
 	xfs_trans_ail_cursor_done(&cur);
 	spin_unlock(&ailp->ail_lock);
-	return error;
 }
 
 /*
@@ -5781,16 +5779,12 @@ xlog_recover_finish(
 	return 0;
 }
 
-int
+void
 xlog_recover_cancel(
 	struct xlog	*log)
 {
-	int		error = 0;
-
 	if (log->l_flags & XLOG_RECOVERY_NEEDED)
-		error = xlog_recover_cancel_intents(log);
-
-	return error;
+		xlog_recover_cancel_intents(log);
 }
 
 #if defined(DEBUG)
