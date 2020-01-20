@@ -176,7 +176,7 @@ __xfs_set_acl(struct inode *inode, struct posix_acl *acl, int type)
 		struct xfs_acl *xfs_acl;
 		int len = XFS_ACL_MAX_SIZE(ip->i_mount);
 
-		xfs_acl = kmem_zalloc_large(len, KM_SLEEP);
+		xfs_acl = kmem_zalloc_large(len, 0);
 		if (!xfs_acl)
 			return -ENOMEM;
 
