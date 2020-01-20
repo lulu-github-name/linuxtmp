@@ -422,6 +422,20 @@ S:	Maintained
 F:	drivers/net/bonding/
 F:	include/linux/if_bonding.h
 
+CEPH COMMON CODE (LIBCEPH)
+M:	Ilya Dryomov <idryomov@redhat.com>
+M:	Jeff Layton <jlayton@redhat.com>
+S:	Maintained
+F:	net/ceph/
+F:	include/linux/ceph/
+F:	include/linux/crush/
+
+CEPH DISTRIBUTED FILE SYSTEM CLIENT (CEPH)
+M:	Jeff Layton <jlayton@redhat.com>
+S:	Maintained
+F:	Documentation/filesystems/ceph.txt
+F:	fs/ceph/
+
 CIFS FILESYSTEM
 M:	Red Hat NFS Team <nfs-team@redhat.com>
 S:	Maintained
@@ -1220,6 +1234,13 @@ QLOGIC QEDR RDMA ETHERNET NETWORK DRIVER
 M:	Manish Chopra <mchopra@redhat.com>
 S:	Maintained
 F:	drivers/infiniband/hw/qedr
+
+RADOS BLOCK DEVICE (RBD)
+M:	Ilya Dryomov <idryomov@redhat.com>
+S:	Maintained
+F:	Documentation/ABI/testing/sysfs-bus-rbd
+F:	drivers/block/rbd.c
+F:	drivers/block/rbd_types.h
 
 RALINK RT2X00 WIRELESS LAN DRIVER
 M:	Jarod Wilson <jarod@redhat.com>
