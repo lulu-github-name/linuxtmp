@@ -321,6 +321,9 @@ ExclusiveOS: Linux
 %ifnarch %{nobuildarches}
 Requires: %{name}-core-uname-r = %{KVERREL}%{?variant}
 Requires: %{name}-modules-uname-r = %{KVERREL}%{?variant}
+%if %{with_realtime}
+Requires: rt-setup
+%endif
 %endif
 
 
