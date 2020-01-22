@@ -1,0 +1,2 @@
+#0-
+0x55430dcf	sas_read_port_mode_page	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL
