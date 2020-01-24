@@ -1,3 +1,26 @@
+* Fri Jan 24 2020 Bruno Meneguele <bmeneg@redhat.com> [4.18.0-173.el8]
+- [x86] kvm: x86/mmu: Take slots_lock when using kvm_mmu_zap_all_fast() (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [x86] kvm: x86: disable shattered huge page recovery for PREEMPT_RT (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [documentation] documentation: Add ITLB_MULTIHIT documentation (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [x86] kvm: x86: mmu: Recovery of shattered NX large pages (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [virt] kvm: Add helper function for creating VM worker threads (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [x86] kvm: mmu: ITLB_MULTIHIT mitigation (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [kernel] cpu/speculation: Uninline and export CPU mitigations helpers (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [x86] cpu: Add Tremont to the cpu vulnerability whitelist (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [x86] bugs: Add ITLB_MULTIHIT bug infrastructure (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [x86] kvm: vmx, svm: always run with EFER.NXE=1 when shadow paging is active (Paolo Bonzini) [1690344] {CVE-2018-12207}
+- [crypto] crypto: hmac - fix memory leak in hmac_init_tfm() (Herbert Xu) [1775858]
+- [crypto] crypto: hash - fix incorrect HASH_MAX_DESCSIZE (Herbert Xu) [1775858]
+- [nvme] nvme: Translate more status codes to blk_status_t (Gopal Tiwari) [1781537]
+- [include] nvme: resync include/linux/nvme.h with nvmecli (Gopal Tiwari) [1781537]
+- [netdrv] hv_netvsc: Fix memory leak when removing rndis device (Mohammed Gamal) [1733007]
+- [fs] cifs: Fix memory allocation in __smb2_handle_cancelled_cmd() (Dave Wysochanski) [1793182]
+- [tools] perf c2c: Fix report with offline cpus (Michael Petlan) [1744903]
+- [kernel] locking/rwsem: Fix kernel crash when spinning on RWSEM_OWNER_UNKNOWN (Waiman Long) [1793028]
+- [mm] mm/memory_hotplug: don't free usage map when removing a re-added early section (Pingfan Liu) [1787269]
+- [netdrv] iavf: remove current MAC address filter on VF reset (Stefan Assmann) [1735725 1738738]
+- [dma] dma-mapping: fix handling of dma-ranges for reserved memory (again) (Jerry Snitselaar) [1784691]
+
 * Tue Jan 21 2020 Bruno Meneguele <bmeneg@redhat.com> [4.18.0-172.el8]
 - [fs] pnfs/filelayout: enable LAYOUTGET on OPEN (Steve Dickson) [1756140]
 - [fs] NFSD fixing possible null pointer derefering in copy offload (Benjamin Coddington) [1763220]
