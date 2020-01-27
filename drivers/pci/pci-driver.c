@@ -614,9 +614,9 @@ static int pci_legacy_suspend(struct device *dev, pm_message_t state)
 
 		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
 		    && pci_dev->current_state != PCI_UNKNOWN) {
-			WARN_ONCE(pci_dev->current_state != prev,
-				"PCI PM: Device state not saved by %pS\n",
-				drv->suspend);
+			pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
+				      "PCI PM: Device state not saved by %pS\n",
+				      drv->suspend);
 		}
 	}
 
@@ -641,9 +641,9 @@ static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
 
 		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
 		    && pci_dev->current_state != PCI_UNKNOWN) {
-			WARN_ONCE(pci_dev->current_state != prev,
-				"PCI PM: Device state not saved by %pS\n",
-				drv->suspend_late);
+			pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
+				      "PCI PM: Device state not saved by %pS\n",
+				      drv->suspend_late);
 			goto Fixup;
 		}
 	}
@@ -699,8 +699,8 @@ static bool pci_has_legacy_pm_support(struct pci_dev *pci_dev)
 	 * supported as well.  Drivers are supposed to support either the
 	 * former, or the latter, but not both at the same time.
 	 */
-	WARN(ret && drv->driver.pm, "driver %s device %04x:%04x\n",
-		drv->name, pci_dev->vendor, pci_dev->device);
+	pci_WARN(pci_dev, ret && drv->driver.pm, "device %04x:%04x\n",
+		 pci_dev->vendor, pci_dev->device);
 
 	return ret;
 }
@@ -823,9 +823,9 @@ static int pci_pm_suspend(struct device *dev)
 
 		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
 		    && pci_dev->current_state != PCI_UNKNOWN) {
-			WARN_ONCE(pci_dev->current_state != prev,
-				"PCI PM: State of device not saved by %pS\n",
-				pm->suspend);
+			pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
+				      "PCI PM: State of device not saved by %pS\n",
+				      pm->suspend);
 		}
 	}
 
@@ -871,9 +871,9 @@ static int pci_pm_suspend_noirq(struct device *dev)
 
 		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
 		    && pci_dev->current_state != PCI_UNKNOWN) {
-			WARN_ONCE(pci_dev->current_state != prev,
-				"PCI PM: State of device not saved by %pS\n",
-				pm->suspend_noirq);
+			pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
+				      "PCI PM: State of device not saved by %pS\n",
+				      pm->suspend_noirq);
 			goto Fixup;
 		}
 	}
@@ -1340,9 +1340,9 @@ static int pci_pm_runtime_suspend(struct device *dev)
 	if (pm && pm->runtime_suspend
 	    && !pci_dev->state_saved && pci_dev->current_state != PCI_D0
 	    && pci_dev->current_state != PCI_UNKNOWN) {
-		WARN_ONCE(pci_dev->current_state != prev,
-			"PCI PM: State of device not saved by %pS\n",
-			pm->runtime_suspend);
+		pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
+			      "PCI PM: State of device not saved by %pS\n",
+			      pm->runtime_suspend);
 		return 0;
 	}
 
