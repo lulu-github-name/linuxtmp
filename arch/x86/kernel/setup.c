@@ -884,6 +884,14 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 		valid = (stepping <= 12);
 		break;
 
+	case INTEL_FAM6_COMETLAKE: /* 8.2 CML-H(s2) */
+		valid = (stepping == 2);
+		break;
+
+	case INTEL_FAM6_COMETLAKE_L: /* 8.2 CML-U(v1) */
+		valid = (stepping == 0);
+		break;
+
 	case INTEL_FAM6_XEON_PHI_KNM: /* 8.0 */
 	case INTEL_FAM6_ATOM_GOLDMONT: /* 8.0 */
 	case INTEL_FAM6_ATOM_GOLDMONT_PLUS: /* 8.0 */
