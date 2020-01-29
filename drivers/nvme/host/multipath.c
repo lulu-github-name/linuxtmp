@@ -716,7 +716,7 @@ int nvme_mpath_init(struct nvme_ctrl *ctrl, struct nvme_id_ctrl *id)
 	int error;
 
 	/* check if multipath is enabled and we have the capability */
-	if (!multipath || !ctrl->subsys || !(ctrl->subsys->cmic & (1 << 3)))
+	if (!ctrl->subsys || !(ctrl->subsys->cmic & (1 << 3)))
 		return 0;
 
 	ctrl->anacap = id->anacap;
