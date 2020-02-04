@@ -828,10 +828,41 @@ static void __init trim_low_memory_range(void)
 	memblock_reserve(0, ALIGN(reserve_low, PAGE_SIZE));
 }
 
+static bool valid_amd_epyc(const char *model_id)
+{
+	int len;
+
+	len = strlen("AMD EPYC 7");
+
+	if (!strncmp(model_id, "AMD EPYC 7", len)) {
+		len += 3;
+		/*
+		 * AMD EPYC 7xx1 == NAPLES (8.0)
+		 * AMD EPYC 7xx2 == ROME   (8.1/8.0z)
+		 */
+		if (strlen(model_id) >= len) {
+			if (model_id[len-1] == '1' ||
+			    model_id[len-1] == '2')
+				return true;
+		}
+	}
+
+	return false;
+}
+
+static bool valid_amd_ryzen(const char *model_id)
+{
+	const char *ryzen5 = "AMD Ryzen 5";
+
+	if (!strncmp(model_id, ryzen5, strlen(ryzen5)))
+		return true;
+
+	return false;
+}
+
 static bool valid_amd_processor(__u8 family, const char *model_id, bool guest)
 {
 	bool valid = false;
-	int len;
 
 	switch(family) {
 	case 0x15:
@@ -840,19 +871,10 @@ static bool valid_amd_processor(__u8 family, const char *model_id, bool guest)
 
 	case 0x17:
 		if (!guest) {
-			len = strlen("AMD EPYC 7");
-			if (!strncmp(model_id, "AMD EPYC 7", len)) {
-				len += 3;
-				/*
-				 * AMD EPYC 7xx1 == NAPLES (8.0)
-				 * AMD EPYC 7xx2 == ROME   (8.1/8.0z)
-				 */
-				if (strlen(model_id) >= len) {
-					if (model_id[len-1] == '1' ||
-					    model_id[len-1] == '2')
-						valid = true;
-				}
-			}
+			if (!strncmp(model_id, "AMD EPYC", 8))
+				valid = valid_amd_epyc(model_id);
+			else if (!strncmp(model_id, "AMD Ryzen", 9))
+				valid = valid_amd_ryzen(model_id);
 		}
 		else {
 			/* guest names do not conform to bare metal */
