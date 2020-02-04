@@ -2025,6 +2025,7 @@ static int ctnetlink_new_conntrack(struct net *net, struct sock *ctnl,
 	struct nf_conntrack_tuple otuple, rtuple;
 	struct nf_conntrack_tuple_hash *h = NULL;
 	struct nfgenmsg *nfmsg = nlmsg_data(nlh);
+	struct nf_conntrack_l3proto *l3proto;
 	struct nf_conn *ct;
 	u_int8_t u3 = nfmsg->nfgen_family;
 	struct nf_conntrack_zone zone;
@@ -2033,6 +2034,14 @@ static int ctnetlink_new_conntrack(struct net *net, struct sock *ctnl,
 	err = ctnetlink_parse_zone(cda[CTA_ZONE], &zone);
 	if (err < 0)
 		return err;
+
+#ifdef CONFIG_MODULES
+	rcu_read_lock();
+	l3proto = __nf_ct_l3proto_find(u3);
+	rcu_read_unlock();
+	if (unlikely(l3proto == &nf_conntrack_l3proto_generic))
+		request_module("nf_conntrack-%d", u3);
+#endif
 
 	if (cda[CTA_TUPLE_ORIG]) {
 		err = ctnetlink_parse_tuple(cda, &otuple, CTA_TUPLE_ORIG,
