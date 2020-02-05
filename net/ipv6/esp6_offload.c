@@ -81,6 +81,8 @@ static struct sk_buff **esp6_gro_receive(struct sk_buff **head,
 		if (!x)
 			goto out_reset;
 
+		skb->mark = xfrm_smark_get(skb->mark, x);
+
 		skb->sp->xvec[skb->sp->len++] = x;
 		skb->sp->olen++;
 
