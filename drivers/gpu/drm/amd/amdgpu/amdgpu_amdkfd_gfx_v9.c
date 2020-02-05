@@ -757,7 +757,7 @@ static int invalidate_tlbs_with_kiq(struct amdgpu_device *adev, uint16_t pasid,
 static int invalidate_tlbs(struct kgd_dev *kgd, uint16_t pasid)
 {
 	struct amdgpu_device *adev = (struct amdgpu_device *) kgd;
-	int vmid;
+	int vmid, i;
 	struct amdgpu_ring *ring = &adev->gfx.kiq.ring;
 	uint32_t flush_type = 0;
 
@@ -776,8 +776,9 @@ static int invalidate_tlbs(struct kgd_dev *kgd, uint16_t pasid)
 		if (get_atc_vmid_pasid_mapping_valid(kgd, vmid)) {
 			if (get_atc_vmid_pasid_mapping_pasid(kgd, vmid)
 				== pasid) {
-				amdgpu_gmc_flush_gpu_tlb(adev, vmid,
-							 flush_type);
+				for (i = 0; i < adev->num_vmhubs; i++)
+					amdgpu_gmc_flush_gpu_tlb(adev, vmid,
+								i, flush_type);
 				break;
 			}
 		}
@@ -789,6 +790,7 @@ static int invalidate_tlbs(struct kgd_dev *kgd, uint16_t pasid)
 static int invalidate_tlbs_vmid(struct kgd_dev *kgd, uint16_t vmid)
 {
 	struct amdgpu_device *adev = (struct amdgpu_device *) kgd;
+	int i;
 
 	if (!amdgpu_amdkfd_is_kfd_vmid(adev, vmid)) {
 		pr_err("non kfd vmid %d\n", vmid);
@@ -810,7 +812,9 @@ static int invalidate_tlbs_vmid(struct kgd_dev *kgd, uint16_t vmid)
 	 * TODO 2: support range-based invalidation, requires kfg2kgd
 	 * interface change
 	 */
-	amdgpu_gmc_flush_gpu_tlb(adev, vmid, 0);
+	for (i = 0; i < adev->num_vmhubs; i++)
+		amdgpu_gmc_flush_gpu_tlb(adev, vmid, i, 0);
+
 	return 0;
 }
 
