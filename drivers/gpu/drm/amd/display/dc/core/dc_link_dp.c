@@ -2363,13 +2363,13 @@ static void dp_wa_power_up_0010FA(struct dc_link *link, uint8_t *dpcd_data,
 
 	if (link->dpcd_caps.dongle_type == DISPLAY_DONGLE_DP_VGA_CONVERTER) {
 		switch (link->dpcd_caps.branch_dev_id) {
-		/* Some active dongles (DP-VGA, DP-DLDVI converters) power down
+		/* 0010FA active dongles (DP-VGA, DP-DLDVI converters) power down
 		 * all internal circuits including AUX communication preventing
 		 * reading DPCD table and EDID (spec violation).
 		 * Encoder will skip DP RX power down on disable_output to
 		 * keep receiver powered all the time.*/
-		case DP_BRANCH_DEVICE_ID_1:
-		case DP_BRANCH_DEVICE_ID_4:
+		case DP_BRANCH_DEVICE_ID_0010FA:
+		case DP_BRANCH_DEVICE_ID_0080E1:
 			link->wa_flags.dp_keep_receiver_powered = true;
 			break;
 

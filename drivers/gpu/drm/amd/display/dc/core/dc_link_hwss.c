@@ -252,7 +252,13 @@ enum dp_panel_mode dp_get_panel_mode(struct dc_link *link)
 	if (link->connector_signal != SIGNAL_TYPE_DISPLAY_PORT) {
 
 		switch (link->dpcd_caps.branch_dev_id) {
-		case DP_BRANCH_DEVICE_ID_2:
+		case DP_BRANCH_DEVICE_ID_0022B9:
+			/* alternate scrambler reset is required for Travis
+			 * for the case when external chip does not
+			 * provide sink device id, alternate scrambler
+			 * scheme will be overriden later by querying
+			 * Encoder features
+			 */
 			if (strncmp(
 				link->dpcd_caps.branch_dev_name,
 				DP_VGA_LVDS_CONVERTER_ID_2,
@@ -262,7 +268,12 @@ enum dp_panel_mode dp_get_panel_mode(struct dc_link *link)
 				return DP_PANEL_MODE_SPECIAL;
 			}
 			break;
-		case DP_BRANCH_DEVICE_ID_3:
+		case DP_BRANCH_DEVICE_ID_00001A:
+			/* alternate scrambler reset is required for Travis
+			 * for the case when external chip does not provide
+			 * sink device id, alternate scrambler scheme will
+			 * be overriden later by querying Encoder feature
+			 */
 			if (strncmp(link->dpcd_caps.branch_dev_name,
 				DP_VGA_LVDS_CONVERTER_ID_3,
 				sizeof(
