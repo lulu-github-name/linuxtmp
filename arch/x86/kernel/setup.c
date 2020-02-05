@@ -853,8 +853,11 @@ static bool valid_amd_epyc(const char *model_id)
 static bool valid_amd_ryzen(const char *model_id)
 {
 	const char *ryzen5 = "AMD Ryzen 5";
+	const char *ryzen7 = "AMD Ryzen 7";
 
 	if (!strncmp(model_id, ryzen5, strlen(ryzen5)))
+		return true;
+	else if (!strncmp(model_id, ryzen7, strlen(ryzen7)))
 		return true;
 
 	return false;
