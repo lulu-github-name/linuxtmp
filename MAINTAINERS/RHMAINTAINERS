@@ -366,6 +366,13 @@ M:	Vivek Goyal <vgoyal@redhat.com>
 S:	Maintained
 F:	block/
 
+BLUETOOTH SUBSYSTEM
+M:      Gopal Tiwari <gtiwari@redhat.com>
+S:      Maintained
+F:      drivers/bluetooth
+F:      include/net/bluetooth/
+F:      net/bluetooth
+
 BROADCOM B44 10/100 ETHERNET DRIVER
 M:	Stanislaw Gruszka <sgruszka@redhat.com>
 S:	Maintained
@@ -854,6 +861,13 @@ ISMT SMBUS DRIVER
 M:	Neil Horman <nhorman@redhat.com>
 S:	Maintained
 F:	drivers/i2c/busses/i2c-ismt.c
+
+MMC LAYER
+M:      Gopal Tiwari <gtiwari@redhat.com>
+S:      Maintained
+F:      Documentation/mmc/
+F:      include/linux/mmc/
+F:      drivers/mmc/
 
 Lenovo Hardware Support
 M:	Ocean He <ohe@redhat.com>
