@@ -48,6 +48,7 @@ struct pipe_inode_info;
 struct rcu_node;
 struct reclaim_state;
 struct robust_list_head;
+struct rq;
 struct sched_attr;
 struct sched_param;
 struct seq_file;
