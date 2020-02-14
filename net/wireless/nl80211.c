@@ -4483,8 +4483,8 @@ static int nl80211_parse_he_obss_pd(struct nlattr *attrs,
 	struct nlattr *tb[NL80211_HE_OBSS_PD_ATTR_MAX + 1];
 	int err;
 
-	err = nla_parse_nested_deprecated(tb, NL80211_HE_OBSS_PD_ATTR_MAX,
-					  attrs, he_obss_pd_policy, NULL);
+	err = nla_parse_nested(tb, NL80211_HE_OBSS_PD_ATTR_MAX, attrs,
+			       he_obss_pd_policy, NULL);
 	if (err)
 		return err;
 

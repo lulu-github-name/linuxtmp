@@ -3289,7 +3289,7 @@ static int check_pkt_len_action_to_attr(const struct nlattr *attr,
 	const struct nlattr *a, *cpl_arg;
 	int err = 0, rem = nla_len(attr);
 
-	start = nla_nest_start(skb, OVS_ACTION_ATTR_CHECK_PKT_LEN);
+	start = nla_nest_start_noflag(skb, OVS_ACTION_ATTR_CHECK_PKT_LEN);
 	if (!start)
 		return -EMSGSIZE;
 
@@ -3308,8 +3308,8 @@ static int check_pkt_len_action_to_attr(const struct nlattr *attr,
 	 * 'OVS_CHECK_PKT_LEN_ATTR_ACTIONS_IF_LESS_EQUAL'.
 	 */
 	a = nla_next(cpl_arg, &rem);
-	ac_start =  nla_nest_start(skb,
-		OVS_CHECK_PKT_LEN_ATTR_ACTIONS_IF_LESS_EQUAL);
+	ac_start =  nla_nest_start_noflag(skb,
+					  OVS_CHECK_PKT_LEN_ATTR_ACTIONS_IF_LESS_EQUAL);
 	if (!ac_start) {
 		err = -EMSGSIZE;
 		goto out;
@@ -3327,8 +3327,8 @@ static int check_pkt_len_action_to_attr(const struct nlattr *attr,
 	 * OVS_CHECK_PKT_LEN_ATTR_ACTIONS_IF_GREATER.
 	 */
 	a = nla_next(a, &rem);
-	ac_start =  nla_nest_start(skb,
-				   OVS_CHECK_PKT_LEN_ATTR_ACTIONS_IF_GREATER);
+	ac_start =  nla_nest_start_noflag(skb,
+					  OVS_CHECK_PKT_LEN_ATTR_ACTIONS_IF_GREATER);
 	if (!ac_start) {
 		err = -EMSGSIZE;
 		goto out;

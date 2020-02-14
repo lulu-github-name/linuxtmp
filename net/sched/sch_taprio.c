@@ -1702,8 +1702,8 @@ static int dump_schedule(struct sk_buff *msg,
 			root->cycle_time_extension, TCA_TAPRIO_PAD))
 		return -1;
 
-	entry_list = nla_nest_start(msg,
-				    TCA_TAPRIO_ATTR_SCHED_ENTRY_LIST);
+	entry_list = nla_nest_start_noflag(msg,
+					   TCA_TAPRIO_ATTR_SCHED_ENTRY_LIST);
 	if (!entry_list)
 		goto error_nest;
 
