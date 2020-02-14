@@ -11908,6 +11908,9 @@ static int bnxt_suspend(struct device *device)
 	}
 	bnxt_hwrm_func_drv_unrgtr(bp);
 	pci_disable_device(bp->pdev);
+	bnxt_free_ctx_mem(bp);
+	kfree(bp->ctx);
+	bp->ctx = NULL;
 	rtnl_unlock();
 	return rc;
 }
@@ -11934,6 +11937,18 @@ static int bnxt_resume(struct device *device)
 	if (rc) {
 		rc = -EBUSY;
 		goto resume_exit;
+	}
+
+	if (bnxt_hwrm_queue_qportcfg(bp)) {
+		rc = -ENODEV;
+		goto resume_exit;
+	}
+
+	if (bp->hwrm_spec_code >= 0x10803) {
+		if (bnxt_alloc_ctx_mem(bp)) {
+			rc = -ENODEV;
+			goto resume_exit;
+		}
 	}
 	bnxt_get_wol_settings(bp);
 	if (netif_running(dev)) {
