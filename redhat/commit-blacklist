@@ -1,0 +1,25 @@
+f25da51fdc38 ieee802154: hwsim: add replacement for fakelb
+# ^^^ nla_parse_nested => nla_parse_nested_deprecated (part of 8cb081746c03)
+# + nla_nest_start => nla_nest_start_noflag (part of ae0be8de9a53)
+f957be9d349a netfilter: conntrack: remove ctnetlink callbacks from l3 protocol trackers
+# ^^^ validate_nested => nla_validate_nested_deprecated (part of 8cb081746c03)
+7e0b2b57f01d netfilter: nft_ct: add ct timeout support
+# ^^^ nla_parse_nested => nla_parse_nested_deprecated (part of 8cb081746c03)
+# + remove NLA_F_NESTED flag from nla_nest_start (part of ae0be8de9a53)
+af308b94a2a4 netfilter: nf_tables: add tunnel support
+# ^^^ nla_parse_nested => nla_parse_nested_deprecated (part of 8cb081746c03)
+# + nla_nest_start => nla_nest_start_noflag (part of ae0be8de9a53)
+600405135360 batman-adv: Prepare framework for mesh genl config
+# ^^^ add .validate to struct genl_ops (part of ef6243acb478)
+5c55a40fa801 batman-adv: Prepare framework for hardif genl config
+# ^^^ add .validate to struct genl_ops (part of ef6243acb478)
+49e7e37cd981 batman-adv: Prepare framework for vlan genl config
+# ^^^ add .validate to struct genl_ops (part of ef6243acb478)
+9771b8ccdfa6 net/ncsi: Extend NC-SI Netlink interface to allow user space to send NC-SI command
+# ^^^ add .validate to struct genl_ops (part of ef6243acb478)
+8d951a75d022 net/ncsi: Configure multi-package, multi-channel modes with failover
+# ^^^ add .validate to struct genl_ops (part of ef6243acb478)
+4ef2a4f43f5e drbd: fix confusing error message during attach
+# ^^^ nla_nest_start => nla_nest_start_noflag (part of ae0be8de9a53)
+b0f60193632e ipv4: Refactor nexthop attributes in fib_dump_info
+# ^^^ nla_nest_start => nla_nest_start_noflag (part of ae0be8de9a53)
