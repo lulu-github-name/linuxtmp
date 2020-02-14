@@ -1115,7 +1115,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
 	ld	r7, VCPU_GPR(R7)(r4)
 	bne	ret_to_ultra
 
-	lwz	r0, VCPU_CR(r4)
+	ld	r0, VCPU_CR(r4)
 	mtcr	r0
 
 	ld	r0, VCPU_GPR(R0)(r4)
@@ -1135,7 +1135,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
  *   R3 = UV_RETURN
  */
 ret_to_ultra:
-	lwz	r0, VCPU_CR(r4)
+	ld	r0, VCPU_CR(r4)
 	mtcr	r0
 
 	ld	r0, VCPU_GPR(R3)(r4)
