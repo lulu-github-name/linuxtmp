@@ -21,8 +21,14 @@ enum bpf_field_info_kind {
  *    1, if matching field is present in target kernel;
  *    0, if no matching field found.
  */
+/* RHEL-only: replace the macro with stub due to lack of LLVM support */
+#if !__has_builtin(__builtin_preserve_field_info)
+#warning "LLVM does not support __builtin_preserve_field_info - CO-RE will not work!"
+#define bpf_core_field_exists(field) (0)
+#else
 #define bpf_core_field_exists(field)					    \
 	__builtin_preserve_field_info(field, BPF_FIELD_EXISTS)
+#endif /* __has_builtin */
 
 /*
  * bpf_core_read() abstracts away bpf_probe_read() call and captures offset
