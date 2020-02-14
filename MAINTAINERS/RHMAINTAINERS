@@ -319,6 +319,7 @@ F:	drivers/perf/*
 F:	include/linux/perf/arm_pmu.h
 
 ARM SMMU DRIVERS
+M:	Jerry Snitselaar <jsnitsel@redhat.com>
 M:	Mark Salter <msalter@redhat.com>
 M:	Jeremy Linton <jlinton@redhat.com>
 S:	Maintained
@@ -890,6 +891,7 @@ F:	include/uapi/linux/if_infiniband.h
 F:	Documentation/infiniband/
 
 IOMMU DRIVERS
+M:	Jerry Snitselaar <jsnitsel@redhat.com>
 M:	Myron Stowe <myron.stowe@redhat.com>
 M:	Alex Williamson <alex.williamson@redhat.com>
 M:	Don Dutile <ddutile@redhat.com>
