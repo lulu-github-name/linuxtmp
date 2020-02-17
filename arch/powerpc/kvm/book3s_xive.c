@@ -2023,6 +2023,10 @@ static int kvmppc_xive_create(struct kvm_device *dev, u32 type)
 
 	pr_devel("Creating xive for partition\n");
 
+	/* Already there ? */
+	if (kvm->arch.xive)
+		return -EEXIST;
+
 	xive = kvmppc_xive_get_device(kvm, type);
 	if (!xive)
 		return -ENOMEM;
@@ -2031,12 +2035,6 @@ static int kvmppc_xive_create(struct kvm_device *dev, u32 type)
 	xive->dev = dev;
 	xive->kvm = kvm;
 	mutex_init(&xive->lock);
-
-	/* Already there ? */
-	if (kvm->arch.xive)
-		ret = -EEXIST;
-	else
-		kvm->arch.xive = xive;
 
 	/* We use the default queue size set by the host */
 	xive->q_order = xive_native_default_eq_shift();
@@ -2057,6 +2055,7 @@ static int kvmppc_xive_create(struct kvm_device *dev, u32 type)
 	if (ret)
 		return ret;
 
+	kvm->arch.xive = xive;
 	return 0;
 }
 
