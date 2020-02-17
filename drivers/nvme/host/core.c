@@ -927,6 +927,7 @@ static void nvme_keep_alive_end_io(struct request *rq, blk_status_t status)
 		return;
 	}
 
+	ctrl->comp_seen = false;
 	spin_lock_irqsave(&ctrl->lock, flags);
 	if (ctrl->state == NVME_CTRL_LIVE ||
 	    ctrl->state == NVME_CTRL_CONNECTING)
@@ -980,7 +981,6 @@ static void nvme_start_keep_alive(struct nvme_ctrl *ctrl)
 	if (unlikely(ctrl->kato == 0))
 		return;
 
-	ctrl->comp_seen = false;
 	schedule_delayed_work(&ctrl->ka_work, ctrl->kato * HZ);
 }
 
