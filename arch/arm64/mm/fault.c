@@ -840,13 +840,12 @@ cortex_a76_erratum_1463225_debug_handler(struct pt_regs *regs)
 }
 #endif /* CONFIG_ARM64_ERRATUM_1463225 */
 
-asmlinkage int __exception do_debug_exception(unsigned long addr_if_watchpoint,
-					      unsigned int esr,
-					      struct pt_regs *regs)
+asmlinkage void __exception do_debug_exception(unsigned long addr_if_watchpoint,
+					       unsigned int esr,
+					       struct pt_regs *regs)
 {
 	const struct fault_info *inf = esr_to_debug_fault_info(esr);
 	unsigned long pc = instruction_pointer(regs);
-	int rv;
 
 	if (cortex_a76_erratum_1463225_debug_handler(regs))
 		return;
@@ -861,17 +860,12 @@ asmlinkage int __exception do_debug_exception(unsigned long addr_if_watchpoint,
 	if (user_mode(regs) && (pc > TASK_SIZE))
 		arm64_apply_bp_hardening();
 
-	if (!inf->fn(addr_if_watchpoint, esr, regs)) {
-		rv = 1;
-	} else {
+	if (inf->fn(addr_if_watchpoint, esr, regs)) {
 		arm64_notify_die(inf->name, regs,
 				 inf->sig, inf->code, (void __user *)pc, esr);
-		rv = 0;
 	}
 
 	if (interrupts_enabled(regs))
 		trace_hardirqs_on();
-
-	return rv;
 }
 NOKPROBE_SYMBOL(do_debug_exception);
