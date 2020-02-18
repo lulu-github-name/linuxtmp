@@ -40,6 +40,7 @@ static struct kset *iommu_group_kset;
 static DEFINE_IDA(iommu_group_ida);
 
 static unsigned int iommu_def_domain_type __read_mostly;
+static bool iommu_def_domain_quirk = false;
 static bool iommu_dma_strict __read_mostly = true;
 static u32 iommu_cmd_line __read_mostly;
 
@@ -2028,7 +2029,8 @@ void iommu_set_default_passthrough(bool cmd_line)
 	if (cmd_line)
 		iommu_set_cmd_line_dma_api();
 
-	iommu_def_domain_type = IOMMU_DOMAIN_IDENTITY;
+	if (!iommu_def_domain_quirk)
+		iommu_def_domain_type = IOMMU_DOMAIN_IDENTITY;
 }
 
 void iommu_set_default_translated(bool cmd_line)
@@ -2036,7 +2038,8 @@ void iommu_set_default_translated(bool cmd_line)
 	if (cmd_line)
 		iommu_set_cmd_line_dma_api();
 
-	iommu_def_domain_type = IOMMU_DOMAIN_DMA;
+	if (!iommu_def_domain_quirk)
+		iommu_def_domain_type = IOMMU_DOMAIN_DMA;
 }
 
 bool iommu_default_passthrough(void)
@@ -2131,7 +2134,8 @@ static int __init iommu_quirks(void)
 	     (strncmp(name, "R120", 4) == 0 ||
 	      strncmp(name, "R270", 4) == 0))) {
 		pr_warn("Gigabyte %s detected, force iommu passthrough mode", name);
-		iommu_def_domain_type = IOMMU_DOMAIN_IDENTITY;
+		iommu_set_default_passthrough(false);
+		iommu_def_domain_quirk = true;
 	}
 
 	return 0;
