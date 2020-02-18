@@ -890,7 +890,6 @@ static void nvme_pci_complete_rq(struct request *req)
 {
 	struct nvme_iod *iod = blk_mq_rq_to_pdu(req);
 
-	nvme_cleanup_cmd(req);
 	if (blk_rq_nr_phys_segments(req))
 		nvme_unmap_data(iod->nvmeq->dev, req);
 	nvme_complete_rq(req);
