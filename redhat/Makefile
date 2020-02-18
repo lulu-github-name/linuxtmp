@@ -104,14 +104,17 @@ rh-check-kabi-dup: rh-kabi-dup
 	@$(REDHAT)/kabi/check-kabi -k $(REDHAT)/kabi/Module.kabi_dup_$(MACH) \
 	-s $(_OUTPUT)/Module.symvers
 
-rh-kabi-dw-base: rh-kabi
+rh-kabi-dw:
+	make -C $(KABIDW)/kabi-dw
+
+rh-kabi-dw-base: rh-kabi rh-kabi-dw
 	@echo "Generating baseline dataset for KABI DWARF-based comparison..."
 	@echo "**** GENERATING DWARF-based kABI baseline dataset ****"
 	@$(KABIDW)/run_kabi-dw.sh generate \
 		$(REDHAT)/kabi/kabi-current/kabi_whitelist_$(CURARCH) \
 		$(_OUTPUT) $(KABIDW)/base/$(CURARCH)/
 
-rh-kabi-dw-check: rh-kabi
+rh-kabi-dw-check: rh-kabi rh-kabi-dw
 	@if [ ! -d $(KABIDW)/base/$(CURARCH) ]; then \
 		echo "**** ERROR: ****"; \
 		echo "Comparison base not found in $(KABIDW)/base/$(CURARCH)."; \
@@ -155,7 +158,11 @@ rh-clean-rpmdirs:
 		rm -rf $$i; \
 	done;
 
-rh-clean: rh-clean-sources rh-clean-configs rh-clean-rpmdirs
+rh-clean-kabi-dw:
+	make -C $(KABIDW)/kabi-dw clean
+	rm -rf $(KABIDW)/base/$(CURARCH)
+
+rh-clean: rh-clean-sources rh-clean-configs rh-clean-rpmdirs rh-clean-kabi-dw
 
 rh-stub-key:
 	@echo "Copying pre-generated keys";
@@ -412,6 +419,7 @@ rh-full-help:
 	@echo  '                      Requires a pre-compiled tree: run `make rh-configs`, copy the'
 	@echo  '                      relevant config file from redhat/configs/ to .config, run `make`.'
 	@echo  '  rh-check-kabi-dup - Like rh-check-kabi but uses a DUP kABI whitelist.'
+	@echo  '  rh-kabi-dw        - Build the kabi-dw tool.'
 	@echo  '  rh-kabi-dw-base   - Generate the base dataset for kABI DWARF-based check.'
 	@echo  '  rh-kabi-dw-check  - Run DWARF-based kABI comparison of current binaries with the base'
 	@echo  '                      dataset.'
