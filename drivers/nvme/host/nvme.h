@@ -103,12 +103,17 @@ enum nvme_quirks {
 	/*
 	 * Use only one interrupt vector for all queues
 	 */
-	NVME_QUIRK_SINGLE_VECTOR		= (1 << 10),
+	NVME_QUIRK_SINGLE_VECTOR		= (1 << 11),
 
 	/*
 	 * Use non-standard 128 bytes SQEs.
 	 */
-	NVME_QUIRK_128_BYTES_SQES		= (1 << 11),
+	NVME_QUIRK_128_BYTES_SQES		= (1 << 12),
+
+	/*
+	 * Prevent tag overlap between queues
+	 */
+	NVME_QUIRK_SHARED_TAGS                  = (1 << 13),
 };
 
 /*
