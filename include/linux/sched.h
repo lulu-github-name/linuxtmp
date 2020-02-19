@@ -707,7 +707,7 @@ struct task_struct {
 	unsigned			sched_migrated:1;
 	unsigned			sched_remote_wakeup:1;
 #ifdef CONFIG_PSI
-	RH_KABI_EXTEND(unsigned		sched_psi_wake_requeue:1)
+	RH_KABI_FILL_HOLE(unsigned	sched_psi_wake_requeue:1)
 #endif
 
 	/* Force alignment to the next boundary: */
@@ -741,7 +741,7 @@ struct task_struct {
 #endif
 #ifdef CONFIG_CGROUPS
 	/* task is frozen/stopped (used by the cgroup freezer) */
-	RH_KABI_EXTEND(unsigned		frozen:1)
+	RH_KABI_FILL_HOLE(unsigned	frozen:1)
 #endif
 
 	unsigned long			atomic_flags; /* Flags requiring atomic access. */
