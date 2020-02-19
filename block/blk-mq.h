@@ -2,6 +2,8 @@
 #ifndef INT_BLK_MQ_H
 #define INT_BLK_MQ_H
 
+#include <linux/rh_kabi.h>
+
 #include "blk-stat.h"
 #include "blk-mq-tag.h"
 
@@ -23,9 +25,7 @@ struct blk_mq_ctx {
 
 	unsigned int		cpu;
 	unsigned short		index_hw[HCTX_MAX_TYPES];
-#ifndef __GENKSYMS__
-	struct blk_mq_hw_ctx 	*hctxs[HCTX_MAX_TYPES];
-#endif
+	RH_KABI_BROKEN_INSERT(struct blk_mq_hw_ctx	*hctxs[HCTX_MAX_TYPES])
 
 	/* incremented at dispatch time */
 	unsigned long		rq_dispatched[2];

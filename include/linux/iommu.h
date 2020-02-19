@@ -309,20 +309,22 @@ struct iommu_ops {
 	bool (*is_attach_deferred)(struct iommu_domain *domain, struct device *dev);
 
 	/* Per device IOMMU features */
-	RH_KABI_EXTEND(bool (*dev_has_feat)(struct device *dev, enum iommu_dev_features f))
-	RH_KABI_EXTEND(bool (*dev_feat_enabled)(struct device *dev, enum iommu_dev_features f))
-	RH_KABI_EXTEND(int (*dev_enable_feat)(struct device *dev, enum iommu_dev_features f))
-	RH_KABI_EXTEND(int (*dev_disable_feat)(struct device *dev, enum iommu_dev_features f))
+	RH_KABI_BROKEN_INSERT_BLOCK(
+	bool (*dev_has_feat)(struct device *dev, enum iommu_dev_features f);
+	bool (*dev_feat_enabled)(struct device *dev, enum iommu_dev_features f);
+	int (*dev_enable_feat)(struct device *dev, enum iommu_dev_features f);
+	int (*dev_disable_feat)(struct device *dev, enum iommu_dev_features f);
 
 	/* Aux-domain specific attach/detach entries */
-	RH_KABI_EXTEND(int (*aux_attach_dev)(struct iommu_domain *domain, struct device *dev))
-	RH_KABI_EXTEND(void (*aux_detach_dev)(struct iommu_domain *domain, struct device *dev))
-	RH_KABI_EXTEND(int (*aux_get_pasid)(struct iommu_domain *domain, struct device *dev))
+	int (*aux_attach_dev)(struct iommu_domain *domain, struct device *dev);
+	void (*aux_detach_dev)(struct iommu_domain *domain, struct device *dev);
+	int (*aux_get_pasid)(struct iommu_domain *domain, struct device *dev);
 
-	RH_KABI_EXTEND(struct iommu_sva *(*sva_bind)(struct device *dev, struct mm_struct *mm,
-						     void *drvdata))
-	RH_KABI_EXTEND(void (*sva_unbind)(struct iommu_sva *handle))
-	RH_KABI_EXTEND(int (*sva_get_pasid)(struct iommu_sva *handle))
+	struct iommu_sva *(*sva_bind)(struct device *dev, struct mm_struct *mm,
+				      void *drvdata);
+	void (*sva_unbind)(struct iommu_sva *handle);
+	int (*sva_get_pasid)(struct iommu_sva *handle);
+	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 
 	unsigned long pgsize_bitmap;
 };

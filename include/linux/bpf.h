@@ -36,17 +36,18 @@ struct bpf_map_ops {
 	void (*map_free)(struct bpf_map *map);
 	int (*map_get_next_key)(struct bpf_map *map, void *key, void *next_key);
 	void (*map_release_uref)(struct bpf_map *map);
-	RH_KABI_EXTEND(void *(*map_lookup_elem_sys_only)(struct bpf_map *map, void *key))
+	RH_KABI_BROKEN_INSERT(void *(*map_lookup_elem_sys_only)(struct bpf_map *map, void *key))
 
 	/* funcs callable from userspace and from eBPF programs */
 	void *(*map_lookup_elem)(struct bpf_map *map, void *key);
 	int (*map_update_elem)(struct bpf_map *map, void *key, void *value, u64 flags);
 	int (*map_delete_elem)(struct bpf_map *map, void *key);
 
-	/* Not protected by KABI, so allowed to insert in the middle */
-	RH_KABI_EXTEND(int (*map_push_elem)(struct bpf_map *map, void *value, u64 flags))
-	RH_KABI_EXTEND(int (*map_pop_elem)(struct bpf_map *map, void *value))
-	RH_KABI_EXTEND(int (*map_peek_elem)(struct bpf_map *map, void *value))
+	RH_KABI_BROKEN_INSERT_BLOCK(
+	int (*map_push_elem)(struct bpf_map *map, void *value, u64 flags);
+	int (*map_pop_elem)(struct bpf_map *map, void *value);
+	int (*map_peek_elem)(struct bpf_map *map, void *value);
+	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 
 	/* funcs called by prog_array and perf_event_array map */
 	void *(*map_fd_get_ptr)(struct bpf_map *map, struct file *map_file,
@@ -56,18 +57,20 @@ struct bpf_map_ops {
 	u32 (*map_fd_sys_lookup_elem)(void *ptr);
 	void (*map_seq_show_elem)(struct bpf_map *map, void *key,
 				  struct seq_file *m);
-	RH_KABI_REPLACE_UNSAFE(int (*map_check_btf)(const struct bpf_map *map, const struct btf *btf,
-						    u32 key_type_id, u32 value_type_id),
-			       int (*map_check_btf)(const struct bpf_map *map,
-						    const struct btf *btf,
-						    const struct btf_type *key_type,
-						    const struct btf_type *value_type))
+	RH_KABI_BROKEN_REMOVE(int (*map_check_btf)(const struct bpf_map *map, const struct btf *btf,
+						   u32 key_type_id, u32 value_type_id))
+	RH_KABI_BROKEN_INSERT_BLOCK(
+	int (*map_check_btf)(const struct bpf_map *map,
+			     const struct btf *btf,
+			     const struct btf_type *key_type,
+			     const struct btf_type *value_type);
 
 	/* Direct value access helpers. */
-	RH_KABI_EXTEND(int (*map_direct_value_addr)(const struct bpf_map *map,
-						    u64 *imm, u32 off))
-	RH_KABI_EXTEND(int (*map_direct_value_meta)(const struct bpf_map *map,
-						    u64 imm, u32 *off))
+	int (*map_direct_value_addr)(const struct bpf_map *map,
+				     u64 *imm, u32 off);
+	int (*map_direct_value_meta)(const struct bpf_map *map,
+				     u64 imm, u32 *off);
+	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 };
 
 struct bpf_map_memory {
@@ -95,7 +98,7 @@ struct bpf_map {
 	u32 btf_key_type_id;
 	u32 btf_value_type_id;
 	struct btf *btf;
-	RH_KABI_EXTEND(struct bpf_map_memory memory)
+	RH_KABI_BROKEN_INSERT(struct bpf_map_memory memory)
 	bool unpriv_array;
 	RH_KABI_FILL_HOLE(bool frozen) /* write-once */
 	/* 48 bytes hole */
@@ -103,9 +106,11 @@ struct bpf_map {
 	/* The 3rd and 4th cacheline with misc members to avoid false sharing
 	 * particularly with refcounting.
 	 */
-	RH_KABI_DEPRECATE(struct user_struct *, user ____cacheline_aligned)
-	RH_KABI_REPLACE_UNSAFE(atomic_t refcnt,
-			       atomic_t refcnt ____cacheline_aligned)
+	RH_KABI_BROKEN_REMOVE_BLOCK(
+	struct user_struct *user ____cacheline_aligned;
+	atomic_t refcnt;
+	) /* RH_KABI_BROKEN_REMOVE_BLOCK */
+	RH_KABI_BROKEN_INSERT(atomic_t refcnt ____cacheline_aligned)
 	atomic_t usercnt;
 	struct work_struct work;
 	char name[BPF_OBJ_NAME_LEN];
@@ -334,27 +339,28 @@ struct bpf_prog_offload_ops {
 	/* verifier basic callbacks */
 	int (*insn_hook)(struct bpf_verifier_env *env,
 			 int insn_idx, int prev_insn_idx);
-	RH_KABI_EXTEND(int (*finalize)(struct bpf_verifier_env *env))
+	RH_KABI_BROKEN_INSERT_BLOCK(
+	int (*finalize)(struct bpf_verifier_env *env);
 	/* verifier optimization callbacks (called after .finalize) */
-	RH_KABI_EXTEND(int (*replace_insn)(struct bpf_verifier_env *env, u32 off,
-					   struct bpf_insn *insn))
-	RH_KABI_EXTEND(int (*remove_insns)(struct bpf_verifier_env *env, u32 off, u32 cnt))
+	int (*replace_insn)(struct bpf_verifier_env *env, u32 off,
+			    struct bpf_insn *insn);
+	int (*remove_insns)(struct bpf_verifier_env *env, u32 off, u32 cnt);
 	/* program management callbacks */
-	RH_KABI_EXTEND(int (*prepare)(struct bpf_prog *prog))
-	RH_KABI_EXTEND(int (*translate)(struct bpf_prog *prog))
-	RH_KABI_EXTEND(void (*destroy)(struct bpf_prog *prog))
+	int (*prepare)(struct bpf_prog *prog);
+	int (*translate)(struct bpf_prog *prog);
+	void (*destroy)(struct bpf_prog *prog);
+	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 };
 
 struct bpf_prog_offload {
 	struct bpf_prog		*prog;
 	struct net_device	*netdev;
-	/* Not protected by KABI, safe to amend in the middle */
-	RH_KABI_EXTEND(struct bpf_offload_dev	*offdev)
+	RH_KABI_BROKEN_INSERT(struct bpf_offload_dev	*offdev)
 	void			*dev_priv;
 	struct list_head	offloads;
 	bool			dev_state;
-	RH_KABI_EXTEND(bool	opt_failed)
-	RH_KABI_DEPRECATE(const struct bpf_prog_offload_ops *, dev_ops)
+	RH_KABI_BROKEN_INSERT(bool	opt_failed)
+	RH_KABI_BROKEN_REMOVE(const struct bpf_prog_offload_ops *dev_ops)
 	void			*jited_image;
 	u32			jited_len;
 };
@@ -378,13 +384,13 @@ struct bpf_prog_aux {
 	u32 used_map_cnt;
 	u32 max_ctx_offset;
 	/* not protected by KABI, safe to extend in the middle */
-	RH_KABI_EXTEND(u32 max_pkt_offset)
-	RH_KABI_EXTEND(u32 max_tp_access)
+	RH_KABI_BROKEN_INSERT(u32 max_pkt_offset)
+	RH_KABI_BROKEN_INSERT(u32 max_tp_access)
 	u32 stack_depth;
 	u32 id;
 	u32 func_cnt; /* used by non-func prog as the number of func progs */
-	RH_KABI_EXTEND(u32 func_idx) /* 0 for non-func prog, the index in func array for func prog */
-	RH_KABI_EXTEND(bool verifier_zext) /* Zero extensions has been inserted by verifier. */
+	RH_KABI_BROKEN_INSERT(u32 func_idx) /* 0 for non-func prog, the index in func array for func prog */
+	RH_KABI_BROKEN_INSERT(bool verifier_zext) /* Zero extensions has been inserted by verifier. */
 	bool offload_requested;
 	struct bpf_prog **func;
 	void *jit_data; /* JIT specific data. arch dependent */
@@ -395,21 +401,22 @@ struct bpf_prog_aux {
 	struct bpf_prog *prog;
 	struct user_struct *user;
 	u64 load_time; /* ns since boottime */
-	RH_KABI_EXTEND(struct bpf_map *cgroup_storage[MAX_BPF_CGROUP_STORAGE_TYPE])
+	RH_KABI_BROKEN_INSERT(struct bpf_map *cgroup_storage[MAX_BPF_CGROUP_STORAGE_TYPE])
 	char name[BPF_OBJ_NAME_LEN];
 #ifdef CONFIG_SECURITY
 	void *security;
 #endif
 	struct bpf_prog_offload *offload;
-	RH_KABI_EXTEND(struct btf *btf)
-	RH_KABI_EXTEND(struct bpf_func_info *func_info)
+	RH_KABI_BROKEN_INSERT_BLOCK(
+	struct btf *btf;
+	struct bpf_func_info *func_info;
 	/* bpf_line_info loaded from userspace.  linfo->insn_off
 	 * has the xlated insn offset.
 	 * Both the main and sub prog share the same linfo.
 	 * The subprog can access its first linfo by
 	 * using the linfo_idx.
 	 */
-	RH_KABI_EXTEND(struct bpf_line_info *linfo)
+	struct bpf_line_info *linfo;
 	/* jited_linfo is the jited addr of the linfo.  It has a
 	 * one to one mapping to linfo:
 	 * jited_linfo[i] is the jited addr for the linfo[i]->insn_off.
@@ -417,15 +424,16 @@ struct bpf_prog_aux {
 	 * The subprog can access its first jited_linfo by
 	 * using the linfo_idx.
 	 */
-	RH_KABI_EXTEND(void **jited_linfo)
-	RH_KABI_EXTEND(u32 func_info_cnt)
-	RH_KABI_EXTEND(u32 nr_linfo)
+	void **jited_linfo;
+	u32 func_info_cnt;
+	u32 nr_linfo;
 	/* subprog can use linfo_idx to access its first linfo and
 	 * jited_linfo.
 	 * main prog always has linfo_idx == 0
 	 */
-	RH_KABI_EXTEND(u32 linfo_idx)
-	RH_KABI_EXTEND(struct bpf_prog_stats __percpu *stats)
+	u32 linfo_idx;
+	struct bpf_prog_stats __percpu *stats;
+	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 	union {
 		struct work_struct work;
 		struct rcu_head	rcu;

@@ -180,7 +180,7 @@ struct pneigh_entry {
 	struct net_device	*dev;
 	u8			flags;
 	/* RHEL: Currently safe to break this structure */
-	RH_KABI_EXTEND(u8	protocol)
+	RH_KABI_BROKEN_INSERT(u8	protocol)
 	u8			key[0];
 };
 

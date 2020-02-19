@@ -257,7 +257,7 @@ struct pmu {
 	struct module			*module;
 	struct device			*dev;
 	const struct attribute_group	**attr_groups;
-	RH_KABI_EXTEND(const struct attribute_group **attr_update)
+	RH_KABI_BROKEN_INSERT(const struct attribute_group **attr_update)
 	const char			*name;
 	int				type;
 
@@ -453,7 +453,7 @@ struct pmu {
 	 * Runs from perf_event_open(). Should return 0 for "no match"
 	 * or non-zero for "match".
 	 */
-	RH_KABI_EXTEND(int (*aux_output_match)		(struct perf_event *event))
+	RH_KABI_BROKEN_INSERT(int (*aux_output_match)		(struct perf_event *event))
 					/* optional */
 
 	/*
@@ -464,7 +464,7 @@ struct pmu {
 	/*
 	 * Check period value for PERF_EVENT_IOC_PERIOD ioctl.
 	 */
-	RH_KABI_EXTEND(int (*check_period)		(struct perf_event *event, u64 value)) /* optional */
+	RH_KABI_BROKEN_INSERT(int (*check_period)		(struct perf_event *event, u64 value)) /* optional */
 };
 
 enum perf_addr_filter_action_t {
@@ -694,7 +694,7 @@ struct perf_event {
 	unsigned long			addr_filters_gen;
 
 	/* for aux_output events */
-	RH_KABI_EXTEND(struct perf_event        *aux_event)
+	RH_KABI_BROKEN_INSERT(struct perf_event        *aux_event)
 
 	void (*destroy)(struct perf_event *);
 	struct rcu_head			rcu_head;
@@ -769,7 +769,7 @@ struct perf_event_context {
 	 * Set when nr_events != nr_active, except tolerant to events not
 	 * necessary to be active due to scheduling constraints, such as cgroups.
 	 */
-	RH_KABI_EXTEND(int rotate_necessary)
+	RH_KABI_BROKEN_INSERT(int rotate_necessary)
 	RH_KABI_REPLACE(atomic_t refcount, refcount_t refcount)
 	struct task_struct		*task;
 
