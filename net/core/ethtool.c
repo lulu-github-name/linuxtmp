@@ -11,6 +11,8 @@
  * (at your option) any later version.
  */
 
+#include <linux/rh_kabi.h>
+
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/capability.h>
@@ -28,9 +30,7 @@
 #include <linux/sched/signal.h>
 #include <linux/net.h>
 #include <net/devlink.h>
-#ifndef __GENKSYMS__
-#include <net/xdp_sock.h>
-#endif
+#include RH_KABI_HIDE_INCLUDE(<net/xdp_sock.h>)
 #include <net/flow_offload.h>
 
 /*

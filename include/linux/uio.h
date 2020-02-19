@@ -9,13 +9,12 @@
 #ifndef __LINUX_UIO_H
 #define __LINUX_UIO_H
 
+#include <linux/rh_kabi.h>
+
 #include <linux/kernel.h>
 #include <linux/thread_info.h>
-#ifndef __GENKSYMS__
-#include <crypto/hash.h>
-#endif
+#include RH_KABI_HIDE_INCLUDE(<crypto/hash.h>)
 #include <uapi/linux/uio.h>
-#include <linux/rh_kabi.h>
 
 struct page;
 struct pipe_inode_info;

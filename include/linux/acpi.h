@@ -21,11 +21,11 @@
 #ifndef _LINUX_ACPI_H
 #define _LINUX_ACPI_H
 
+#include <linux/rh_kabi.h>
+
 #include <linux/errno.h>
 #include <linux/ioport.h>	/* for struct resource */
-#ifndef __GENKSYMS__
-#include <linux/irqdomain.h>
-#endif
+#include RH_KABI_HIDE_INCLUDE(<linux/irqdomain.h>)
 #include <linux/resource_ext.h>
 #include <linux/device.h>
 #include <linux/property.h>

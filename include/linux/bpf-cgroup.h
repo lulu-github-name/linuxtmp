@@ -2,17 +2,15 @@
 #ifndef _BPF_CGROUP_H
 #define _BPF_CGROUP_H
 
-#ifndef __GENKSYMS__
-#include <linux/bpf.h>
-#endif
+#include <linux/rh_kabi.h>
+
+#include RH_KABI_HIDE_INCLUDE(<linux/bpf.h>)
 #include <linux/errno.h>
 #include <linux/jump_label.h>
 #include <linux/percpu.h>
 #include <linux/percpu-refcount.h>
 #include <linux/rbtree.h>
 #include <uapi/linux/bpf.h>
-
-#include <linux/rh_kabi.h>
 
 struct sock;
 struct sockaddr;

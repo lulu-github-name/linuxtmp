@@ -5,6 +5,8 @@
 #ifndef __NET_NET_NAMESPACE_H
 #define __NET_NET_NAMESPACE_H
 
+#include <linux/rh_kabi.h>
+
 #include <linux/atomic.h>
 #include <linux/refcount.h>
 #include <linux/workqueue.h>
@@ -30,9 +32,7 @@
 #include <net/netns/xfrm.h>
 #include <net/netns/mpls.h>
 #include <net/netns/can.h>
-#ifndef __GENKSYMS__
-#include <net/netns/xdp.h>
-#endif
+#include RH_KABI_HIDE_INCLUDE(<net/netns/xdp.h>)
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 #include <linux/skbuff.h>

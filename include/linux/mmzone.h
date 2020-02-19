@@ -5,6 +5,8 @@
 #ifndef __ASSEMBLY__
 #ifndef __GENERATING_BOUNDS_H
 
+#include <linux/rh_kabi.h>
+
 #include <linux/spinlock.h>
 #include <linux/list.h>
 #include <linux/wait.h>
@@ -18,11 +20,8 @@
 #include <linux/pageblock-flags.h>
 #include <linux/page-flags-layout.h>
 #include <linux/atomic.h>
-#include <linux/rh_kabi.h>
-#ifndef __GENKSYMS__
-#include <linux/mm_types.h>
-#include <linux/page-flags.h>
-#endif
+#include RH_KABI_HIDE_INCLUDE(<linux/mm_types.h>)
+#include RH_KABI_HIDE_INCLUDE(<linux/page-flags.h>)
 #include <asm/page.h>
 
 /* Free memory management - zoned buddy allocator.  */

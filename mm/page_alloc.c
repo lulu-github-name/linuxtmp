@@ -15,6 +15,8 @@
  *          (lots of bits borrowed from Ingo Molnar & Andrew Morton)
  */
 
+#include <linux/rh_kabi.h>
+
 #include <linux/stddef.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
@@ -44,9 +46,7 @@
 #include <linux/mempolicy.h>
 #include <linux/memremap.h>
 #include <linux/stop_machine.h>
-#ifndef __GENKSYMS__
-#include <linux/random.h>
-#endif
+#include RH_KABI_HIDE_INCLUDE(<linux/random.h>)
 #include <linux/sort.h>
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>

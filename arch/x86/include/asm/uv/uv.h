@@ -2,6 +2,8 @@
 #ifndef _ASM_X86_UV_UV_H
 #define _ASM_X86_UV_UV_H
 
+#include <linux/rh_kabi.h>
+
 #include <asm/tlbflush.h>
 
 enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
@@ -10,9 +12,7 @@ struct cpumask;
 struct mm_struct;
 
 #ifdef CONFIG_X86_UV
-#ifndef __GENKSYMS__
-#include <linux/efi.h>
-#endif
+#include RH_KABI_HIDE_INCLUDE(<linux/efi.h>)
 
 #define	UV_PROC_NODE	"sgi_uv"
 
