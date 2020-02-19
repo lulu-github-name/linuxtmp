@@ -411,7 +411,6 @@ union bpf_attr {
 		 * (context accesses, allowed helpers, etc).
 		 */
 		__u32		expected_attach_type;
-		/* Not protected by KABI, safe to extend in the middle */
 #ifndef __GENKSYMS__
 		__u32		prog_btf_fd;	/* fd pointing to BTF type data */
 		__u32		func_info_rec_size;	/* userspace bpf_func_info size */
