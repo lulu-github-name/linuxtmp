@@ -1087,7 +1087,7 @@ static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback 
 		 * the submission code will error out, so we don't need to
 		 * handle that case here.
 		 */
-		if (task->tk_flags & RPC_TASK_KILLED)
+		if (RPC_SIGNALLED(task))
 			goto need_restart;
 
 		return true;
@@ -1138,7 +1138,7 @@ static bool nfsd4_cb_sequence_done(struct rpc_task *task, struct nfsd4_callback 
 	dprintk("%s: freed slot, new seqid=%d\n", __func__,
 		clp->cl_cb_session->se_cb_seq_nr);
 
-	if (task->tk_flags & RPC_TASK_KILLED)
+	if (RPC_SIGNALLED(task))
 		goto need_restart;
 out:
 	return ret;
