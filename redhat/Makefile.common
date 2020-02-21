@@ -43,9 +43,21 @@ RELEASED_KERNEL:=0
 STAMP_VERSION:=$(KVERSION)
 
 LOCVERFILE:=../localversion
+
+# We let 35 characters be the max length of the localversion string
+# at this stage to avoid red-herring failure when the string is concat'd
+# by brew later on in the build process. The longest such
+# concatenation adds 29 characters at the time of this comment.
+BUILDIDBOUND=35
+
 # create an empty localversion file if you don't want a local buildid
 ifneq ($(wildcard $(LOCVERFILE)),)
   BUILDID:=$(shell cat $(LOCVERFILE))
+
+  ifeq ("$(shell [ $(shell echo -n $(BUILDID) | wc -c) -gt $(BUILDIDBOUND) ] && echo "Y" )", "Y")
+    $(error BUILDID "$(BUILDID)" exceeds limit of $(BUILDIDBOUND) characters)
+  endif
+
   $(info BUILDID is "$(BUILDID)". Update '$(shell dirname $(REDHAT))/localversion' to change.)
 else
   ifeq ($(BUILDID),)
