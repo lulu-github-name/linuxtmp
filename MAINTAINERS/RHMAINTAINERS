@@ -54,7 +54,6 @@ Red Hat Maintainers List (try to look for most precise areas first)
 		-----------------------------------
 
 ARK Kernel Maintainer
-M:	Laura Abbott <labbott@redhat.com>
 M:	Jeremy Cline <jcline@redhat.com>
 T:	git https://gitlab.com/cki-project/kernel-ark.git
 S:	Maintained
