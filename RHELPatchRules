@@ -147,7 +147,7 @@ a) Information in []s
 outside of the Red Hat git trees.  However, note that the original full subject
 will be retained within the body of the patch commit message in the git trees.
 
-[Required] Each patch subject starts with "[RHELX]".
+[Required] Each patch subject starts with "[RHELX]" or "[ARK]" for RHEL.next.
 
     This information must include 'RHELX'.  This part determines which
 maintainer needs to track the patch.  If there is no RHEL release information,
@@ -170,6 +170,11 @@ the subject. If a patch set is a mix of patches in different subsystems, the
 suggested solution is to split the set into multiple sets, each with its own
 bug number.  If not feasible, submit the whole set to the subsystem that is
 the best fit.
+
+    For ARK patches, if they are based off the "internal" branch they should
+include the INTERNAL tag. If they are based off the "ark-patches" branch they
+should include the RHPATCHES tag. For details on the repository layout, see
+https://gitlab.com/cki-project/kernel-ark/-/wikis/Repository-layout.
 
 [Suggested] Alternatively, each patch subject can start with "[RHELX.Y]".
 
