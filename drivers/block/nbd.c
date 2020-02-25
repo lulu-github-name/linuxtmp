@@ -921,14 +921,15 @@ static blk_status_t nbd_queue_rq(struct blk_mq_hw_ctx *hctx,
 
 static int nbd_check_sock_type(struct nbd_device *nbd, struct socket *sock)
 {
-	struct sockaddr addr;
+	struct sockaddr_storage buf;
+	struct sockaddr *addr = (struct sockaddr *)&buf;
 	int err;
 
-	err = kernel_getsockname(sock, &addr);
+	err = kernel_getsockname(sock, addr);
 	if (err < 0)
 		return err;
 
-	if (addr.sa_family != AF_UNIX) {
+	if (addr->sa_family != AF_UNIX) {
 		dev_err(disk_to_dev(nbd->disk),
 			"Only AF_UNIX sockets are supported.\n");
 		return -EINVAL;
