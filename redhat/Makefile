@@ -93,6 +93,10 @@ rh-check-kabi: rh-kabi
 		echo "ERROR: You must compile the kernel and modules first";\
 		exit 1;\
 	fi
+	@if grep -n -r RH_KABI ../include/uapi ../arch/*/include/uapi; then \
+		echo "ERROR: RH_KABI macros cannot be used in uapi directories."; \
+		exit 1; \
+	fi
 	@$(REDHAT)/kabi/check-kabi -k $(REDHAT)/kabi/Module.kabi_$(MACH) \
 	 -s $(_OUTPUT)/Module.symvers
 
