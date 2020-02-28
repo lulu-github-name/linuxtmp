@@ -5068,23 +5068,22 @@ SWITCHTEC_QUIRK(0x8575);  /* PFXI 80XG3 */
 SWITCHTEC_QUIRK(0x8576);  /* PFXI 96XG3 */
 
 /*
- * On certain Lenovo Thinkpad P50 SKUs, specifically those with a Nvidia
- * Quadro M1000M, the BIOS will occasionally make the mistake of not resetting
- * the nvidia GPU between reboots if the system is configured to use hybrid
- * graphics mode. This results in the GPU being left in whatever state it was
- * in during the previous boot which causes spurious interrupts from the GPU,
- * which in turn cause us to disable the wrong IRQs and end up breaking the
- * touchpad. Unsurprisingly, this also completely breaks nouveau.
+ * On Lenovo Thinkpad P50 SKUs with a Nvidia Quadro M1000M, the BIOS does
+ * not always reset the secondary Nvidia GPU between reboots if the system
+ * is configured to use Hybrid Graphics mode.  This results in the GPU
+ * being left in whatever state it was in during the *previous* boot, which
+ * causes spurious interrupts from the GPU, which in turn causes us to
+ * disable the wrong IRQ and end up breaking the touchpad.  Unsurprisingly,
+ * this also completely breaks nouveau.
  *
- * Luckily, it seems a simple reset of the PCI device for the nvidia GPU
- * manages to bring the GPU back into a clean state and fix all of these
- * issues. Additionally since the GPU will report NoReset+ when the machine is
- * configured in Dedicated display mode, we don't need to worry about
- * accidentally resetting the GPU when it's supposed to already be
- * initialized.
+ * Luckily, it seems a simple reset of the Nvidia GPU brings it back to a
+ * clean state and fixes all these issues.
+ *
+ * When the machine is configured in Dedicated display mode, the issue
+ * doesn't occur.  Fortunately the GPU advertises NoReset+ when in this
+ * mode, so we can detect that and avoid resetting it.
  */
-static void
-quirk_lenovo_thinkpad_p50_nvgpu_survives_reboot(struct pci_dev *pdev)
+static void quirk_reset_lenovo_thinkpad_p50_nvgpu(struct pci_dev *pdev)
 {
 	void __iomem *map;
 	int ret;
@@ -5094,30 +5093,25 @@ quirk_lenovo_thinkpad_p50_nvgpu_survives_reboot(struct pci_dev *pdev)
 	    !pdev->reset_fn)
 		return;
 
-	/*
-	 * If we can't enable the device's mmio space, it's probably not even
-	 * initialized. This is fine, and means we can just skip the quirk
-	 * entirely.
-	 */
-	if (pci_enable_device_mem(pdev)) {
-		pci_dbg(pdev, "Can't enable device mem, no reset needed\n");
+	if (pci_enable_device_mem(pdev))
 		return;
-	}
 
-	/* Taken from drivers/gpu/drm/nouveau/engine/device/base.c */
-	map = ioremap(pci_resource_start(pdev, 0), 0x102000);
+	/*
+	 * Based on nvkm_device_ctor() in
+	 * drivers/gpu/drm/nouveau/nvkm/engine/device/base.c
+	 */
+	map = pci_iomap(pdev, 0, 0x23000);
 	if (!map) {
-		pci_err(pdev, "Can't map MMIO space, this is probably very bad\n");
+		pci_err(pdev, "Can't map MMIO space\n");
 		goto out_disable;
 	}
 
 	/*
-	 * Be extra careful, and make sure that the GPU firmware is posted
-	 * before trying a reset
+	 * Make sure the GPU looks like it's been POSTed before resetting
+	 * it.
 	 */
 	if (ioread32(map + 0x2240c) & 0x2) {
-		pci_info(pdev,
-			 FW_BUG "GPU left initialized by EFI, resetting\n");
+		pci_info(pdev, FW_BUG "GPU left initialized by EFI, resetting\n");
 		ret = pci_reset_function(pdev);
 		if (ret < 0)
 			pci_err(pdev, "Failed to reset GPU: %d\n", ret);
@@ -5127,7 +5121,6 @@ quirk_lenovo_thinkpad_p50_nvgpu_survives_reboot(struct pci_dev *pdev)
 out_disable:
 	pci_disable_device(pdev);
 }
-
 DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_VENDOR_ID_NVIDIA, 0x13b1,
 			      PCI_CLASS_DISPLAY_VGA, 8,
-			      quirk_lenovo_thinkpad_p50_nvgpu_survives_reboot);
+			      quirk_reset_lenovo_thinkpad_p50_nvgpu);
