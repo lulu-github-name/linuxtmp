@@ -1786,6 +1786,7 @@ static inline int pci_irqd_intx_xlate(struct irq_domain *d,
 static inline const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
 							 struct pci_dev *dev)
 { return NULL; }
+static inline bool pci_ats_disabled(void) { return true; }
 #endif /* CONFIG_PCI */
 
 /* Include architecture-dependent settings and functions */
