@@ -60,9 +60,15 @@ S:	Maintained
 F:	redhat/
 I:	INTERNAL
 
+RHEL 8.3 Kernel Maintainer
+M:	Frantisek Hrbata <fhrbata@redhat.com>
+T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git rhel-8.3.0
+S:	Maintained
+F:	redhat/
+
 RHEL 8.2 Kernel Maintainer
 M:	Bruno Meneguele <bmeneg@redhat.com>
-T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git
+T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git rhel-8.2.0
 S:	Maintained
 F:	redhat/
 
@@ -115,7 +121,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 7.7 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
+M:	Rado Vrbovsky <rvrbovsk@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-7.7.z.git
 S:	Maintained
 F:	redhat/
@@ -174,12 +180,6 @@ T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.10.z.git
 S:	Maintained
 F:	redhat/
 
-RHEL 6.7 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
-T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.7.z.git
-S:	Maintained
-F:	redhat/
-
 RHEL 6.6 Kernel Maintainer
 M:	Herton R. Krzesinski <herton@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.6.z.git
@@ -189,12 +189,6 @@ F:	redhat/
 RHEL 6.5 Kernel Maintainer
 M:	Frantisek Hrbata <fhrbata@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.5.z.git
-S:	Maintained
-F:	redhat/
-
-RHEL 6.4 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
-T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.4.z.git
 S:	Maintained
 F:	redhat/
 
