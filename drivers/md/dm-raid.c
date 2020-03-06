@@ -1614,13 +1614,12 @@ static int _check_data_dev_sectors(struct raid_set *rs)
 }
 
 /* Calculate the sectors per device and per array used for @rs */
-static int rs_set_dev_and_array_sectors(struct raid_set *rs, bool use_mddev)
+static int rs_set_dev_and_array_sectors(struct raid_set *rs, sector_t sectors, bool use_mddev)
 {
 	int delta_disks;
 	unsigned int data_stripes;
+	sector_t array_sectors = sectors, dev_sectors = sectors;
 	struct mddev *mddev = &rs->md;
-	struct md_rdev *rdev;
-	sector_t array_sectors = rs->ti->len, dev_sectors = rs->ti->len;
 
 	if (use_mddev) {
 		delta_disks = mddev->delta_disks;
@@ -1655,12 +1654,9 @@ static int rs_set_dev_and_array_sectors(struct raid_set *rs, bool use_mddev)
 		/* Striped layouts */
 		array_sectors = (data_stripes + delta_disks) * dev_sectors;
 
-	rdev_for_each(rdev, mddev)
-		if (!test_bit(Journal, &rdev->flags))
-			rdev->sectors = dev_sectors;
-
 	mddev->array_sectors = array_sectors;
 	mddev->dev_sectors = dev_sectors;
+	rs_set_rdev_sectors(rs);
 
 	return _check_data_dev_sectors(rs);
 bad:
@@ -2910,7 +2906,7 @@ static int rs_setup_reshape(struct raid_set *rs)
 
 	/* Remove disk(s) */
 	} else if (rs->delta_disks < 0) {
-		r = rs_set_dev_and_array_sectors(rs, true);
+		r = rs_set_dev_and_array_sectors(rs, rs->ti->len, true);
 		mddev->reshape_backwards = 1; /* removing disk(s) -> backward reshape */
 
 	/* Change layout and/or chunk size */
@@ -3071,7 +3067,7 @@ static int raid_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	 *
 	 * Any existing superblock will overwrite the array and device sizes
 	 */
-	r = rs_set_dev_and_array_sectors(rs, false);
+	r = rs_set_dev_and_array_sectors(rs, rs->ti->len, false);
 	if (r)
 		goto bad;
 
