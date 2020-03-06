@@ -1,2 +1,2 @@
 #0-
-0x178d1a30	sas_rphy_add	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL
+0xa43ce280	sas_rphy_add	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL

@@ -1,2 +1,2 @@
 #0-
-0x82b5cd5c	raid_class_release	drivers/scsi/raid_class	EXPORT_SYMBOL
+0x54e18e74	raid_class_release	drivers/scsi/raid_class	EXPORT_SYMBOL

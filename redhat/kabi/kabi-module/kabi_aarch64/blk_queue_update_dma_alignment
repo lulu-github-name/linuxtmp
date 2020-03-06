@@ -1,2 +1,2 @@
 #0-
-0x26535a5f	blk_queue_update_dma_alignment	vmlinux	EXPORT_SYMBOL
+0xbcf0f929	blk_queue_update_dma_alignment	vmlinux	EXPORT_SYMBOL

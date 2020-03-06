@@ -1,2 +1,2 @@
 #0-
-0xe033b50c	raid_class_attach	drivers/scsi/raid_class	EXPORT_SYMBOL
+0xc9c3b33d	raid_class_attach	drivers/scsi/raid_class	EXPORT_SYMBOL

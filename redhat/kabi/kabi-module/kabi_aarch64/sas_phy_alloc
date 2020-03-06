@@ -1,2 +1,2 @@
 #0-
-0xb62d87a2	sas_phy_alloc	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL
+0xf2949aa9	sas_phy_alloc	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL
