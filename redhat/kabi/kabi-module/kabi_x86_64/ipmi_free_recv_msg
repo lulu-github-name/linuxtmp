@@ -1,0 +1,2 @@
+#0-
+0xd1f579d0	ipmi_free_recv_msg	drivers/char/ipmi/ipmi_msghandler	EXPORT_SYMBOL

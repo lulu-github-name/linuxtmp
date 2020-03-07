@@ -1,0 +1,2 @@
+#0-
+0x1f72c37a	sas_read_port_mode_page	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL

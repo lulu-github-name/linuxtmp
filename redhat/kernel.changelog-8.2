@@ -1,3 +1,12 @@
+* Wed Mar 04 2020 Bruno Meneguele <bmeneg@redhat.com> [4.18.0-186.el8]
+- [netdrv] Revert "r8169: don't use MSI before RTL8168d" (Josef Oskera) [1792839]
+- [drm] drm/nouveau/kms/gv100-: Re-set LUT after clearing for modesets (Ben Skeggs) [1789026]
+- [drm] drm/nouveau/disp/gv100-: not all channel types support reporting error codes (Ben Skeggs) [1789481]
+- [drm] drm/nouveau/disp/nv50-: prevent oops when no channel method map provided (Ben Skeggs) [1789481]
+- [fs] cifs: don't leak -EAGAIN for stat() during reconnect (Dave Wysochanski) [1769599]
+- [block] blk-mq: insert passthrough request into hctx->dispatch directly (Ming Lei) [1788728]
+- [scsi] scsi: megaraid_sas: fixup MSIx interrupt setup during resume (Tomas Henzl) [1805353]
+
 * Fri Feb 28 2020 Bruno Meneguele <bmeneg@redhat.com> [4.18.0-185.el8]
 - [fs] NFS: Add deferred cache invalidation for close-to-open consistency violations (Benjamin Coddington) [1803162]
 - [block] nbd: fix stack corruption in nbd_check_sock_type() (Ming Lei) [1803664]

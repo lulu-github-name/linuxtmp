@@ -1,0 +1,2 @@
+#0-
+0xf5531bea	ipmi_poll_interface	drivers/char/ipmi/ipmi_msghandler	EXPORT_SYMBOL
