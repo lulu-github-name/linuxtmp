@@ -724,7 +724,6 @@ F:	include/scsi/*iscsi*
 
 KERNEL VIRTUAL MACHINE (KVM)
 M:	Paolo Bonzini <pbonzini@redhat.com>
-M:	Radim Krčmář <rkrcmar@redhat.com>
 M:	Bandan Das <bsd@redhat.com>
 L:	rhvirt-patches@redhat.com
 S:	Supported
@@ -740,8 +739,8 @@ F:	tools/kvm/
 
 KERNEL VIRTUAL MACHINE FOR AMD-V (KVM/amd)
 M:	Paolo Bonzini <pbonzini@redhat.com>
-M:	Radim Krčmář <rkrcmar@redhat.com>
 M:	Bandan Das <bsd@redhat.com>
+M:	Wei Huang <wehuang@redhat.com>
 L:	rhvirt-patches@redhat.com
 S:	Supported
 F:	arch/x86/include/asm/svm.h
@@ -749,8 +748,8 @@ F:	arch/x86/kvm/svm.c
 
 KERNEL VIRTUAL MACHINE FOR ARM64 (KVM/arm64)
 M:	Andrew Jones <drjones@redhat.com>
-M:	Wei Huang <wei@redhat.com>
 M:	Eric Auger <eric.auger@redhat.com>
+M:	Gavin Shan <gshan@redhat.com>
 L:	rhvirt-patches@redhat.com
 S:	Supported
 F:	arch/arm64/include/uapi/asm/kvm*
@@ -783,7 +782,6 @@ F:	arch/s390/mm/gmap.c
 
 KERNEL VIRTUAL MACHINE FOR X86 (KVM/x86)
 M:	Paolo Bonzini <pbonzini@redhat.com>
-M:	Radim Krčmář <rkrcmar@redhat.com>
 M:	Bandan Das <bsd@redhat.com>
 L:	rhvirt-patches@redhat.com
 S:	Supported
@@ -1562,7 +1560,6 @@ F:	net/wireless/
 
 XEN
 M:	Vitaly Kuznetsov <vkuznets@redhat.com>
-M:	Radim Krcmar <rkrcmar@redhat.com>
 M:	Igor Mammedov <imammedo@redhat.com>
 M:	Andrew Jones <drjones@redhat.com>
 S:	Maintained
