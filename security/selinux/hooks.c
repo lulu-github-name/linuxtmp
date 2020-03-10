@@ -107,7 +107,7 @@ struct selinux_state selinux_state;
 static atomic_t selinux_secmark_refcount = ATOMIC_INIT(0);
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-static int selinux_enforcing_boot;
+static int selinux_enforcing_boot __initdata;
 
 static int __init enforcing_setup(char *str)
 {
@@ -121,13 +121,13 @@ __setup("enforcing=", enforcing_setup);
 #define selinux_enforcing_boot 1
 #endif
 
-int selinux_enabled __lsm_ro_after_init = 1;
+int selinux_enabled_boot __initdata = 1;
 #ifdef CONFIG_SECURITY_SELINUX_BOOTPARAM
 static int __init selinux_enabled_setup(char *str)
 {
 	unsigned long enabled;
 	if (!kstrtoul(str, 0, &enabled))
-		selinux_enabled = enabled ? 1 : 0;
+		selinux_enabled_boot = enabled ? 1 : 0;
 	return 1;
 }
 __setup("selinux=", selinux_enabled_setup);
@@ -7183,11 +7183,11 @@ static struct security_hook_list selinux_hooks[] __lsm_ro_after_init = {
 static __init int selinux_init(void)
 {
 	if (!security_module_enable("selinux")) {
-		selinux_enabled = 0;
+		selinux_enabled_boot = 0;
 		return 0;
 	}
 
-	if (!selinux_enabled) {
+	if (!selinux_enabled_boot) {
 		pr_info("SELinux:  Disabled at boot.\n");
 		return 0;
 	}
@@ -7321,7 +7321,7 @@ static int __init selinux_nf_ip_init(void)
 {
 	int err;
 
-	if (!selinux_enabled)
+	if (!selinux_enabled_boot)
 		return 0;
 
 	pr_debug("SELinux:  Registering netfilter hooks\n");
@@ -7367,8 +7367,6 @@ int selinux_disable(struct selinux_state *state)
 	state->disabled = 1;
 
 	pr_info("SELinux:  Disabled at runtime.\n");
-
-	selinux_enabled = 0;
 
 	/*
 	 * Unregister netfilter hooks.
