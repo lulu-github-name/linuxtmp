@@ -1,2 +1,2 @@
 #0-
-0x4e0ea627	sas_port_delete_phy	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL
+0xbb82ea8f	sas_port_delete_phy	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL

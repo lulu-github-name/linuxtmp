@@ -1,2 +1,2 @@
 #0-
-0x6f183194	sas_remove_host	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL
+0x31be47b8	sas_remove_host	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL

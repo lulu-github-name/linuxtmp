@@ -1,2 +1,2 @@
 #0-
-0x124d62ff	blk_queue_max_write_same_sectors	vmlinux	EXPORT_SYMBOL
+0x113305e9	blk_queue_max_write_same_sectors	vmlinux	EXPORT_SYMBOL

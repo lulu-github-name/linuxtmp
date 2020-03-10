@@ -1,2 +1,2 @@
 #0-
-0xe90bddc5	scsi_device_lookup	vmlinux	EXPORT_SYMBOL
+0x01b96dcd	scsi_device_lookup	vmlinux	EXPORT_SYMBOL

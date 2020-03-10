@@ -1,2 +1,2 @@
 #0-
-0x91703125	blk_mq_tag_to_rq	vmlinux	EXPORT_SYMBOL
+0xa0f8c280	blk_mq_tag_to_rq	vmlinux	EXPORT_SYMBOL

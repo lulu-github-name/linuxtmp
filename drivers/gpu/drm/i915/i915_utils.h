@@ -31,6 +31,8 @@
 #include <linux/types.h>
 #include <linux/workqueue.h>
 
+#define FDO_BUG_URL "https://gitlab.freedesktop.org/drm/intel/-/wikis/How-to-file-i915-bugs"
+
 #undef WARN_ON
 /* Many gcc seem to no see through this and fall over :( */
 #if 0

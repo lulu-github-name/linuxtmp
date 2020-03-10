@@ -1,2 +1,2 @@
 #0-
-0x82f8480a	fc_remove_host	drivers/scsi/scsi_transport_fc	EXPORT_SYMBOL
+0x45f82af7	fc_remove_host	drivers/scsi/scsi_transport_fc	EXPORT_SYMBOL

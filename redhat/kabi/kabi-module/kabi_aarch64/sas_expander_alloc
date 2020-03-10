@@ -1,2 +1,2 @@
 #0-
-0x0aad019e	sas_expander_alloc	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL
+0xc55e2842	sas_expander_alloc	drivers/scsi/scsi_transport_sas	EXPORT_SYMBOL
