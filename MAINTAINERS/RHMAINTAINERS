@@ -453,6 +453,16 @@ M:	Stefan Assmann <sassmann@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/cisco/enic/
 
+CONTROL GROUP (CGROUP)
+M:	Waiman Long <longman@redhat.com>
+S:	Maintained
+F:	Documentation/cgroup*
+F:	include/linux/cgroup*
+F:	include/linux/cpuset.h
+F:	kernel/cgroup*
+F:	mm/memcontrol.c
+F:	mm/swap_cgroup.c
+
 CPU FREQUENCY DRIVERS
 M:	Al Stone <ahs3@redhat.com>
 M:	Lenny Szubowicz <lszubowi@redhat.com>
@@ -885,6 +895,23 @@ F:	Documentation/ABI/testing/sysfs-kernel-livepatch
 F:	samples/livepatch/
 F:	tools/testing/selftests/livepatch/
 
+LOCKING PRIMITIVES
+M:	Waiman Long <longman@redhat.com>
+S:	Maintained
+F:	Documentation/locking/
+F:	arch/*/include/asm/mutex*.h
+F:	arch/*/include/asm/spinlock*.h
+F:	include/asm-generic/qrwlock*
+F:	include/asm-generic/qspinlock*
+F:	include/linux/lockdep.h
+F:	include/linux/mutex*.h
+F:	include/linux/rwlock*.h
+F:	include/linux/rwsem*.h
+F:	include/linux/seqlock.h
+F:	include/linux/spinlock*.h
+F:	lib/locking*.[ch]
+F:	kernel/locking/
+
 LSI 3ware SAS/SATA-RAID Linux Drive (3w-sas)
 M:	Tomas Henzl <thenzl@redhat.com>
 S:	Maintained
@@ -1258,6 +1285,13 @@ M:	Jarod Wilson <jarod@redhat.com>
 M:	Stanislaw Gruszka <sgruszka@redhat.com>
 S:	Maintained
 F:	drivers/net/wireless/rt2x00/
+
+READ-COPY UPDATE (RCU)
+M:	Waiman Long <longman@redhat.com>
+S:	Maintained
+F:	Documentation/RCU/
+F:	include/linux/rcu*
+F:	kernel/rcu/
 
 REALTEK WIRELESS LAN DRIVERS
 M:	Jarod Wilson <jarod@redhat.com>
