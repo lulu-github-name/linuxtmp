@@ -35,7 +35,7 @@ struct rcu_sync {
 	int			gp_count;
 	wait_queue_head_t	gp_wait;
 
-	int			cb_state;
+	RH_KABI_DEPRECATE(int,	cb_state)
 	struct rcu_head		cb_head;
 
 	RH_KABI_DEPRECATE(enum rcu_sync_type, gp_type)
@@ -54,7 +54,7 @@ static inline bool rcu_sync_is_idle(struct rcu_sync *rsp)
 			 !rcu_read_lock_bh_held() &&
 			 !rcu_read_lock_sched_held(),
 			 "suspicious rcu_sync_is_idle() usage");
-	return !rsp->gp_state; /* GP_IDLE */
+	return !READ_ONCE(rsp->gp_state); /* GP_IDLE */
 }
 
 extern void rcu_sync_init(struct rcu_sync *);
@@ -67,7 +67,6 @@ extern void rcu_sync_dtor(struct rcu_sync *);
 		.gp_state = 0,						\
 		.gp_count = 0,						\
 		.gp_wait = __WAIT_QUEUE_HEAD_INITIALIZER(name.gp_wait),	\
-		.cb_state = 0,						\
 	}
 
 #define	DEFINE_RCU_SYNC(name)	\
