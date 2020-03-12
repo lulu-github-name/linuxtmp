@@ -1399,7 +1399,7 @@ S:	Odd Fixes
 F:	drivers/net/ethernet/marvell/sky2.*
 
 SOFTWARE RAID (Multiple Disks, MD) SUPPORT
-M:	Jes Sorensen <Jes.Sorensen@redhat.com>
+M:	Nigel Croxon <ncroxon@redhat.com>
 S:	Maintained
 F:	drivers/md/
 
