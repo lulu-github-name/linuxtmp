@@ -612,8 +612,6 @@ void devlink_port_attrs_set(struct devlink_port *devlink_port,
 			    u32 split_subport_number,
 			    const unsigned char *switch_id,
 			    unsigned char switch_id_len);
-int devlink_port_get_phys_port_name(struct devlink_port *devlink_port,
-				    char *name, size_t len);
 void devlink_port_attrs_pci_pf_set(struct devlink_port *devlink_port,
 				   const unsigned char *switch_id,
 				   unsigned char switch_id_len, u16 pf);
