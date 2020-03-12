@@ -14,6 +14,7 @@ Contents:
    e1000
    device_drivers/google/gve.rst
    devlink-info-versions
+   devlink-trap
    kapi
    z8530book
    msg_zerocopy
