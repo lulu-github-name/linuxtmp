@@ -489,7 +489,7 @@ struct cfs_rq {
 	struct load_weight	load;
 	unsigned long		runnable_weight;
 	unsigned int		nr_running;
-	unsigned int		h_nr_running;
+	unsigned int		h_nr_running;      /* SCHED_{NORMAL,BATCH,IDLE} */
 
 	u64			exec_clock;
 	u64			min_vruntime;
@@ -511,7 +511,7 @@ struct cfs_rq {
 #ifdef	CONFIG_SCHED_DEBUG
 	unsigned int		nr_spread_over;
 #endif
-
+	RH_KABI_FILL_HOLE(unsigned int idle_h_nr_running) /* SCHED_IDLE */
 #ifdef CONFIG_SMP
 	/*
 	 * CFS load tracking
