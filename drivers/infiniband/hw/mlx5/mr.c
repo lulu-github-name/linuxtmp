@@ -1600,7 +1600,7 @@ static void dereg_mr(struct mlx5_ib_dev *dev, struct mlx5_ib_mr *mr)
 		WARN_ON(atomic_read(&mr->num_pending_prefetch));
 
 		/* Destroy all page mappings */
-		if (umem_odp->page_list)
+		if (!umem_odp->is_implicit_odp)
 			mlx5_ib_invalidate_range(umem_odp,
 						 ib_umem_start(umem_odp),
 						 ib_umem_end(umem_odp));
