@@ -1126,6 +1126,20 @@ F:      net/ipv6/calipso.c
 F:      net/netfilter/xt_CONNSECMARK.c
 F:      net/netfilter/xt_SECMARK.c
 
+NETWORKING [NETDEVSIM]
+I:	net
+M:	Hangbin Liu <haliu@redhat.com>
+S:	Maintained
+F:	drivers/net/netdevsim/
+
+NETWORKING [TEAM]
+I:	net
+M:	Hangbin Liu <haliu@redhat.com>
+S:	Maintained
+F:	drivers/net/team/
+F:	include/linux/if_team.h
+F:	include/uapi/linux/if_team.h
+
 NETXEN (1/10) GbE SUPPORT
 M:	Manish Chopra <mchopra@redhat.com>
 M:	Tony Camuso <tcamuso@redhat.com>
