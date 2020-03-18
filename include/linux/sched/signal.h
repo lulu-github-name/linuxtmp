@@ -147,7 +147,7 @@ struct signal_struct {
 	struct thread_group_cputimer cputimer;
 
 	/* Earliest-expiration cache. */
-	struct task_cputime cputime_expires;
+	RH_KABI_DEPRECATE(struct task_cputime, cputime_expires)
 
 	/* Empty if CONFIG_POSIX_TIMERS=n */
 	RH_KABI_DEPRECATE(struct list_head, cpu_timers[3])

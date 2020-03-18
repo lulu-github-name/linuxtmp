@@ -20,11 +20,18 @@
 
 static void posix_cpu_timer_rearm(struct k_itimer *timer);
 
+void posix_cputimers_group_init(struct posix_cputimers *pct, u64 cpu_limit)
+{
+	posix_cputimers_init(pct);
+	if (cpu_limit != RLIM_INFINITY)
+		pct->cputime_expires.prof_exp = cpu_limit * NSEC_PER_SEC;
+}
+
 /*
  * Called after updating RLIMIT_CPU to run cpu timer and update
- * tsk->signal->cputime_expires expiration cache if necessary. Needs
- * siglock protection since other code may update expiration cache as
- * well.
+ * tsk->signal->posix_cputimers.cputime_expires expiration cache if
+ * necessary. Needs siglock protection since other code may update
+ * expiration cache as well.
  */
 void update_rlimit_cpu(struct task_struct *task, unsigned long rlim_new)
 {
@@ -447,10 +454,11 @@ static void arm_timer(struct k_itimer *timer)
 
 	if (CPUCLOCK_PERTHREAD(timer->it_clock)) {
 		head = p->task_struct_rh->posix_cputimers.cpu_timers;
-		cputime_expires = &p->cputime_expires;
+		cputime_expires =
+			    &p->task_struct_rh->posix_cputimers.cputime_expires;
 	} else {
 		head = p->signal->posix_cputimers.cpu_timers;
-		cputime_expires = &p->signal->cputime_expires;
+		cputime_expires = &p->signal->posix_cputimers.cputime_expires;
 	}
 	head += CPUCLOCK_WHICH(timer->it_clock);
 
@@ -774,7 +782,7 @@ static void check_thread_timers(struct task_struct *tsk,
 				struct list_head *firing)
 {
 	struct list_head *timers = tsk->task_struct_rh->posix_cputimers.cpu_timers;
-	struct task_cputime *tsk_expires = &tsk->cputime_expires;
+	struct task_cputime *tsk_expires = &tsk->task_struct_rh->posix_cputimers.cputime_expires;
 	u64 expires, stime, utime;
 	unsigned long soft;
 
@@ -785,7 +793,7 @@ static void check_thread_timers(struct task_struct *tsk,
 	 * If cputime_expires is zero, then there are no active
 	 * per thread CPU timers.
 	 */
-	if (task_cputime_zero(&tsk->cputime_expires))
+	if (task_cputime_zero(tsk_expires))
 		return;
 
 	task_cputime(tsk, &utime, &stime);
@@ -957,10 +965,10 @@ static void check_process_timers(struct task_struct *tsk,
 			prof_expires = x;
 	}
 
-	sig->cputime_expires.prof_exp = prof_expires;
-	sig->cputime_expires.virt_exp = virt_expires;
-	sig->cputime_expires.sched_exp = sched_expires;
-	if (task_cputime_zero(&sig->cputime_expires))
+	sig->posix_cputimers.cputime_expires.prof_exp = prof_expires;
+	sig->posix_cputimers.cputime_expires.virt_exp = virt_expires;
+	sig->posix_cputimers.cputime_expires.sched_exp = sched_expires;
+	if (task_cputime_zero(&sig->posix_cputimers.cputime_expires))
 		stop_process_timers(sig);
 
 	sig->cputimer.checking_timer = false;
@@ -1061,12 +1069,14 @@ static inline int fastpath_timer_check(struct task_struct *tsk)
 {
 	struct signal_struct *sig;
 
-	if (!task_cputime_zero(&tsk->cputime_expires)) {
+	if (!task_cputime_zero(
+			&tsk->task_struct_rh->posix_cputimers.cputime_expires)) {
 		struct task_cputime task_sample;
 
 		task_cputime(tsk, &task_sample.utime, &task_sample.stime);
 		task_sample.sum_exec_runtime = tsk->se.sum_exec_runtime;
-		if (task_cputime_expired(&task_sample, &tsk->cputime_expires))
+		if (task_cputime_expired(&task_sample,
+			&tsk->task_struct_rh->posix_cputimers.cputime_expires))
 			return 1;
 	}
 
@@ -1091,7 +1101,8 @@ static inline int fastpath_timer_check(struct task_struct *tsk)
 
 		sample_cputime_atomic(&group_sample, &sig->cputimer.cputime_atomic);
 
-		if (task_cputime_expired(&group_sample, &sig->cputime_expires))
+		if (task_cputime_expired(&group_sample,
+					 &sig->posix_cputimers.cputime_expires))
 			return 1;
 	}
 
@@ -1207,12 +1218,12 @@ void set_process_cpu_timer(struct task_struct *tsk, unsigned int clock_idx,
 	 */
 	switch (clock_idx) {
 	case CPUCLOCK_PROF:
-		if (expires_gt(tsk->signal->cputime_expires.prof_exp, *newval))
-			tsk->signal->cputime_expires.prof_exp = *newval;
+		if (expires_gt(tsk->signal->posix_cputimers.cputime_expires.prof_exp, *newval))
+			tsk->signal->posix_cputimers.cputime_expires.prof_exp = *newval;
 		break;
 	case CPUCLOCK_VIRT:
-		if (expires_gt(tsk->signal->cputime_expires.virt_exp, *newval))
-			tsk->signal->cputime_expires.virt_exp = *newval;
+		if (expires_gt(tsk->signal->posix_cputimers.cputime_expires.virt_exp, *newval))
+			tsk->signal->posix_cputimers.cputime_expires.virt_exp = *newval;
 		break;
 	}
 

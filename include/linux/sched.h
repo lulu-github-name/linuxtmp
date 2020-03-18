@@ -244,11 +244,6 @@ struct prev_cputime {
 #endif
 };
 
-/* Alternate field names when used on cache expirations: */
-#define virt_exp			utime
-#define prof_exp			stime
-#define sched_exp			sum_exec_runtime
-
 enum vtime_state {
 	/* Task is sleeping or running in a CPU with VTIME inactive: */
 	VTIME_INACTIVE = 0,
@@ -842,7 +837,7 @@ struct task_struct {
 	unsigned long			maj_flt;
 
 #ifdef CONFIG_POSIX_TIMERS
-	struct task_cputime		cputime_expires;
+	RH_KABI_DEPRECATE(struct task_cputime, cputime_expires)
 	RH_KABI_DEPRECATE(struct list_head, cpu_timers[3])
 #endif
 	/* Process credentials: */
