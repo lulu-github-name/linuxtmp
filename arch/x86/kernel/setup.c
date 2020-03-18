@@ -936,8 +936,8 @@ static bool valid_intel_processor(__u8 family, __u8 model, __u8 stepping)
 		valid = (stepping <= 4);
 		break;
 
-	case INTEL_FAM6_SKYLAKE_X: /* 8.0 */
-		valid = (stepping <= 7);
+	case INTEL_FAM6_SKYLAKE_X: /* 8.0:SKX,CLX  8.2:CPX */
+		valid = (stepping <= 11);
 		break;
 
 	default:
