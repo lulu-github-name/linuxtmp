@@ -268,6 +268,8 @@ struct device_driver_rh {
  * @resume:	Called to bring a device from sleep mode.
  * @groups:	Default attributes that get created by the driver core
  *		automatically.
+ * @dev_groups:	Additional attributes attached to device instance once the
+ *		it is bound to the driver.
  * @pm:		Power management operations of the device which matched
  *		this driver.
  * @coredump:	Called when sysfs entry is written to. The device driver
@@ -307,7 +309,7 @@ struct device_driver {
 	void (*coredump) (struct device *dev);
 
 	struct driver_private *p;
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, const struct attribute_group **dev_groups)
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
