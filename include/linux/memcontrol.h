@@ -149,6 +149,7 @@ struct mem_cgroup_per_node {
 #ifdef CONFIG_MEMCG_KMEM
 	RH_KABI_EXTEND(struct memcg_shrinker_map __rcu	*shrinker_map)
 #endif
+	RH_KABI_EXTEND(atomic_long_t lruvec_stat_local[NR_VM_NODE_STAT_ITEMS])
 };
 
 struct mem_cgroup_threshold {
@@ -287,7 +288,7 @@ struct mem_cgroup {
 
 	atomic_long_t		RH_KABI_RENAME(stat, vmstats)[MEMCG_NR_STAT];
 	atomic_long_t		RH_KABI_RENAME(events, vmevents)[NR_VM_EVENT_ITEMS];
-	atomic_long_t memory_events[MEMCG_NR_MEMORY_EVENTS];
+	atomic_long_t		memory_events[MEMCG_NR_MEMORY_EVENTS];
 
 	unsigned long		socket_pressure;
 
@@ -318,6 +319,20 @@ struct mem_cgroup {
 	struct list_head event_list;
 	spinlock_t event_list_lock;
 
+	RH_KABI_BROKEN_INSERT(atomic_long_t vmstats_local[MEMCG_NR_STAT])
+	RH_KABI_BROKEN_INSERT(atomic_long_t vmevents_local[NR_VM_EVENT_ITEMS])
+
+	/*
+	 * RHEL8 Warning:
+	 * The offsets of the nodeinfo[] array entries are subject to change.
+	 * Third-party kernel modules should NOT try to access its content.
+	 * In addition, the following inline functions should not be used.
+	 *  - mem_cgroup_nodeinfo()
+	 *  - mem_cgroup_lruvec()
+	 *  - mod_lruvec_page_state(), __mod_lruvec_page_state()
+	 *  - inc_lruvec_page_state(), __inc_lruvec_page_state()
+	 *  - dec_lruvec_page_state(), __dec_lruvec_page_state()
+	 */
 	struct mem_cgroup_per_node *nodeinfo[0];
 	/* WARNING: nodeinfo must be the last member here */
 };
@@ -561,10 +576,24 @@ void unlock_page_memcg(struct page *page);
  * idx can be of type enum memcg_stat_item or node_stat_item.
  * Keep in sync with memcg_exact_page_state().
  */
+static inline unsigned long memcg_page_state(struct mem_cgroup *memcg, int idx)
+{
+	long x = atomic_long_read(&memcg->vmstats[idx]);
+#ifdef CONFIG_SMP
+	if (x < 0)
+		x = 0;
+#endif
+	return x;
+}
+
+/*
+ * idx can be of type enum memcg_stat_item or node_stat_item.
+ * Keep in sync with memcg_exact_page_state().
+ */
 static inline unsigned long memcg_page_state_local(struct mem_cgroup *memcg,
 						   int idx)
 {
-	long x = atomic_long_read(&memcg->vmstats[idx]);
+	long x = atomic_long_read(&memcg->vmstats_local[idx]);
 #ifdef CONFIG_SMP
 	if (x < 0)
 		x = 0;
@@ -616,6 +645,24 @@ static inline void mod_memcg_page_state(struct page *page,
 		mod_memcg_state(page->mem_cgroup, idx, val);
 }
 
+static inline unsigned long lruvec_page_state(struct lruvec *lruvec,
+					      enum node_stat_item idx)
+{
+	struct mem_cgroup_per_node *pn;
+	long x;
+
+	if (mem_cgroup_disabled())
+		return node_page_state(lruvec_pgdat(lruvec), idx);
+
+	pn = container_of(lruvec, struct mem_cgroup_per_node, lruvec);
+	x = atomic_long_read(&pn->lruvec_stat[idx]);
+#ifdef CONFIG_SMP
+	if (x < 0)
+		x = 0;
+#endif
+	return x;
+}
+
 static inline unsigned long lruvec_page_state_local(struct lruvec *lruvec,
 						    enum node_stat_item idx)
 {
@@ -626,7 +673,7 @@ static inline unsigned long lruvec_page_state_local(struct lruvec *lruvec,
 		return node_page_state(lruvec_pgdat(lruvec), idx);
 
 	pn = container_of(lruvec, struct mem_cgroup_per_node, lruvec);
-	x = atomic_long_read(&pn->lruvec_stat[idx]);
+	x = atomic_long_read(&pn->lruvec_stat_local[idx]);
 #ifdef CONFIG_SMP
 	if (x < 0)
 		x = 0;
@@ -966,6 +1013,11 @@ static inline void mem_cgroup_print_oom_group(struct mem_cgroup *memcg)
 {
 }
 
+static inline unsigned long memcg_page_state(struct mem_cgroup *memcg, int idx)
+{
+	return 0;
+}
+
 static inline unsigned long memcg_page_state_local(struct mem_cgroup *memcg,
 						   int idx)
 {
@@ -994,6 +1046,12 @@ static inline void mod_memcg_page_state(struct page *page,
 					int idx,
 					int nr)
 {
+}
+
+static inline unsigned long lruvec_page_state(struct lruvec *lruvec,
+					      enum node_stat_item idx)
+{
+	return node_page_state(lruvec_pgdat(lruvec), idx);
 }
 
 static inline unsigned long lruvec_page_state_local(struct lruvec *lruvec,
