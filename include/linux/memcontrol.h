@@ -126,6 +126,7 @@ struct memcg_shrinker_map {
 struct mem_cgroup_per_node {
 	struct lruvec		lruvec;
 
+	/* Subtree VM stats (batched updates) */
 	struct lruvec_stat __percpu *lruvec_stat_cpu;
 	atomic_long_t		lruvec_stat[NR_VM_NODE_STAT_ITEMS];
 
@@ -149,7 +150,8 @@ struct mem_cgroup_per_node {
 #ifdef CONFIG_MEMCG_KMEM
 	RH_KABI_EXTEND(struct memcg_shrinker_map __rcu	*shrinker_map)
 #endif
-	RH_KABI_EXTEND(atomic_long_t lruvec_stat_local[NR_VM_NODE_STAT_ITEMS])
+	/* Legacy local VM stats */
+	RH_KABI_BROKEN_INSERT(struct lruvec_stat __percpu *lruvec_stat_local)
 };
 
 struct mem_cgroup_threshold {
@@ -280,9 +282,12 @@ struct mem_cgroup {
 	atomic_t		moving_account;
 	struct task_struct	*move_lock_task;
 
-	/* memory.stat */
+	/* Subtree VM stats and events (batched updates) */
 	struct RH_KABI_RENAME(mem_cgroup_stat_cpu, memcg_vmstats_percpu)
 		__percpu *RH_KABI_RENAME(stat_cpu, vmstats_percpu);
+
+	/* Legacy local VM stats and events */
+	RH_KABI_FILL_HOLE(struct memcg_vmstats_percpu __percpu *vmstats_local)
 
 	MEMCG_PADDING(_pad2_);
 
@@ -319,9 +324,6 @@ struct mem_cgroup {
 	struct list_head event_list;
 	spinlock_t event_list_lock;
 
-	RH_KABI_BROKEN_INSERT(atomic_long_t vmstats_local[MEMCG_NR_STAT])
-	RH_KABI_BROKEN_INSERT(atomic_long_t vmevents_local[NR_VM_EVENT_ITEMS])
-
 	/*
 	 * RHEL8 Warning:
 	 * The offsets of the nodeinfo[] array entries are subject to change.
@@ -333,6 +335,7 @@ struct mem_cgroup {
 	 *  - inc_lruvec_page_state(), __inc_lruvec_page_state()
 	 *  - dec_lruvec_page_state(), __dec_lruvec_page_state()
 	 */
+	RH_KABI_BROKEN_INSERT(MEMCG_PADDING(_pad3_))
 	struct mem_cgroup_per_node *nodeinfo[0];
 	/* WARNING: nodeinfo must be the last member here */
 };
@@ -593,7 +596,11 @@ static inline unsigned long memcg_page_state(struct mem_cgroup *memcg, int idx)
 static inline unsigned long memcg_page_state_local(struct mem_cgroup *memcg,
 						   int idx)
 {
-	long x = atomic_long_read(&memcg->vmstats_local[idx]);
+	long x = 0;
+	int cpu;
+
+	for_each_possible_cpu(cpu)
+		x += per_cpu(memcg->vmstats_local->stat[idx], cpu);
 #ifdef CONFIG_SMP
 	if (x < 0)
 		x = 0;
@@ -667,13 +674,15 @@ static inline unsigned long lruvec_page_state_local(struct lruvec *lruvec,
 						    enum node_stat_item idx)
 {
 	struct mem_cgroup_per_node *pn;
-	long x;
+	long x = 0;
+	int cpu;
 
 	if (mem_cgroup_disabled())
 		return node_page_state(lruvec_pgdat(lruvec), idx);
 
 	pn = container_of(lruvec, struct mem_cgroup_per_node, lruvec);
-	x = atomic_long_read(&pn->lruvec_stat_local[idx]);
+	for_each_possible_cpu(cpu)
+		x += per_cpu(pn->lruvec_stat_local->count[idx], cpu);
 #ifdef CONFIG_SMP
 	if (x < 0)
 		x = 0;
