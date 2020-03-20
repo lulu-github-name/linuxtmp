@@ -60,9 +60,15 @@ S:	Maintained
 F:	redhat/
 I:	INTERNAL
 
+RHEL 8.3 Kernel Maintainer
+M:	Frantisek Hrbata <fhrbata@redhat.com>
+T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git rhel-8.3.0
+S:	Maintained
+F:	redhat/
+
 RHEL 8.2 Kernel Maintainer
 M:	Bruno Meneguele <bmeneg@redhat.com>
-T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git
+T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git rhel-8.2.0
 S:	Maintained
 F:	redhat/
 
@@ -115,7 +121,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 7.7 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
+M:	Rado Vrbovsky <rvrbovsk@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-7.7.z.git
 S:	Maintained
 F:	redhat/
@@ -174,12 +180,6 @@ T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.10.z.git
 S:	Maintained
 F:	redhat/
 
-RHEL 6.7 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
-T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.7.z.git
-S:	Maintained
-F:	redhat/
-
 RHEL 6.6 Kernel Maintainer
 M:	Herton R. Krzesinski <herton@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.6.z.git
@@ -189,12 +189,6 @@ F:	redhat/
 RHEL 6.5 Kernel Maintainer
 M:	Frantisek Hrbata <fhrbata@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.5.z.git
-S:	Maintained
-F:	redhat/
-
-RHEL 6.4 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
-T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.4.z.git
 S:	Maintained
 F:	redhat/
 
@@ -458,6 +452,16 @@ CISCO VIC ETHERNET NIC DRIVER
 M:	Stefan Assmann <sassmann@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/cisco/enic/
+
+CONTROL GROUP (CGROUP)
+M:	Waiman Long <longman@redhat.com>
+S:	Maintained
+F:	Documentation/cgroup*
+F:	include/linux/cgroup*
+F:	include/linux/cpuset.h
+F:	kernel/cgroup*
+F:	mm/memcontrol.c
+F:	mm/swap_cgroup.c
 
 CPU FREQUENCY DRIVERS
 M:	Al Stone <ahs3@redhat.com>
@@ -746,6 +750,7 @@ F:	tools/kvm/
 KERNEL VIRTUAL MACHINE FOR AMD-V (KVM/amd)
 M:	Paolo Bonzini <pbonzini@redhat.com>
 M:	Bandan Das <bsd@redhat.com>
+M:	Wei Huang <wehuang@redhat.com>
 L:	rhvirt-patches@redhat.com
 S:	Supported
 F:	arch/x86/include/asm/svm.h
@@ -754,6 +759,7 @@ F:	arch/x86/kvm/svm.c
 KERNEL VIRTUAL MACHINE FOR ARM64 (KVM/arm64)
 M:	Andrew Jones <drjones@redhat.com>
 M:	Eric Auger <eric.auger@redhat.com>
+M:	Gavin Shan <gshan@redhat.com>
 L:	rhvirt-patches@redhat.com
 S:	Supported
 F:	arch/arm64/include/uapi/asm/kvm*
@@ -807,30 +813,35 @@ F:	mm/memory-failure.c
 F:	mm/hwpoison-inject.c
 
 Hyper-V CORE AND DRIVERS
-M:	Jason Wang <jasowang@redhat.com>
-M:	Vitaly Kuznetsov <vkuznets@redhat.com>
 M:	Cathy Avery <cavery@redhat.com>
+M:	Mohammed Gamal <mgamal@redhat.com>
+M:	Vitaly Kuznetsov <vkuznets@redhat.com>
 S:	Maintained
-F:	Documentation/networking/netvsc.txt
+F:	Documentation/networking/device_drivers/microsoft/netvsc.txt
 F:	arch/x86/include/asm/mshyperv.h
 F:	arch/x86/include/asm/trace/hyperv.h
 F:	arch/x86/include/asm/hyperv-tlfs.h
 F:	arch/x86/kernel/cpu/mshyperv.c
 F:	arch/x86/hyperv
+F:	drivers/clocksource/hyperv_timer.c
 F:	drivers/hid/hid-hyperv.c
 F:	drivers/hv/
 F:	drivers/input/serio/hyperv-keyboard.c
 F:	drivers/pci/controller/pci-hyperv.c
+F:	drivers/pci/controller/pci-hyperv-intf.c
 F:	drivers/net/hyperv/
 F:	drivers/scsi/storvsc_drv.c
 F:	drivers/uio/uio_hv_generic.c
 F:	drivers/video/fbdev/hyperv_fb.c
 F:	drivers/iommu/hyperv-iommu.c
 F:	net/vmw_vsock/hyperv_transport.c
+F:	include/clocksource/hyperv_timer.h
 F:	include/linux/hyperv.h
 F:	include/uapi/linux/hyperv.h
+F:	include/asm-generic/mshyperv.h
 F:	tools/hv/
 F:	Documentation/ABI/stable/sysfs-bus-vmbus
+F:	Documentation/ABI/testing/debugfs-hyperv
 
 INFINIBAND SUBSYSTEM
 M:	Kamal Heib <kheib@redhat.com>
@@ -883,6 +894,23 @@ F:	Documentation/livepatch/
 F:	Documentation/ABI/testing/sysfs-kernel-livepatch
 F:	samples/livepatch/
 F:	tools/testing/selftests/livepatch/
+
+LOCKING PRIMITIVES
+M:	Waiman Long <longman@redhat.com>
+S:	Maintained
+F:	Documentation/locking/
+F:	arch/*/include/asm/mutex*.h
+F:	arch/*/include/asm/spinlock*.h
+F:	include/asm-generic/qrwlock*
+F:	include/asm-generic/qspinlock*
+F:	include/linux/lockdep.h
+F:	include/linux/mutex*.h
+F:	include/linux/rwlock*.h
+F:	include/linux/rwsem*.h
+F:	include/linux/seqlock.h
+F:	include/linux/spinlock*.h
+F:	lib/locking*.[ch]
+F:	kernel/locking/
 
 LSI 3ware SAS/SATA-RAID Linux Drive (3w-sas)
 M:	Tomas Henzl <thenzl@redhat.com>
@@ -1258,6 +1286,13 @@ M:	Stanislaw Gruszka <sgruszka@redhat.com>
 S:	Maintained
 F:	drivers/net/wireless/rt2x00/
 
+READ-COPY UPDATE (RCU)
+M:	Waiman Long <longman@redhat.com>
+S:	Maintained
+F:	Documentation/RCU/
+F:	include/linux/rcu*
+F:	kernel/rcu/
+
 REALTEK WIRELESS LAN DRIVERS
 M:	Jarod Wilson <jarod@redhat.com>
 M:	Stanislaw Gruszka <sgruszka@redhat.com>
@@ -1364,7 +1399,7 @@ S:	Odd Fixes
 F:	drivers/net/ethernet/marvell/sky2.*
 
 SOFTWARE RAID (Multiple Disks, MD) SUPPORT
-M:	Jes Sorensen <Jes.Sorensen@redhat.com>
+M:	Nigel Croxon <ncroxon@redhat.com>
 S:	Maintained
 F:	drivers/md/
 
