@@ -1703,7 +1703,7 @@ struct sched_class {
 #endif
 
 	RH_KABI_REPLACE(void (*set_curr_task)(struct rq *rq),
-			void (*set_next_task)(struct rq *rq, struct task_struct *p))
+			void (*set_next_task)(struct rq *rq, struct task_struct *p, bool first))
 	void (*task_tick)(struct rq *rq, struct task_struct *p, int queued);
 	void (*task_fork)(struct task_struct *p);
 	void (*task_dead)(struct task_struct *p);
@@ -1744,7 +1744,7 @@ static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
 static inline void set_next_task(struct rq *rq, struct task_struct *next)
 {
 	WARN_ON_ONCE(rq->curr != next);
-	next->sched_class->set_next_task(rq, next);
+	next->sched_class->set_next_task(rq, next, false);
 }
 
 #ifdef CONFIG_SMP
