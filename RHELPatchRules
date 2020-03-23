@@ -701,44 +701,17 @@ VIII. Bugzilla use/reuse
 
 1. Background
 
-Bugzilla tickets are used by everyone interested in the status and history of
-a given issue or feature.  There are situations in which additional patches are
-required and the question if the same BZ should be reused or a new one should be
-created.
+Bugzilla tickets are used by everyone interested in the status and history of a
+given issue or feature.  There are situations in which additional patches are
+required, and the question if the same BZ should be reused or a new one should
+be created is raised.
 
-One of the bugzilla heavy users is QE which uses it to determine how to test
-and verify that the work done by engineering was correct and complete.  QE
-classifies the BZs in two categories: bugfix and enhancement.
-
-Here are the rules QE goes by for informational purposes:
-
-* Bugfix: anything that is fixing a real issue and possibly has a reproducer
-	Rules to match as a bugfix:
-		- if the BZ is exclusively to fix a specific bug
-		AND/OR
-		- the BZ has a reproducer
-	-> QE will set "Bugfix" as keyword at the time of qa_ack+
-
-* Enhancement: rebases, new features, new hardware support.  In other words:
-	       everything that isn't a Bugfix.
-	Rules to match as enhancement:
-		- BZ fails to be matched as Bugfix
-
-Rules engineering go by:
-* Undetermined:
-	- qa_ack?
-	OR
-	- qa_ack-
-
-* Bugfix:
-	- qa_ack+
-	AND
-	- Keywords contains Bugfix
-
-* Enhancement:
-	- qa_ack+
-	AND
-	- Keywords doesn't contain Bugfix
+QE uses bugzillas to verify the stability and reliability of changes made
+to the kernel.  There are two types of bugzillas that QE will track, Bugs and
+Feature Requests.  Bugs are classified as a defect in an existing feature in a
+product, and Feature Requests are enhancements to existing products.
+There is no special keyword enforcement for Bugs, all Feature Request bugzillas
+must have the keyword "FutureFeature".
 
 2. Bugzilla reuse
 
@@ -751,7 +724,7 @@ a) In case the BZ is still in POST, contact the kernel maintainer to make sure
    integrated AND no other patches were integrated under the same BZ, it's
    possible to reuse the BZ
 
-* Bugfix BZ:
+* Bug:
 a) In case the BZ is ON_QA and QE marks it FailsQA AND changes it back to ASSIGNED,
    it should be REUSED
 b) In case the BZ is in any state before VERIFIED and further patches are needed
@@ -762,7 +735,7 @@ c) In case the BZ is VERIFIED and a new patch is needed for the same issue, a ne
 	     was created to fix a similar case. No dependencies between BZs are
 	     needed.
 
-* Enhancement BZ:
+* Feature Request:
 a) In case of FailsQA, a NEW BZ will be created
 	a.1) Original BZ only will move to VERIFIED when {all,} the
 	     required NEW BZ{s,} {are,is} merged and VERIFIED
