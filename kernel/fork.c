@@ -159,6 +159,8 @@ static inline struct task_struct *alloc_task_struct_node(int node)
 
 static inline void free_task_struct(struct task_struct *tsk)
 {
+	if (tsk->task_struct_rh)
+		kfree(tsk->task_struct_rh);
 	kmem_cache_free(task_struct_cachep, tsk);
 }
 #endif
@@ -871,6 +873,12 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	atomic_set(&tsk->stack_refcount, 1);
 #endif
 
+	/* RHEL: allocate the extended task_struct on the same node */
+	tsk->task_struct_rh = kmalloc_node(sizeof(struct task_struct_rh),
+					   GFP_KERNEL, node);
+	if (!tsk->task_struct_rh)
+		goto free_stack;
+
 	if (err)
 		goto free_stack;
 
@@ -1508,6 +1516,7 @@ void __cleanup_sighand(struct sighand_struct *sighand)
  */
 static void posix_cpu_timers_init_group(struct signal_struct *sig)
 {
+	struct posix_cputimers *pct = &sig->posix_cputimers;
 	unsigned long cpu_limit;
 
 	cpu_limit = READ_ONCE(sig->rlim[RLIMIT_CPU].rlim_cur);
@@ -1516,10 +1525,7 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
 		sig->cputimer.running = true;
 	}
 
-	/* The timer lists. */
-	INIT_LIST_HEAD(&sig->cpu_timers[0]);
-	INIT_LIST_HEAD(&sig->cpu_timers[1]);
-	INIT_LIST_HEAD(&sig->cpu_timers[2]);
+	posix_cputimers_init(pct);
 }
 #else
 static inline void posix_cpu_timers_init_group(struct signal_struct *sig) { }
@@ -1634,9 +1640,8 @@ static void posix_cpu_timers_init(struct task_struct *tsk)
 	tsk->cputime_expires.prof_exp = 0;
 	tsk->cputime_expires.virt_exp = 0;
 	tsk->cputime_expires.sched_exp = 0;
-	INIT_LIST_HEAD(&tsk->cpu_timers[0]);
-	INIT_LIST_HEAD(&tsk->cpu_timers[1]);
-	INIT_LIST_HEAD(&tsk->cpu_timers[2]);
+
+	posix_cputimers_init(&tsk->task_struct_rh->posix_cputimers);
 }
 #else
 static inline void posix_cpu_timers_init(struct task_struct *tsk) { }

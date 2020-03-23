@@ -50,6 +50,10 @@ static struct sighand_struct init_sighand = {
 	.signalfd_wqh	= __WAIT_QUEUE_HEAD_INITIALIZER(init_sighand.signalfd_wqh),
 };
 
+static struct task_struct_rh init_task_struct_rh = {
+	INIT_CPU_TIMERS(init_task_struct_rh)
+};
+
 /*
  * Set up the first task table, touch at your own risk!. Base=0,
  * limit=0x1fffff (=2MB)
@@ -116,10 +120,10 @@ struct task_struct init_task
 	.blocked	= {{0}},
 	.alloc_lock	= __SPIN_LOCK_UNLOCKED(init_task.alloc_lock),
 	.journal_info	= NULL,
-	INIT_CPU_TIMERS(init_task)
 	.pi_lock	= __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),
 	.timer_slack_ns = 50000, /* 50 usec default slack */
 	.thread_pid	= &init_struct_pid,
+	.task_struct_rh = &init_task_struct_rh,
 	.rh_pgid	= &init_struct_pid,
 	.rh_sid		= &init_struct_pid,
 	.thread_group	= LIST_HEAD_INIT(init_task.thread_group),

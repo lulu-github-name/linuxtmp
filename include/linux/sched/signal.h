@@ -9,6 +9,7 @@
 #include <linux/sched/task.h>
 #include <linux/cred.h>
 #include <linux/rh_kabi.h>
+#include <linux/posix-timers.h>
 
 /*
  * Types defining task->signal and task->sighand and APIs using them:
@@ -148,8 +149,8 @@ struct signal_struct {
 	/* Earliest-expiration cache. */
 	struct task_cputime cputime_expires;
 
-	struct list_head cpu_timers[3];
-
+	/* Empty if CONFIG_POSIX_TIMERS=n */
+	RH_KABI_DEPRECATE(struct list_head, cpu_timers[3])
 #endif
 
 	/* PID/PID hash table linkage. */
@@ -245,6 +246,7 @@ struct signal_struct {
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
+	RH_KABI_EXTEND(struct posix_cputimers posix_cputimers)
 } __randomize_layout;
 
 /*

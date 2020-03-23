@@ -27,6 +27,7 @@
 #include <linux/signal_types.h>
 #include <linux/mm_types_task.h>
 #include <linux/task_io_accounting.h>
+#include <linux/posix-timers.h>
 #include <linux/rseq.h>
 #include <linux/rh_kabi.h>
 
@@ -586,6 +587,11 @@ struct wake_q_node {
 	struct wake_q_node *next;
 };
 
+struct task_struct_rh {
+	/* Empty if CONFIG_POSIX_CPUTIMERS=n */
+	struct posix_cputimers posix_cputimers;
+};
+
 struct task_struct {
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/*
@@ -804,7 +810,7 @@ struct task_struct {
 #endif
 	struct pid			*thread_pid;
 	RH_KABI_USE(3, const cpumask_t  *cpus_ptr)
-	long				rh_reserved4;
+	struct task_struct_rh		*task_struct_rh;
 	struct pid			*rh_pgid;
 	long				rh_reserved5;
 	long				rh_reserved6;
@@ -852,9 +858,8 @@ struct task_struct {
 
 #ifdef CONFIG_POSIX_TIMERS
 	struct task_cputime		cputime_expires;
-	struct list_head		cpu_timers[3];
+	RH_KABI_DEPRECATE(struct list_head, cpu_timers[3])
 #endif
-
 	/* Process credentials: */
 
 	/* Tracer's credentials at attach: */
@@ -1266,6 +1271,12 @@ struct task_struct {
 	 * structure.  It *MUST* be at the end of 'task_struct'.
 	 *
 	 * Do not put anything below here!
+	 */
+
+	/*
+	 * RHEL: There is a task_struct_rh that can be safely used to add
+	 * elements to.  task_struct, and task_struct_rh are only allocated
+	 * within the kernel.
 	 */
 };
 
