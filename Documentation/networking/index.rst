@@ -15,6 +15,7 @@ Contents:
    device_drivers/google/gve.rst
    devlink-info-versions
    devlink-trap
+   devlink-trap-netdevsim
    kapi
    z8530book
    msg_zerocopy
