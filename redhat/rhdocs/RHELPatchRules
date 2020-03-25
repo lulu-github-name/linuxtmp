@@ -385,7 +385,7 @@ on RHKL*, which is never a good thing :-)
 
     For information on brew, see the Brew HOWTO at
 
-	https://mojo.redhat.com/docs/DOC-1071519
+	https://docs.engineering.redhat.com/display/Brew/Using+the+Brew+Prod+environment
 
     For information on cross-compiling see the mini-FAQ at the end of this
 document.
@@ -806,7 +806,7 @@ https://home.corp.redhat.com/wiki/rhel6kernel-config-patching
 
 2.  What is the link to the internal RHKL archive?
 
-http://post-office.corp.redhat.com/mailman/listinfo/rhkernel-list/
+https://mailman-eng.corp.redhat.com/mailman/listinfo/rhkernel-list
 
 3.  Is there a link to RHEL patchwork?
 
