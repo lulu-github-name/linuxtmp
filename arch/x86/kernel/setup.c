@@ -555,7 +555,7 @@ static void __init reserve_crashkernel(void)
 	 * region.
 	 */
 	if (mem_encrypt_active())
-		mem_enc_req = ALIGN(swiotlb_size_or_default(), SZ_1M);
+		mem_enc_req = min(ALIGN(swiotlb_size_or_default(), SZ_1M), 64UL << 20);
 	else
 		mem_enc_req = 0;
 
