@@ -64,9 +64,9 @@ struct macsec_eth_header {
 
 #define MACSEC_NUM_AN 4 /* 2 bits for the association number */
 
-#define for_each_rxsc(secy, sc)			\
+#define for_each_rxsc(secy, sc)				\
 	for (sc = rcu_dereference_bh(secy->rx_sc);	\
-	     sc;				\
+	     sc;					\
 	     sc = rcu_dereference_bh(sc->next))
 #define for_each_rxsc_rtnl(secy, sc)			\
 	for (sc = rtnl_dereference(secy->rx_sc);	\
@@ -1142,6 +1142,7 @@ static rx_handler_result_t macsec_handle_frame(struct sk_buff **pskb)
 
 	list_for_each_entry_rcu(macsec, &rxd->secys, secys) {
 		struct macsec_rx_sc *sc = find_rx_sc(&macsec->secy, sci);
+
 		sc = sc ? macsec_rxsc_get(sc) : NULL;
 
 		if (sc) {
@@ -1584,7 +1585,6 @@ static struct macsec_rx_sa *get_rxsa_from_nl(struct net *net,
 	*scp = rx_sc;
 	return rx_sa;
 }
-
 
 static const struct nla_policy macsec_genl_policy[NUM_MACSEC_ATTR] = {
 	[MACSEC_ATTR_IFINDEX] = { .type = NLA_U32 },
@@ -2153,7 +2153,7 @@ static int macsec_upd_rxsc(struct sk_buff *skb, struct genl_info *info)
 }
 
 static int copy_tx_sa_stats(struct sk_buff *skb,
-			     struct macsec_tx_sa_stats __percpu *pstats)
+			    struct macsec_tx_sa_stats __percpu *pstats)
 {
 	struct macsec_tx_sa_stats sum = {0, };
 	int cpu;
@@ -2173,7 +2173,7 @@ static int copy_tx_sa_stats(struct sk_buff *skb,
 }
 
 static int copy_rx_sa_stats(struct sk_buff *skb,
-			     struct macsec_rx_sa_stats __percpu *pstats)
+			    struct macsec_rx_sa_stats __percpu *pstats)
 {
 	struct macsec_rx_sa_stats sum = {0, };
 	int cpu;
@@ -2199,7 +2199,7 @@ static int copy_rx_sa_stats(struct sk_buff *skb,
 }
 
 static int copy_rx_sc_stats(struct sk_buff *skb,
-			     struct pcpu_rx_sc_stats __percpu *pstats)
+			    struct pcpu_rx_sc_stats __percpu *pstats)
 {
 	struct macsec_rx_sc_stats sum = {0, };
 	int cpu;
@@ -2263,7 +2263,7 @@ static int copy_rx_sc_stats(struct sk_buff *skb,
 }
 
 static int copy_tx_sc_stats(struct sk_buff *skb,
-			     struct pcpu_tx_sc_stats __percpu *pstats)
+			    struct pcpu_tx_sc_stats __percpu *pstats)
 {
 	struct macsec_tx_sc_stats sum = {0, };
 	int cpu;
@@ -2303,7 +2303,7 @@ static int copy_tx_sc_stats(struct sk_buff *skb,
 }
 
 static int copy_secy_stats(struct sk_buff *skb,
-			    struct pcpu_secy_stats __percpu *pstats)
+			   struct pcpu_secy_stats __percpu *pstats)
 {
 	struct macsec_dev_stats sum = {0, };
 	int cpu;
@@ -2959,12 +2959,10 @@ static int macsec_get_iflink(const struct net_device *dev)
 	return macsec_priv(dev)->real_dev->ifindex;
 }
 
-
 static int macsec_get_nest_level(struct net_device *dev)
 {
 	return macsec_priv(dev)->nest_level;
 }
-
 
 static const struct net_device_ops macsec_netdev_ops = {
 	.ndo_init		= macsec_dev_init,
