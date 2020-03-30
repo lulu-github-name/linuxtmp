@@ -203,7 +203,7 @@ struct bio {
 
 	struct bio_set		*bi_pool;
 
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, u64	bi_iocost_cost)
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 

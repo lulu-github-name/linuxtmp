@@ -16,6 +16,7 @@ enum rq_qos_id {
 	RQ_QOS_CGROUP,
 #else
 	RQ_QOS_LATENCY,
+	RQ_QOS_COST,
 #endif
 };
 
@@ -84,6 +85,8 @@ static inline const char *rq_qos_id_to_name(enum rq_qos_id id)
 		return "wbt";
 	case RQ_QOS_LATENCY:
 		return "latency";
+	case RQ_QOS_COST:
+		return "cost";
 	}
 	return "unknown";
 }
