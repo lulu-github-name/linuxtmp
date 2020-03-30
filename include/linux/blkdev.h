@@ -429,7 +429,7 @@ struct request_queue {
 
 	/* sw queues */
 	struct blk_mq_ctx __percpu	*queue_ctx;
-	unsigned int		nr_queues;
+	RH_KABI_DEPRECATE(unsigned int,            nr_queues)
 
 	unsigned int		queue_depth;
 
