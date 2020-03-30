@@ -350,6 +350,19 @@ static void __DEBUG_bytes(__u8 *bytes, size_t len, const char *msg, ...)
 #define DEBUG_bytes(bytes, len, msg, ...)	do { } while (0)
 #endif
 
+static void dm_integrity_prepare(struct request *rq)
+{
+}
+
+static void dm_integrity_complete(struct request *rq, unsigned int nr_bytes)
+{
+}
+
+static const struct blk_integrity_profile_ext_ops dm_integrity_profile_ops = {
+	.prepare_fn		= dm_integrity_prepare,
+	.complete_fn		= dm_integrity_complete,
+};
+
 /*
  * DM Integrity profile, protection is performed layer above (dm-crypt)
  */
@@ -357,6 +370,7 @@ static const struct blk_integrity_profile dm_integrity_profile = {
 	.name			= "DM-DIF-EXT-TAG",
 	.generate_fn		= NULL,
 	.verify_fn		= NULL,
+	.ext_ops		= &dm_integrity_profile_ops,
 };
 
 static void dm_integrity_map_continue(struct dm_integrity_io *dio, bool from_map);

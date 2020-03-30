@@ -1548,13 +1548,25 @@ struct blk_integrity_iter {
 };
 
 typedef blk_status_t (integrity_processing_fn) (struct blk_integrity_iter *);
+typedef void (integrity_prepare_fn) (struct request *);
+typedef void (integrity_complete_fn) (struct request *, unsigned int);
+
+struct blk_integrity_profile_ext_ops {
+	integrity_prepare_fn		*prepare_fn;
+	integrity_complete_fn		*complete_fn;
+
+	RH_KABI_RESERVE(1)
+	RH_KABI_RESERVE(2)
+	RH_KABI_RESERVE(3)
+	RH_KABI_RESERVE(4)
+};
 
 struct blk_integrity_profile {
 	integrity_processing_fn		*generate_fn;
 	integrity_processing_fn		*verify_fn;
 	const char			*name;
 
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, const struct blk_integrity_profile_ext_ops *ext_ops)
 	RH_KABI_RESERVE(2)
 };
 
