@@ -30,6 +30,7 @@ struct blk_flush_queue {
 	 */
 	struct request		*orig_rq;
 	spinlock_t		mq_flush_lock;
+	RH_KABI_EXTEND(blk_status_t 		rq_status)
 };
 
 extern struct kmem_cache *blk_requestq_cachep;
@@ -45,6 +46,12 @@ blk_get_flush_queue(struct request_queue *q, struct blk_mq_ctx *ctx)
 static inline void __blk_get_queue(struct request_queue *q)
 {
 	kobject_get(&q->kobj);
+}
+
+static inline bool
+is_flush_rq(struct request *req, struct blk_mq_hw_ctx *hctx)
+{
+	return hctx->fq->flush_rq == req;
 }
 
 struct blk_flush_queue *blk_alloc_flush_queue(struct request_queue *q,
