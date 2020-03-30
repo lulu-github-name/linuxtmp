@@ -47,7 +47,6 @@ page-alloc-$(CONFIG_SHUFFLE_PAGE_ALLOCATOR) += shuffle.o
 
 obj-y += page-alloc.o
 obj-y += init-mm.o
-obj-y += nobootmem.o
 obj-y += memblock.o
 
 ifdef CONFIG_MMU
