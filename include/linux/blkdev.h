@@ -125,6 +125,7 @@ enum mq_rq_state {
 
 struct request_aux {
 	u64 alloc_time_ns;
+	unsigned short stats_sectors;
 };
 
 /*
@@ -207,9 +208,8 @@ struct request {
 	unsigned short wbt_flags;
 #endif
 #ifdef CONFIG_BLK_DEV_THROTTLING_LOW
-	unsigned short throtl_size;
+	RH_KABI_DEPRECATE(unsigned short, throtl_size)
 #endif
-
 	/*
 	 * Number of scatter-gather DMA addr+len pairs after
 	 * physical address coalescing is performed.
@@ -955,6 +955,7 @@ static inline struct request_queue *bdev_get_queue(struct block_device *bdev)
  * blk_rq_err_bytes()		: bytes left till the next error boundary
  * blk_rq_sectors()		: sectors left in the entire request
  * blk_rq_cur_sectors()		: sectors left in the current segment
+ * blk_rq_stats_sectors()	: sectors of the entire request used for stats
  */
 static inline sector_t blk_rq_pos(const struct request *rq)
 {
@@ -981,6 +982,11 @@ static inline unsigned int blk_rq_sectors(const struct request *rq)
 static inline unsigned int blk_rq_cur_sectors(const struct request *rq)
 {
 	return blk_rq_cur_bytes(rq) >> SECTOR_SHIFT;
+}
+
+static inline unsigned int blk_rq_stats_sectors(const struct request *rq)
+{
+	return blk_rq_aux(rq)->stats_sectors;
 }
 
 #ifdef CONFIG_BLK_DEV_ZONED
