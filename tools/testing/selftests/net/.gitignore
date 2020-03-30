@@ -19,3 +19,4 @@ ip_defrag
 ipv6_flowlabel
 ipv6_flowlabel_mgr
 so_txtime
+nettest
