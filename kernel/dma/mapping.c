@@ -5,7 +5,7 @@
  * Copyright (c) 2006  SUSE Linux Products GmbH
  * Copyright (c) 2006  Tejun Heo <teheo@suse.de>
  */
-#include <linux/bootmem.h> /* for max_pfn : in RHEL8 bootmem, 57c8a661d95d not backported */
+#include <linux/memblock.h> /* for max_pfn */
 #include <linux/acpi.h>
 #include <linux/dma-direct.h>
 #include <linux/dma-noncoherent.h>
