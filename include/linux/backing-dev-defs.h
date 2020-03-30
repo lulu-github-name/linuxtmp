@@ -211,7 +211,9 @@ struct backing_dev_info {
 	struct dentry *debug_dir;
 	struct dentry *debug_stats;
 #endif
-	RH_KABI_RESERVE(1)
+
+	/* no cgwb switch while syncing */
+	RH_KABI_USE(1, struct rw_semaphore *wb_switch_rwsem)
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)

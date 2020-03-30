@@ -690,6 +690,12 @@ static int cgwb_bdi_init(struct backing_dev_info *bdi)
 	bdi->cgwb_congested_tree = RB_ROOT;
 	mutex_init(&bdi->cgwb_release_mutex);
 
+	bdi->wb_switch_rwsem = kzalloc(sizeof(struct rw_semaphore), GFP_KERNEL);
+	if (!bdi->wb_switch_rwsem)
+		return -ENOMEM;
+	else
+		init_rwsem(bdi->wb_switch_rwsem);
+
 	ret = wb_init(&bdi->wb, bdi, 1, GFP_KERNEL);
 	if (!ret) {
 		bdi->wb.memcg_css = &root_mem_cgroup->css;
@@ -965,6 +971,9 @@ static void release_bdi(struct kref *ref)
 	WARN_ON_ONCE(bdi->dev);
 	wb_exit(&bdi->wb);
 	cgwb_bdi_exit(bdi);
+#ifdef CONFIG_CGROUP_WRITEBACK
+	kfree(bdi->wb_switch_rwsem);
+#endif
 	kfree(bdi);
 }
 
