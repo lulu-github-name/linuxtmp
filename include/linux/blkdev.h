@@ -409,7 +409,7 @@ struct request_queue {
 	/*
 	 * Together with queue_head for cacheline sharing
 	 */
-	struct list_head	queue_head;
+	RH_KABI_DEPRECATE(struct list_head,	queue_head)
 	struct request		*last_merge;
 	struct elevator_queue	*elevator;
 
