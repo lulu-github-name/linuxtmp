@@ -791,7 +791,7 @@ xfs_add_to_ioend(
 	}
 
 	wpc->ioend->io_size += len;
-	wbc_account_io(wbc, page, len);
+	wbc_account_cgroup_owner(wbc, page, len);
 }
 
 STATIC void
