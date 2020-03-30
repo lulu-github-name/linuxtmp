@@ -1552,7 +1552,7 @@ rescan:
 		ret = blk_add_partitions(disk, bdev);
 		if (ret == -EAGAIN)
 			goto rescan;
-	} else {
+	} else if (invalidate) {
 		/*
 		 * Tell userspace that the media / partition table may have
 		 * changed.
