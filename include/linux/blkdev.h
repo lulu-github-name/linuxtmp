@@ -363,17 +363,16 @@ struct queue_limits {
 	RH_KABI_RESERVE(8)
 };
 
+typedef int (*report_zones_cb)(struct blk_zone *zone, unsigned int idx,
+			       void *data);
+
 #ifdef CONFIG_BLK_DEV_ZONED
 
-/*
- * Maximum number of zones to report with a single report zones command.
- */
-#define BLK_ZONED_REPORT_MAX_ZONES	8192U
+#define BLK_ALL_ZONES  ((unsigned int)-1)
+int blkdev_report_zones(struct block_device *bdev, sector_t sector,
+			unsigned int nr_zones, report_zones_cb cb, void *data);
 
 extern unsigned int blkdev_nr_zones(struct block_device *bdev);
-extern int blkdev_report_zones(struct block_device *bdev,
-			       sector_t sector, struct blk_zone *zones,
-			       unsigned int *nr_zones);
 extern int blkdev_zone_mgmt(struct block_device *bdev, enum req_opf op,
 			    sector_t sectors, sector_t nr_sectors,
 			    gfp_t gfp_mask);
@@ -1750,7 +1749,7 @@ struct block_device_operations {
 			    struct blk_zone *zones, unsigned int *nr_zones,
 			    gfp_t gfp_mask),
 	int (*report_zones)(struct gendisk *, sector_t sector,
-			    struct blk_zone *zones, unsigned int *nr_zones)
+			unsigned int nr_zones, report_zones_cb cb, void *data)
 	)
 	struct module *owner;
 	const struct pr_ops *pr_ops;
