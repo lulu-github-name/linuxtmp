@@ -613,7 +613,7 @@ void __init mem_init(void)
 
 	high_memory = __va((max_pfn << PAGE_SHIFT));
 	set_max_mapnr(page_to_pfn(virt_to_page(high_memory - 1)) + 1);
-	free_all_bootmem();
+	memblock_free_all();
 
 #ifdef CONFIG_PA11
 	if (hppa_dma_ops == &pcxl_dma_ops) {

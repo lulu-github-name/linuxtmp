@@ -141,7 +141,7 @@ static inline void init_pointer_tables(void)
 void __init mem_init(void)
 {
 	/* this will put all memory onto the freelists */
-	free_all_bootmem();
+	memblock_free_all();
 	init_pointer_tables();
 	mem_init_print_info(NULL);
 }
