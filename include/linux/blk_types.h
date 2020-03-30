@@ -335,6 +335,15 @@ enum req_flag_bits {
 	/* for driver use */
 	__REQ_DRV,
 	__REQ_SWAP,		/* swapping request. */
+
+	/*
+	 * When a shared kthread needs to issue a bio for a cgroup, doing
+	 * so synchronously can lead to priority inversions as the kthread
+	 * can be trapped waiting for that cgroup.  CGROUP_PUNT flag makes
+	 * submit_bio() punt the actual issuing to a dedicated per-blkcg
+	 * work item to avoid such priority inversions.
+	 */
+	__REQ_CGROUP_PUNT,
 	__REQ_NR_BITS,		/* stops here */
 };
 
@@ -352,6 +361,8 @@ enum req_flag_bits {
 #define REQ_RAHEAD		(1ULL << __REQ_RAHEAD)
 #define REQ_BACKGROUND		(1ULL << __REQ_BACKGROUND)
 #define REQ_NOWAIT		(1ULL << __REQ_NOWAIT)
+#define REQ_CGROUP_PUNT		(1ULL << __REQ_CGROUP_PUNT)
+
 #define REQ_NOUNMAP		(1ULL << __REQ_NOUNMAP)
 #define REQ_HIPRI		(1ULL << __REQ_HIPRI)
 
