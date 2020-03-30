@@ -213,13 +213,13 @@ int __init swiotlb_init_with_tbl(char *tlb, unsigned long nslabs, int verbose)
 	 * between io_tlb_start and io_tlb_end.
 	 */
 	alloc_size = PAGE_ALIGN(io_tlb_nslabs * sizeof(int));
-	io_tlb_list = memblock_virt_alloc(alloc_size, PAGE_SIZE);
+	io_tlb_list = memblock_alloc(alloc_size, PAGE_SIZE);
 	if (!io_tlb_list)
 		panic("%s: Failed to allocate %lu bytes align=0x%lx\n",
 		      __func__, alloc_size, PAGE_SIZE);
 
 	alloc_size = PAGE_ALIGN(io_tlb_nslabs * sizeof(phys_addr_t));
-	io_tlb_orig_addr = memblock_virt_alloc(alloc_size, PAGE_SIZE);
+	io_tlb_orig_addr = memblock_alloc(alloc_size, PAGE_SIZE);
 	if (!io_tlb_orig_addr)
 		panic("%s: Failed to allocate %lu bytes align=0x%lx\n",
 		      __func__, alloc_size, PAGE_SIZE);
@@ -256,7 +256,7 @@ swiotlb_init(int verbose)
 	bytes = io_tlb_nslabs << IO_TLB_SHIFT;
 
 	/* Get IO TLB memory from the low pages */
-	vstart = memblock_virt_alloc_low_nopanic(PAGE_ALIGN(bytes), PAGE_SIZE);
+	vstart = memblock_alloc_low_nopanic(PAGE_ALIGN(bytes), PAGE_SIZE);
 	if (vstart && !swiotlb_init_with_tbl(vstart, io_tlb_nslabs, verbose))
 		return;
 
