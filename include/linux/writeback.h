@@ -12,6 +12,7 @@
 #include <linux/backing-dev-defs.h>
 #include <linux/blk_types.h>
 #include <linux/rh_kabi.h>
+#include RH_KABI_HIDE_INCLUDE(<linux/blk-cgroup.h>)
 
 struct bio;
 
@@ -103,6 +104,16 @@ static inline int wbc_to_write_flags(struct writeback_control *wbc)
 		return REQ_BACKGROUND;
 
 	return 0;
+}
+
+static inline struct cgroup_subsys_state *
+wbc_blkcg_css(struct writeback_control *wbc)
+{
+#ifdef CONFIG_CGROUP_WRITEBACK
+	if (wbc->wb)
+		return wbc->wb->blkcg_css;
+#endif
+	return blkcg_root_css;
 }
 
 /*
