@@ -597,6 +597,8 @@ struct request_queue {
 	RH_KABI_EXTEND(struct mutex		mq_freeze_lock)
 
 	RH_KABI_EXTEND(struct mutex		sysfs_dir_lock)
+
+	RH_KABI_EXTEND(struct dentry		*rqos_debugfs_dir)
 };
 
 #define QUEUE_FLAG_STOPPED	1	/* queue is stopped */
