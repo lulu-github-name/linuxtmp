@@ -36,6 +36,7 @@
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 #include <linux/skbuff.h>
+#include <linux/notifier.h>
 #include <linux/siphash.h>
 
 struct user_namespace;
@@ -94,6 +95,7 @@ struct net {
 	struct list_head 	dev_base_head;
 	struct hlist_head 	*dev_name_head;
 	struct hlist_head	*dev_index_head;
+
 	unsigned int		dev_base_seq;	/* protected by rtnl_mutex */
 	int			ifindex;
 	unsigned int		dev_unreg_count;
@@ -172,6 +174,7 @@ struct net {
 	RH_KABI_EXTEND_WITH_SIZE(struct netns_xdp xdp, 21)
 	RH_KABI_EXTEND(int	sctp_ecn_enable)
 	RH_KABI_EXTEND(struct list_head        xfrm_inexact_bins)
+	RH_KABI_EXTEND(struct raw_notifier_head	netdev_chain)
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
