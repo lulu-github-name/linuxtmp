@@ -1206,7 +1206,7 @@ static int __init mce_amd_init(void)
 	case 0x17:
 		xec_mask = 0x3f;
 		if (!boot_cpu_has(X86_FEATURE_SMCA)) {
-			printk(KERN_WARNING "Decoding supported only on Scalable MCA processors.\n");
+			pr_warn_once("Decoding supported only on Scalable MCA processors.\n");
 			goto err_out;
 		}
 		break;
