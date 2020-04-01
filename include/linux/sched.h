@@ -1232,24 +1232,13 @@ struct task_struct {
 	 */
 	randomized_struct_fields_end
 
-#ifdef __GENKSYMS__
-	RH_KABI_RESERVE(1)
-	RH_KABI_RESERVE(2)
-	RH_KABI_RESERVE(3)
-	RH_KABI_RESERVE(4)
-	RH_KABI_RESERVE(5)
-	RH_KABI_RESERVE(6)
-	RH_KABI_RESERVE(7)
-	RH_KABI_RESERVE(8)
-#else
 	/*
 	 * RHEL8: With PIDTYPE_MAX equals 4, the following fields will
 	 * occupy 8 long's. There are some rh_reserved* fields up near
 	 * the pid_link structure that can be reused for other purpose.
 	 */
 	/* PID/PID hash table linkage. */
-	struct hlist_node		pid_links[PIDTYPE_MAX];
-#endif
+	RH_KABI_USE(1, 2, 3, 4, 5, 6, 7, 8, struct hlist_node pid_links[PIDTYPE_MAX])
 
 	/* CPU-specific state of this task: */
 	struct thread_struct		thread;
