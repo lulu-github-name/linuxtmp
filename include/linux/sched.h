@@ -714,8 +714,7 @@ struct task_struct {
 	unsigned			restore_sigmask:1;
 #endif
 #ifdef CONFIG_MEMCG
-	RH_KABI_REPLACE_UNSAFE(unsigned	memcg_may_oom:1,
-			       unsigned	in_user_fault:1)
+	unsigned	 RH_KABI_RENAME(memcg_may_oom, in_user_fault):1;
 #ifdef CONFIG_MEMCG_KMEM
 	RH_KABI_DEPRECATE(unsigned,	memcg_kmem_skip_account:1)
 #endif

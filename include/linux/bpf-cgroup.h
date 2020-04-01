@@ -70,7 +70,7 @@ struct cgroup_bpf {
 	 * struct once but should not do that again. */
 
 	/* array of effective progs in this cgroup */
-	RH_KABI_REPLACE_UNSAFE(
+	RH_KABI_BROKEN_REPLACE(
 		struct bpf_prog_array __rcu *effective[MAX_BPF_ATTACH_TYPE],
 		struct bpf_prog_array __rcu *effective[RH_MAX_BPF_ATTACH_TYPE]
 	)
@@ -80,11 +80,11 @@ struct cgroup_bpf {
 	 * have either zero or one element
 	 * when BPF_F_ALLOW_MULTI the list can have up to BPF_CGROUP_MAX_PROGS
 	 */
-	RH_KABI_REPLACE_UNSAFE(
+	RH_KABI_BROKEN_REPLACE(
 		struct list_head progs[MAX_BPF_ATTACH_TYPE],
 		struct list_head progs[RH_MAX_BPF_ATTACH_TYPE]
 	)
-	RH_KABI_REPLACE_UNSAFE(
+	RH_KABI_BROKEN_REPLACE(
 		u32 flags[MAX_BPF_ATTACH_TYPE],
 		u32 flags[RH_MAX_BPF_ATTACH_TYPE]
 	)

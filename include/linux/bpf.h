@@ -92,7 +92,8 @@ struct bpf_map {
 	u32 value_size;
 	u32 max_entries;
 	u32 map_flags;
-	RH_KABI_REPLACE_UNSAFE(u32 pages, int spin_lock_off) /* >=0 valid offset, <0 error */
+	RH_KABI_BROKEN_REMOVE(u32 pages)
+	RH_KABI_BROKEN_INSERT(int spin_lock_off) /* >=0 valid offset, <0 error */
 	u32 id;
 	int numa_node;
 	u32 btf_key_type_id;
@@ -532,8 +533,8 @@ struct bpf_prog_array_item {
 
 struct bpf_prog_array {
 	struct rcu_head rcu;
-	/* not protected by KABI, safe to replace */
-	RH_KABI_REPLACE_UNSAFE(struct bpf_prog *progs[0],struct bpf_prog_array_item items[0])
+	RH_KABI_BROKEN_REMOVE(struct bpf_prog *progs[0])
+	RH_KABI_BROKEN_INSERT(struct bpf_prog_array_item items[0])
 };
 
 struct bpf_prog_array *bpf_prog_array_alloc(u32 prog_cnt, gfp_t flags);

@@ -749,7 +749,7 @@ struct root_domain {
 	 * - More than one runnable task
 	 * - Running task is misfit
 	 */
-	RH_KABI_REPLACE_UNSAFE(bool overload, int overload)
+	RH_KABI_BROKEN_REPLACE(bool overload, int overload)
 
 	/*
 	 * The bit corresponding to a CPU gets set here if such CPU has more

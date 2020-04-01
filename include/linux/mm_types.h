@@ -421,7 +421,7 @@ struct mm_struct {
 		/*
 		 * RHEL KABI NOTE: due to changes for BZ#1620349 mm_types.h is
 		 * being exposed to the vdso32 object build, thus we need the
-		 * _UNSAFE variant of RH_KABI_REPLACE in order to placate the
+		 * _BROKEN variant of RH_KABI_REPLACE in order to placate the
 		 * static assertion check embedded into the safe macro.
 		 * Although unsigned long and atomic64_t do not have a type size
 		 * match in the vdso32 object build case, it is, actually, safe
@@ -431,7 +431,7 @@ struct mm_struct {
 		 * struct mm_struct is required, the type sizes and aligment are
 		 * a perfect match, as expected.
 		 */
-		RH_KABI_REPLACE_UNSAFE(
+		RH_KABI_BROKEN_REPLACE(
 		unsigned long pinned_vm,
 		atomic64_t    pinned_vm
 		)			   /* Refcount permanently increased */
