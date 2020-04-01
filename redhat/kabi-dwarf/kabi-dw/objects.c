@@ -885,10 +885,10 @@ int obj_debug_tree(obj_t *root)
  *	union {};
  * }
  *
- * RH_KABI_USE2(_P) replace a single field by two field that fits in
- * the same space. It puts the two new field into an unnamed
+ * RH_KABI_USE_SPLIT(_P) replaces a single field by multiple fields that
+ * fit in the same space. It puts the new fields into an unnamed
  * struct. We don't hide that as we have no way to know if that struct
- * is an artifact from RH_KABI_USE2 or was added deliberately.
+ * is an artifact from RH_KABI_USE_SPLIT or was added deliberately.
  *
  * RH_KABI_DEPRECATE(_FN) prefix the field name with
  * rh_reserved_. This is not the most specific string. It currently
