@@ -536,11 +536,7 @@ struct request_queue {
 	unsigned int		sg_reserved_size;
 	int			node;
 #ifdef CONFIG_BLK_DEV_IO_TRACE
-#ifdef __GENKSYMS__
-	struct blk_trace	*blk_trace;
-#else
-	struct blk_trace __rcu	*blk_trace;
-#endif
+	struct blk_trace RH_KABI_ADD_MODIFIER(__rcu) *blk_trace;
 	struct mutex		blk_trace_mutex;
 #endif
 	/*
