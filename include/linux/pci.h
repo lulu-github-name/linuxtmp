@@ -489,7 +489,7 @@ struct pci_dev {
 	RH_KABI_RESERVE(13)
 	RH_KABI_RESERVE(14)
 	RH_KABI_RESERVE(15)
-	RH_KABI_SIZE_AND_EXTEND(pci_dev_extended)
+	RH_KABI_AUX_EMBED(pci_dev_extended)
 };
 
 static inline struct pci_dev *pci_physfn(struct pci_dev *dev)

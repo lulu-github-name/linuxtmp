@@ -138,7 +138,7 @@ struct hrtimer {
 	u8				is_soft;
 	RH_KABI_FILL_HOLE(u8 is_hard)
 	/* RHEL: All arches -- there are 4 bytes left to fill here */
-	RH_KABI_SIZE_AND_EXTEND_PTR(hrtimer);
+	RH_KABI_AUX_PTR(hrtimer);
 };
 
 /**

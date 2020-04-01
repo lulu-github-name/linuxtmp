@@ -136,7 +136,7 @@ struct dma_map_ops {
 			enum dma_data_direction direction);
 	int (*dma_supported)(struct device *dev, u64 mask);
 	u64 (*get_required_mask)(struct device *dev);
-	RH_KABI_SIZE_AND_EXTEND(dma_map_ops_extended)
+	RH_KABI_AUX_EMBED(dma_map_ops_extended)
 };
 
 #define DMA_MAPPING_ERROR		(~(dma_addr_t)0)

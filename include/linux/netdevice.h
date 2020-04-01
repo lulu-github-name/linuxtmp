@@ -347,7 +347,7 @@ struct napi_struct {
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
 	RH_KABI_RESERVE(7)
-	RH_KABI_SIZE_AND_EXTEND(napi_struct_extended)
+	RH_KABI_AUX_EMBED(napi_struct_extended)
 };
 
 enum {
@@ -943,7 +943,7 @@ struct xfrmdev_ops {
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
 	RH_KABI_RESERVE(7)
-	RH_KABI_SIZE_AND_EXTEND(xfrmdev_ops_extended)
+	RH_KABI_AUX_EMBED(xfrmdev_ops_extended)
 };
 #endif
 
@@ -978,7 +978,7 @@ struct tlsdev_ops {
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
 	RH_KABI_RESERVE(7)
-	RH_KABI_SIZE_AND_EXTEND(tlsdev_ops_extended)
+	RH_KABI_AUX_EMBED(tlsdev_ops_extended)
 };
 #endif
 
@@ -1563,7 +1563,7 @@ struct net_device_ops {
 	RH_KABI_RESERVE(45)
 	RH_KABI_RESERVE(46)
 	RH_KABI_RESERVE(47)
-	RH_KABI_SIZE_AND_EXTEND(net_device_ops_extended)
+	RH_KABI_AUX_EMBED(net_device_ops_extended)
 };
 
 /**
@@ -2237,7 +2237,7 @@ struct net_device {
 	RH_KABI_RESERVE(28)
 	RH_KABI_RESERVE(29)
 	RH_KABI_RESERVE(30)
-	RH_KABI_SIZE_AND_EXTEND_PTR(net_device_extended)
+	RH_KABI_AUX_PTR(net_device_extended)
 };
 #define to_net_dev(d) container_of(d, struct net_device, dev)
 

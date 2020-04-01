@@ -141,7 +141,7 @@ struct cpuinfo_x86 {
 	/* Address space bits used by the cache internally */
 	u8			x86_cache_bits;
 	unsigned		initialized : 1;
-	RH_KABI_SIZE_AND_EXTEND(cpuinfo_x86_extended);
+	RH_KABI_AUX_EMBED(cpuinfo_x86_extended);
 } __randomize_layout;
 
 struct cpuid_regs {

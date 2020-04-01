@@ -457,7 +457,7 @@ struct ethtool_ops {
 	RH_KABI_RESERVE(29)
 	RH_KABI_RESERVE(30)
 	RH_KABI_RESERVE(31)
-	RH_KABI_SIZE_AND_EXTEND(ethtool_ops_extended)
+	RH_KABI_AUX_EMBED(ethtool_ops_extended)
 };
 
 struct ethtool_rx_flow_rule {

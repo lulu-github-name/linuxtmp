@@ -313,7 +313,7 @@ struct device_driver {
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
-	RH_KABI_SIZE_AND_EXTEND_PTR(device_driver);
+	RH_KABI_AUX_PTR(device_driver);
 };
 
 
@@ -446,7 +446,7 @@ struct class {
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
-	RH_KABI_SIZE_AND_EXTEND_PTR(class);
+	RH_KABI_AUX_PTR(class);
 };
 
 struct class_dev_iter {
@@ -1068,7 +1068,7 @@ struct device {
 	RH_KABI_RESERVE(14)
 	RH_KABI_RESERVE(15)
 	RH_KABI_RESERVE(16)
-	RH_KABI_SIZE_AND_EXTEND_PTR(device_extended)
+	RH_KABI_AUX_PTR(device_extended)
 };
 
 static inline struct device *kobj_to_dev(struct kobject *kobj)

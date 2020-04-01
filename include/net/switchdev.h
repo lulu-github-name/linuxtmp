@@ -155,7 +155,7 @@ struct switchdev_ops {
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
 	RH_KABI_RESERVE(7)
-	RH_KABI_SIZE_AND_EXTEND(switchdev_ops_extended)
+	RH_KABI_AUX_EMBED(switchdev_ops_extended)
 };
 
 enum switchdev_notifier_type {
