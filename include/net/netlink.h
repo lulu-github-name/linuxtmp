@@ -290,9 +290,13 @@ enum nla_policy_validation {
  */
 struct nla_policy {
 #ifdef __BIG_ENDIAN__
-	RH_KABI_REPLACE2(u16 type, u8 validation_type, u8 type)
+	RH_KABI_REPLACE_SPLIT(u16 type,
+			      u8 validation_type,
+			      u8 type)
 #else
-	RH_KABI_REPLACE2(u16 type, u8 type, u8 validation_type)
+	RH_KABI_REPLACE_SPLIT(u16 type,
+			      u8 type,
+			      u8 validation_type)
 #endif
 	u16		len;
 #ifdef __GENKSYMS__
