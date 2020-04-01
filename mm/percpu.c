@@ -1330,7 +1330,7 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 	/* allocate chunk */
 	alloc_size = sizeof(struct pcpu_chunk) +
 		BITS_TO_LONGS(region_size >> PAGE_SHIFT);
-	chunk = memblock_alloc(alloc_size, 0);
+	chunk = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!chunk)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      alloc_size);
@@ -1345,20 +1345,20 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 	region_bits = pcpu_chunk_map_bits(chunk);
 
 	alloc_size = BITS_TO_LONGS(region_bits) * sizeof(chunk->alloc_map[0]);
-	chunk->alloc_map = memblock_alloc(alloc_size, 0);
+	chunk->alloc_map = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!chunk->alloc_map)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      alloc_size);
 
 	alloc_size =
 		BITS_TO_LONGS(region_bits + 1) * sizeof(chunk->bound_map[0]);
-	chunk->bound_map = memblock_alloc(alloc_size, 0);
+	chunk->bound_map = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!chunk->bound_map)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      alloc_size);
 
 	alloc_size = pcpu_chunk_nr_blocks(chunk) * sizeof(chunk->md_blocks[0]);
-	chunk->md_blocks = memblock_alloc(alloc_size, 0);
+	chunk->md_blocks = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!chunk->md_blocks)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      alloc_size);
@@ -2319,25 +2319,25 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 	/* process group information and build config tables accordingly */
 	alloc_size = ai->nr_groups * sizeof(group_offsets[0]);
-	group_offsets = memblock_alloc(alloc_size, 0);
+	group_offsets = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!group_offsets)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      alloc_size);
 
 	alloc_size = ai->nr_groups * sizeof(group_sizes[0]);
-	group_sizes = memblock_alloc(alloc_size, 0);
+	group_sizes = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!group_sizes)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      alloc_size);
 
 	alloc_size = nr_cpu_ids * sizeof(unit_map[0]);
-	unit_map = memblock_alloc(alloc_size, 0);
+	unit_map = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!unit_map)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      alloc_size);
 
 	alloc_size = nr_cpu_ids * sizeof(unit_off[0]);
-	unit_off = memblock_alloc(alloc_size, 0);
+	unit_off = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!unit_off)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      alloc_size);
@@ -2405,7 +2405,7 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	 */
 	pcpu_nr_slots = __pcpu_size_to_slot(pcpu_unit_size) + 2;
 	pcpu_slot = memblock_alloc(pcpu_nr_slots * sizeof(pcpu_slot[0]),
-				   0);
+				   SMP_CACHE_BYTES);
 	if (!pcpu_slot)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      pcpu_nr_slots * sizeof(pcpu_slot[0]));
@@ -2721,7 +2721,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	size_sum = ai->static_size + ai->reserved_size + ai->dyn_size;
 	areas_size = PFN_ALIGN(ai->nr_groups * sizeof(void *));
 
-	areas = memblock_alloc_nopanic(areas_size, 0);
+	areas = memblock_alloc_nopanic(areas_size, SMP_CACHE_BYTES);
 	if (!areas) {
 		rc = -ENOMEM;
 		goto out_free;
@@ -2862,7 +2862,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 	/* unaligned allocations can't be freed, round up to page size */
 	pages_size = PFN_ALIGN(unit_pages * num_possible_cpus() *
 			       sizeof(pages[0]));
-	pages = memblock_alloc(pages_size, 0);
+	pages = memblock_alloc(pages_size, SMP_CACHE_BYTES);
 	if (!pages)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      pages_size);
