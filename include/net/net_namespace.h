@@ -175,6 +175,7 @@ struct net {
 	RH_KABI_EXTEND(int	sctp_ecn_enable)
 	RH_KABI_EXTEND(struct list_head        xfrm_inexact_bins)
 	RH_KABI_EXTEND(struct raw_notifier_head	netdev_chain)
+	RH_KABI_EXTEND(struct list_head		nft_module_list)
 	RH_KABI_EXTEND(struct mutex		nft_commit_mutex)
 } __randomize_layout;
 
