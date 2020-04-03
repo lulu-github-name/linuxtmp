@@ -512,11 +512,18 @@ static void nft_request_module(struct net *net, const char *fmt, ...)
 	if (WARN(ret >= MODULE_NAME_LEN, "truncated: '%s' (len %d)", module_name, ret))
 		return;
 
-	nfnl_unlock(NFNL_SUBSYS_NFTABLES);
+	mutex_unlock(&net->nft_commit_mutex);
 	request_module("%s", module_name);
-	nfnl_lock(NFNL_SUBSYS_NFTABLES);
+	mutex_lock(&net->nft_commit_mutex);
 }
 #endif
+
+static void lockdep_nfnl_nft_mutex_not_held(void)
+{
+#ifdef CONFIG_PROVE_LOCKING
+	WARN_ON_ONCE(lockdep_nfnl_is_held(NFNL_SUBSYS_NFTABLES));
+#endif
+}
 
 static const struct nft_chain_type *
 nf_tables_chain_type_lookup(struct net *net, const struct nlattr *nla,
@@ -527,6 +534,8 @@ nf_tables_chain_type_lookup(struct net *net, const struct nlattr *nla,
 	type = __nf_tables_chain_type_lookup(nla, family);
 	if (type != NULL)
 		return type;
+
+	lockdep_nfnl_nft_mutex_not_held();
 #ifdef CONFIG_MODULES
 	if (autoload) {
 		nft_request_module(net, "nft-chain-%u-%.*s", family,
@@ -862,6 +871,7 @@ static int nf_tables_newtable(struct net *net, struct sock *nlsk,
 	struct nft_ctx ctx;
 	int err;
 
+	lockdep_assert_held(&net->nft_commit_mutex);
 	attr = nla[NFTA_TABLE_NAME];
 	table = nft_table_lookup(net, attr, family, genmask);
 	if (IS_ERR(table)) {
@@ -1100,7 +1110,17 @@ nft_chain_lookup_byhandle(const struct nft_table *table, u64 handle, u8 genmask)
 	return ERR_PTR(-ENOENT);
 }
 
-static struct nft_chain *nft_chain_lookup(struct nft_table *table,
+static bool lockdep_commit_lock_is_held(struct net *net)
+{
+#ifdef CONFIG_PROVE_LOCKING
+	return lockdep_is_held(&net->nft_commit_mutex);
+#else
+	return true;
+#endif
+}
+
+static struct nft_chain *nft_chain_lookup(struct net *net,
+					  struct nft_table *table,
 					  const struct nlattr *nla, u8 genmask)
 {
 	char search[NFT_CHAIN_MAXNAMELEN + 1];
@@ -1113,7 +1133,7 @@ static struct nft_chain *nft_chain_lookup(struct nft_table *table,
 	nla_strlcpy(search, nla, sizeof(search));
 
 	WARN_ON(!rcu_read_lock_held() &&
-		!lockdep_nfnl_is_held(NFNL_SUBSYS_NFTABLES));
+		!lockdep_commit_lock_is_held(net));
 
 	chain = ERR_PTR(-ENOENT);
 	rcu_read_lock();
@@ -1353,7 +1373,7 @@ static int nf_tables_getchain(struct net *net, struct sock *nlsk,
 		return PTR_ERR(table);
 	}
 
-	chain = nft_chain_lookup(table, nla[NFTA_CHAIN_NAME], genmask);
+	chain = nft_chain_lookup(net, table, nla[NFTA_CHAIN_NAME], genmask);
 	if (IS_ERR(chain)) {
 		NL_SET_BAD_ATTR(extack, nla[NFTA_CHAIN_NAME]);
 		return PTR_ERR(chain);
@@ -1486,6 +1506,9 @@ static int nft_chain_parse_hook(struct net *net,
 	const struct nft_chain_type *type;
 	struct net_device *dev;
 	int err;
+
+	lockdep_assert_held(&net->nft_commit_mutex);
+	lockdep_nfnl_nft_mutex_not_held();
 
 	err = nla_parse_nested_deprecated(ha, NFTA_HOOK_MAX,
 					  nla[NFTA_CHAIN_HOOK],
@@ -1724,7 +1747,8 @@ static int nf_tables_updchain(struct nft_ctx *ctx, u8 genmask, u8 policy,
 	    nla[NFTA_CHAIN_NAME]) {
 		struct nft_chain *chain2;
 
-		chain2 = nft_chain_lookup(table, nla[NFTA_CHAIN_NAME], genmask);
+		chain2 = nft_chain_lookup(ctx->net, table,
+					  nla[NFTA_CHAIN_NAME], genmask);
 		if (!IS_ERR(chain2))
 			return -EEXIST;
 	}
@@ -1803,6 +1827,8 @@ static int nf_tables_newchain(struct net *net, struct sock *nlsk,
 
 	create = nlh->nlmsg_flags & NLM_F_CREATE ? true : false;
 
+	lockdep_assert_held(&net->nft_commit_mutex);
+
 	table = nft_table_lookup(net, nla[NFTA_CHAIN_TABLE], family, genmask);
 	if (IS_ERR(table)) {
 		NL_SET_BAD_ATTR(extack, nla[NFTA_CHAIN_TABLE]);
@@ -1821,7 +1847,7 @@ static int nf_tables_newchain(struct net *net, struct sock *nlsk,
 		}
 		attr = nla[NFTA_CHAIN_HANDLE];
 	} else {
-		chain = nft_chain_lookup(table, attr, genmask);
+		chain = nft_chain_lookup(net, table, attr, genmask);
 		if (IS_ERR(chain)) {
 			if (PTR_ERR(chain) != -ENOENT) {
 				NL_SET_BAD_ATTR(extack, attr);
@@ -1899,7 +1925,7 @@ static int nf_tables_delchain(struct net *net, struct sock *nlsk,
 		chain = nft_chain_lookup_byhandle(table, handle, genmask);
 	} else {
 		attr = nla[NFTA_CHAIN_NAME];
-		chain = nft_chain_lookup(table, attr, genmask);
+		chain = nft_chain_lookup(net, table, attr, genmask);
 	}
 	if (IS_ERR(chain)) {
 		NL_SET_BAD_ATTR(extack, attr);
@@ -1997,6 +2023,7 @@ static const struct nft_expr_type *nft_expr_type_get(struct net *net,
 	if (type != NULL && try_module_get(type->owner))
 		return type;
 
+	lockdep_nfnl_nft_mutex_not_held();
 #ifdef CONFIG_MODULES
 	if (type == NULL) {
 		nft_request_module(net, "nft-expr-%u-%.*s", family,
@@ -2479,7 +2506,7 @@ static int nf_tables_getrule(struct net *net, struct sock *nlsk,
 		return PTR_ERR(table);
 	}
 
-	chain = nft_chain_lookup(table, nla[NFTA_RULE_CHAIN], genmask);
+	chain = nft_chain_lookup(net, table, nla[NFTA_RULE_CHAIN], genmask);
 	if (IS_ERR(chain)) {
 		NL_SET_BAD_ATTR(extack, nla[NFTA_RULE_CHAIN]);
 		return PTR_ERR(chain);
@@ -2513,6 +2540,7 @@ static void nf_tables_rule_destroy(const struct nft_ctx *ctx,
 {
 	struct nft_expr *expr, *next;
 
+	lockdep_assert_held(&ctx->net->nft_commit_mutex);
 	/*
 	 * Careful: some expressions might not be initialized in case this
 	 * is called on error from nf_tables_newrule().
@@ -2610,6 +2638,8 @@ static int nf_tables_newrule(struct net *net, struct sock *nlsk,
 	bool create;
 	u64 handle, pos_handle;
 
+	lockdep_assert_held(&net->nft_commit_mutex);
+
 	create = nlh->nlmsg_flags & NLM_F_CREATE ? true : false;
 
 	table = nft_table_lookup(net, nla[NFTA_RULE_TABLE], family, genmask);
@@ -2618,7 +2648,7 @@ static int nf_tables_newrule(struct net *net, struct sock *nlsk,
 		return PTR_ERR(table);
 	}
 
-	chain = nft_chain_lookup(table, nla[NFTA_RULE_CHAIN], genmask);
+	chain = nft_chain_lookup(net, table, nla[NFTA_RULE_CHAIN], genmask);
 	if (IS_ERR(chain)) {
 		NL_SET_BAD_ATTR(extack, nla[NFTA_RULE_CHAIN]);
 		return PTR_ERR(chain);
@@ -2814,7 +2844,8 @@ static int nf_tables_delrule(struct net *net, struct sock *nlsk,
 	}
 
 	if (nla[NFTA_RULE_CHAIN]) {
-		chain = nft_chain_lookup(table, nla[NFTA_RULE_CHAIN], genmask);
+		chain = nft_chain_lookup(net, table, nla[NFTA_RULE_CHAIN],
+					 genmask);
 		if (IS_ERR(chain)) {
 			NL_SET_BAD_ATTR(extack, nla[NFTA_RULE_CHAIN]);
 			return PTR_ERR(chain);
@@ -2906,6 +2937,8 @@ nft_select_set_ops(const struct nft_ctx *ctx,
 	const struct nft_set_type *type;
 	u32 flags = 0;
 
+	lockdep_assert_held(&ctx->net->nft_commit_mutex);
+	lockdep_nfnl_nft_mutex_not_held();
 #ifdef CONFIG_MODULES
 	if (list_empty(&nf_tables_set_types)) {
 		nft_request_module(ctx->net, "nft-set");
@@ -5120,6 +5153,7 @@ nft_obj_type_get(struct net *net, u32 objtype)
 	if (type != NULL && try_module_get(type->owner))
 		return type;
 
+	lockdep_nfnl_nft_mutex_not_held();
 #ifdef CONFIG_MODULES
 	if (type == NULL) {
 		nft_request_module(net, "nft-obj-%u", objtype);
@@ -5682,6 +5716,7 @@ nft_flowtable_type_get(struct net *net, u8 family)
 	if (type != NULL && try_module_get(type->owner))
 		return type;
 
+	lockdep_nfnl_nft_mutex_not_held();
 #ifdef CONFIG_MODULES
 	if (type == NULL) {
 		nft_request_module(net, "nf-flowtable-%u", family);
@@ -6531,9 +6566,9 @@ static void nf_tables_commit_chain(struct net *net, struct nft_chain *chain)
 	next_genbit = nft_gencursor_next(net);
 
 	g0 = rcu_dereference_protected(chain->rules_gen_0,
-				       lockdep_nfnl_is_held(NFNL_SUBSYS_NFTABLES));
+				       lockdep_commit_lock_is_held(net));
 	g1 = rcu_dereference_protected(chain->rules_gen_1,
-				       lockdep_nfnl_is_held(NFNL_SUBSYS_NFTABLES));
+				       lockdep_commit_lock_is_held(net));
 
 	/* No changes to this chain? */
 	if (chain->rules_next == NULL) {
@@ -6746,6 +6781,7 @@ static int nf_tables_commit(struct net *net, struct sk_buff *skb)
 
 	nf_tables_commit_release(net);
 	nf_tables_gen_notify(net, skb, NFT_MSG_NEWGEN);
+	mutex_unlock(&net->nft_commit_mutex);
 
 	return 0;
 }
@@ -6897,12 +6933,25 @@ static void nf_tables_cleanup(struct net *net)
 
 static int nf_tables_abort(struct net *net, struct sk_buff *skb)
 {
-	return __nf_tables_abort(net);
+	int ret = __nf_tables_abort(net);
+
+	mutex_unlock(&net->nft_commit_mutex);
+
+	return ret;
 }
 
 static bool nf_tables_valid_genid(struct net *net, u32 genid)
 {
-	return genid == 0 || net->nft.base_seq == genid;
+	bool genid_ok;
+
+	mutex_lock(&net->nft_commit_mutex);
+
+	genid_ok = genid == 0 || net->nft.base_seq == genid;
+	if (!genid_ok)
+		mutex_unlock(&net->nft_commit_mutex);
+
+	/* else, commit mutex has to be released by commit or abort function */
+	return genid_ok;
 }
 
 static const struct nfnetlink_subsystem nf_tables_subsys = {
@@ -7234,8 +7283,8 @@ static int nft_verdict_init(const struct nft_ctx *ctx, struct nft_data *data,
 	case NFT_GOTO:
 		if (!tb[NFTA_VERDICT_CHAIN])
 			return -EINVAL;
-		chain = nft_chain_lookup(ctx->table, tb[NFTA_VERDICT_CHAIN],
-					 genmask);
+		chain = nft_chain_lookup(ctx->net, ctx->table,
+					 tb[NFTA_VERDICT_CHAIN], genmask);
 		if (IS_ERR(chain))
 			return PTR_ERR(chain);
 		if (nft_is_base_chain(chain))
@@ -7482,6 +7531,7 @@ static int __net_init nf_tables_init_net(struct net *net)
 {
 	INIT_LIST_HEAD(&net->nft.tables);
 	INIT_LIST_HEAD(&net->nft.commit_list);
+	mutex_init(&net->nft_commit_mutex);
 	net->nft.base_seq = 1;
 	net->nft.validate_state = NFT_VALIDATE_SKIP;
 
@@ -7490,11 +7540,11 @@ static int __net_init nf_tables_init_net(struct net *net)
 
 static void __net_exit nf_tables_exit_net(struct net *net)
 {
-	nfnl_lock(NFNL_SUBSYS_NFTABLES);
+	mutex_lock(&net->nft_commit_mutex);
 	if (!list_empty(&net->nft.commit_list))
 		__nf_tables_abort(net);
 	__nft_release_tables(net);
-	nfnl_unlock(NFNL_SUBSYS_NFTABLES);
+	mutex_unlock(&net->nft_commit_mutex);
 	WARN_ON_ONCE(!list_empty(&net->nft.tables));
 }
 
