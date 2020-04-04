@@ -3191,7 +3191,7 @@ struct sk_buff *dev_hard_start_xmit(struct sk_buff *first, struct net_device *de
 	while (skb) {
 		struct sk_buff *next = skb->next;
 
-		skb->next = NULL;
+		skb_mark_not_on_list(skb);
 		rc = xmit_one(skb, dev, txq, next != NULL);
 		if (unlikely(!dev_xmit_complete(rc))) {
 			skb->next = next;
@@ -3291,7 +3291,7 @@ struct sk_buff *validate_xmit_skb_list(struct sk_buff *skb, struct net_device *d
 
 	for (; skb != NULL; skb = next) {
 		next = skb->next;
-		skb->next = NULL;
+		skb_mark_not_on_list(skb);
 
 		/* in case skb wont be segmented, point to itself */
 		skb->prev = skb;
@@ -5107,7 +5107,7 @@ void napi_gro_flush(struct napi_struct *napi, bool flush_old)
 		if (flush_old && NAPI_GRO_CB(skb)->age == jiffies)
 			return;
 		list_del(&skb->list);
-		skb->next = NULL;
+		skb_mark_not_on_list(skb);
 		napi_gro_complete(skb);
 		napi->gro_count--;
 	}
@@ -5258,7 +5258,7 @@ static enum gro_result dev_gro_receive(struct napi_struct *napi, struct sk_buff 
 
 	if (pp) {
 		list_del(&pp->list);
-		pp->next = NULL;
+		skb_mark_not_on_list(pp);
 		napi_gro_complete(pp);
 		napi->gro_count--;
 	}
