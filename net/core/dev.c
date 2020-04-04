@@ -5106,8 +5106,7 @@ void napi_gro_flush(struct napi_struct *napi, bool flush_old)
 	list_for_each_entry_safe_reverse(skb, p, &napi->gro_list, list) {
 		if (flush_old && NAPI_GRO_CB(skb)->age == jiffies)
 			return;
-		list_del(&skb->list);
-		skb_mark_not_on_list(skb);
+		skb_list_del_init(skb);
 		napi_gro_complete(skb);
 		napi->gro_count--;
 	}
@@ -5257,8 +5256,7 @@ static enum gro_result dev_gro_receive(struct napi_struct *napi, struct sk_buff 
 	ret = NAPI_GRO_CB(skb)->free ? GRO_MERGED_FREE : GRO_MERGED;
 
 	if (pp) {
-		list_del(&pp->list);
-		skb_mark_not_on_list(pp);
+		skb_list_del_init(pp);
 		napi_gro_complete(pp);
 		napi->gro_count--;
 	}
