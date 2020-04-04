@@ -5271,7 +5271,7 @@ static enum gro_result dev_gro_receive(struct napi_struct *napi, struct sk_buff 
 		struct sk_buff *nskb;
 
 		nskb = list_last_entry(&napi->gro_list, struct sk_buff, list);
-		list_del(&nskb->list);
+		skb_list_del_init(nskb);
 		napi_gro_complete(nskb);
 	} else {
 		napi->gro_count++;
