@@ -18,6 +18,8 @@ struct seq_file;
 struct gpio_device;
 struct module;
 
+struct gpio_chip;
+
 #ifdef CONFIG_GPIOLIB
 
 #ifdef CONFIG_GPIOLIB_IRQCHIP
@@ -115,6 +117,14 @@ struct gpio_irq_chip {
 	 * True if set the interrupt handling uses nested threads.
 	 */
 	bool threaded;
+
+	/**
+	 * @init_hw: optional routine to initialize hardware before
+	 * an IRQ chip will be added. This is quite useful when
+	 * a particular driver wants to clear IRQ related registers
+	 * in order to avoid undesired events.
+	 */
+	int (*init_hw)(struct gpio_chip *chip);
 
 	/**
 	 * @init_valid_mask: optional routine to initialize @valid_mask, to be
