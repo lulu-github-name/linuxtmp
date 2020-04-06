@@ -387,6 +387,14 @@ static void gpiochip_free_valid_mask(struct gpio_chip *gpiochip)
 	gpiochip->valid_mask = NULL;
 }
 
+static int gpiochip_add_pin_ranges(struct gpio_chip *gc)
+{
+	if (gc->add_pin_ranges)
+		return gc->add_pin_ranges(gc);
+
+	return 0;
+}
+
 bool gpiochip_line_is_valid(const struct gpio_chip *gpiochip,
 				unsigned int offset)
 {
@@ -1370,6 +1378,10 @@ int gpiochip_add_data_with_key(struct gpio_chip *chip, void *data,
 		goto err_remove_chip;
 
 	status = of_gpiochip_add(chip);
+	if (status)
+		goto err_remove_chip;
+
+	status = gpiochip_add_pin_ranges(chip);
 	if (status)
 		goto err_remove_chip;
 
