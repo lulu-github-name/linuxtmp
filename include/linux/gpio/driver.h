@@ -162,6 +162,9 @@ static inline struct gpio_irq_chip *to_gpio_irq_chip(struct irq_chip *chip)
 }
 #endif
 
+#define GPIO_LINE_DIRECTION_IN	1
+#define GPIO_LINE_DIRECTION_OUT	0
+
 /**
  * struct gpio_chip - abstract a GPIO controller
  * @label: a functional name for the GPIO device, such as a part
