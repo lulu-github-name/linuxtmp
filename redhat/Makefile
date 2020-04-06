@@ -409,7 +409,7 @@ rh-full-help:
 		$$(sed -n 's/.*--target \([^ ]*\).*/\1/p' Makefile.cross | sort -u)
 	@echo  '  rh-cross-all-rpms     - [x86_64 only] execute rpm builds for all supported'
 	@echo  '                          archs using RHEL cross compiler.'
-	@echo  '  rh-cross-<arch>-rpm   - [x86_64 only] execute rpm builds for specified'
+	@echo  '  rh-cross-<arch>-rpms  - [x86_64 only] execute rpm builds for specified'
 	@echo  '                          <arch> using RHEL cross compiler.'
 	@echo  '                          See rh-cross-<arch>-build for the supported archs.'
 
