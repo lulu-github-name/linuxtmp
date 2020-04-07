@@ -6267,15 +6267,6 @@ static int mlxsw_sp_router_fib_event(struct notifier_block *nb,
 			NL_SET_ERR_MSG_MOD(info->extack, "FIB offload was aborted. Not configuring route");
 			return notifier_from_errno(-EINVAL);
 		}
-		if (info->family == AF_INET6) {
-			struct fib6_entry_notifier_info *fen6_info;
-
-			fen6_info = container_of(info,
-						 struct fib6_entry_notifier_info,
-						 info);
-			if (fen6_info->multipath_rt)
-				return NOTIFY_DONE;
-		}
 		break;
 	}
 
