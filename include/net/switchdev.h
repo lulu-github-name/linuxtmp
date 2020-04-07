@@ -135,12 +135,12 @@ struct switchdev_ops_extended_rh {
  *
  * @switchdev_port_attr_set: Set a port attribute (see switchdev_attr).
  */
-struct switchdev_ops {
+struct RH_KABI_RENAME(switchdev_ops, rh_deprecated_switchdev_ops) {
 	RH_KABI_DEPRECATE_FN(int, switchdev_port_attr_get, struct net_device *dev,
 					   struct switchdev_attr *attr)
-	int	(*switchdev_port_attr_set)(struct net_device *dev,
+	RH_KABI_DEPRECATE_FN(int, switchdev_port_attr_set, struct net_device *dev,
 					   const struct switchdev_attr *attr,
-					   struct switchdev_trans *trans);
+					   struct switchdev_trans *trans)
 	RH_KABI_DEPRECATE_FN(int, switchdev_port_obj_add, struct net_device *dev,
 					  const struct switchdev_obj *obj,
 					  struct switchdev_trans *trans)
@@ -260,9 +260,6 @@ int switchdev_handle_port_attr_set(struct net_device *dev,
 			int (*set_cb)(struct net_device *dev,
 				      const struct switchdev_attr *attr,
 				      struct switchdev_trans *trans));
-
-#define SWITCHDEV_SET_OPS(netdev, ops) ((netdev)->switchdev_ops = (ops))
-
 #else
 
 static inline void switchdev_deferred_process(void)
@@ -359,9 +356,6 @@ switchdev_handle_port_attr_set(struct net_device *dev,
 {
 	return 0;
 }
-
-#define SWITCHDEV_SET_OPS(netdev, ops) do {} while (0)
-
 #endif
 
 #endif /* _LINUX_SWITCHDEV_H_ */
