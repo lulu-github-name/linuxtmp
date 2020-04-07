@@ -729,6 +729,7 @@ TRACE_EVENT(xprtrdma_post_send,
 
 	TP_STRUCT__entry(
 		__field(const void *, req)
+		__field(const void *, sc)
 		__field(unsigned int, task_id)
 		__field(unsigned int, client_id)
 		__field(int, num_sge)
@@ -742,14 +743,15 @@ TRACE_EVENT(xprtrdma_post_send,
 		__entry->task_id = rqst->rq_task->tk_pid;
 		__entry->client_id = rqst->rq_task->tk_client->cl_clid;
 		__entry->req = req;
+		__entry->sc = req->rl_sendctx;
 		__entry->num_sge = req->rl_wr.num_sge;
 		__entry->signaled = req->rl_wr.send_flags & IB_SEND_SIGNALED;
 		__entry->status = status;
 	),
 
-	TP_printk("task:%u@%u req=%p (%d SGE%s) %sstatus=%d",
+	TP_printk("task:%u@%u req=%p sc=%p (%d SGE%s) %sstatus=%d",
 		__entry->task_id, __entry->client_id,
-		__entry->req, __entry->num_sge,
+		__entry->req, __entry->sc, __entry->num_sge,
 		(__entry->num_sge == 1 ? "" : "s"),
 		(__entry->signaled ? "signaled " : ""),
 		__entry->status
@@ -848,6 +850,7 @@ TRACE_EVENT(xprtrdma_wc_send,
 
 	TP_STRUCT__entry(
 		__field(const void *, req)
+		__field(const void *, sc)
 		__field(unsigned int, unmap_count)
 		__field(unsigned int, status)
 		__field(unsigned int, vendor_err)
@@ -855,13 +858,14 @@ TRACE_EVENT(xprtrdma_wc_send,
 
 	TP_fast_assign(
 		__entry->req = sc->sc_req;
+		__entry->sc = sc;
 		__entry->unmap_count = sc->sc_unmap_count;
 		__entry->status = wc->status;
 		__entry->vendor_err = __entry->status ? wc->vendor_err : 0;
 	),
 
-	TP_printk("req=%p, unmapped %u pages: %s (%u/0x%x)",
-		__entry->req, __entry->unmap_count,
+	TP_printk("req=%p sc=%p unmapped=%u: %s (%u/0x%x)",
+		__entry->req, __entry->sc, __entry->unmap_count,
 		rdma_show_wc_status(__entry->status),
 		__entry->status, __entry->vendor_err
 	)
