@@ -42,6 +42,9 @@ struct ipv6_stub {
 	u32 (*ip6_mtu_from_fib6)(struct fib6_info *f6i, struct in6_addr *daddr,
 				 struct in6_addr *saddr);
 
+	void (*fib6_rt_update)(struct net *net, struct fib6_info *rt,
+			       struct nl_info *info);
+
 	void (*udpv6_encap_enable)(void);
 	void (*ndisc_send_na)(struct net_device *dev, const struct in6_addr *daddr,
 			      const struct in6_addr *solicited_addr,
