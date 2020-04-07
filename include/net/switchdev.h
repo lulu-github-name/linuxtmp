@@ -49,7 +49,8 @@ enum switchdev_attr_id {
 		       RH_DEPRECATED_SWITCHDEV_ATTR_ID_PORT_PARENT_ID),
 	SWITCHDEV_ATTR_ID_PORT_STP_STATE,
 	SWITCHDEV_ATTR_ID_PORT_BRIDGE_FLAGS,
-	SWITCHDEV_ATTR_ID_PORT_BRIDGE_FLAGS_SUPPORT,
+	RH_KABI_RENAME(SWITCHDEV_ATTR_ID_PORT_BRIDGE_FLAGS_SUPPORT,
+		       RH_DEPRECATED_SWITCHDEV_ATTR_ID_PORT_BRIDGE_FLAGS_SUPPORT),
 	SWITCHDEV_ATTR_ID_PORT_MROUTER,
 	SWITCHDEV_ATTR_ID_BRIDGE_AGEING_TIME,
 	SWITCHDEV_ATTR_ID_BRIDGE_VLAN_FILTERING,
@@ -70,7 +71,7 @@ struct switchdev_attr {
 		RH_KABI_DEPRECATE(struct netdev_phys_item_id, ppid)
 		u8 stp_state;				/* PORT_STP_STATE */
 		unsigned long brport_flags;		/* PORT_{PRE}_BRIDGE_FLAGS */
-		unsigned long brport_flags_support;	/* PORT_BRIDGE_FLAGS_SUPPORT */
+		RH_KABI_DEPRECATE(unsigned long, brport_flags_support)
 		bool mrouter;				/* PORT_MROUTER */
 		clock_t ageing_time;			/* BRIDGE_AGEING_TIME */
 		bool vlan_filtering;			/* BRIDGE_VLAN_FILTERING */
