@@ -986,6 +986,11 @@ struct dev_ifalias {
 	char ifalias[];
 };
 
+struct netdev_net_notifier {
+	struct list_head list;
+	struct notifier_block *nb;
+};
+
 struct net_device_ops_extended_rh {
 };
 struct devlink;
@@ -1897,6 +1902,10 @@ struct net_device_extended_rh {
  *
  *	@wol_enabled:	Wake-on-LAN is enabled
  *
+ *	@net_notifier_list:	List of per-net netdev notifier block
+ *				that follow this device when it is moved
+ *				to another network namespace.
+ *
  *	FIXME: cleanup struct net_device such that network protocol info
  *	moves out.
  */
@@ -2207,8 +2216,7 @@ struct net_device {
 	/* 4 bytes hole remain prior RH_KABI reservations below */
 
 	RH_KABI_USE(1, struct mpls_dev __rcu   *mpls_ptr)
-	RH_KABI_RESERVE(2)
-	RH_KABI_RESERVE(3)
+	RH_KABI_USE(2, 3, struct list_head	net_notifier_list)
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
@@ -2673,6 +2681,12 @@ int unregister_netdevice_notifier(struct notifier_block *nb);
 int register_netdevice_notifier_net(struct net *net, struct notifier_block *nb);
 int unregister_netdevice_notifier_net(struct net *net,
 				      struct notifier_block *nb);
+int register_netdevice_notifier_dev_net(struct net_device *dev,
+					struct notifier_block *nb,
+					struct netdev_net_notifier *nn);
+int unregister_netdevice_notifier_dev_net(struct net_device *dev,
+					  struct notifier_block *nb,
+					  struct netdev_net_notifier *nn);
 
 struct netdev_notifier_info {
 	struct net_device	*dev;
