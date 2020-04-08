@@ -1100,7 +1100,7 @@ struct task_struct {
 
 	struct tlbflush_unmap_batch	tlb_ubc;
 
-	RH_KABI_REPLACE_UNSAFE(struct rcu_head rcu, union {
+	RH_KABI_REPLACE(struct rcu_head rcu, union {
 		refcount_t		rcu_users;
 		struct rcu_head		rcu;
 	})
