@@ -1492,6 +1492,10 @@ struct super_block {
 
 	spinlock_t		s_inode_wblist_lock;
 	struct list_head	s_inodes_wb;	/* writeback inodes */
+
+	/* Time limits for c/m/atime in seconds */
+	RH_KABI_EXTEND(time64_t	s_time_min)
+	RH_KABI_EXTEND(time64_t	s_time_max)
 } __randomize_layout;
 
 /* Helper functions so that in most cases filesystems will
