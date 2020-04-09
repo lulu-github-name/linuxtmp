@@ -1454,6 +1454,7 @@ int tipc_node_xmit(struct net *net, struct sk_buff_head *list,
 	int rc;
 
 	if (in_own_node(net, dnode)) {
+		tipc_loopback_trace(net, list);
 		spin_lock_init(&list->lock);
 		tipc_sk_rcv(net, list);
 		return 0;
