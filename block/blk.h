@@ -31,6 +31,7 @@ struct blk_flush_queue {
 	struct request		*orig_rq;
 	spinlock_t		mq_flush_lock;
 	RH_KABI_EXTEND(blk_status_t 		rq_status)
+	RH_KABI_EXTEND(struct lock_class_key	key)
 };
 
 extern struct kmem_cache *blk_requestq_cachep;
