@@ -123,6 +123,9 @@ enum mq_rq_state {
 	MQ_RQ_COMPLETE		= 2,
 };
 
+struct request_aux {
+};
+
 /*
  * Try to put the fields that are referenced together in the same cacheline.
  *
@@ -243,6 +246,8 @@ struct request {
 	/* for bidi */
 	struct request *next_rq;
 };
+
+extern struct request_aux *blk_rq_aux(const struct request *rq);
 
 static inline bool blk_op_is_scsi(unsigned int op)
 {

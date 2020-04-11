@@ -337,4 +337,10 @@ void blk_queue_free_zone_bitmaps(struct request_queue *q);
 static inline void blk_queue_free_zone_bitmaps(struct request_queue *q) {}
 #endif
 
+/* internal helper for accessing request_aux  */
+static inline struct request_aux *rq_aux(const struct request *rq)
+{
+	return (struct request_aux *)((void *)rq - sizeof(struct request_aux));
+}
+
 #endif /* BLK_INTERNAL_H */

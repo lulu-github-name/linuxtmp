@@ -1750,6 +1750,15 @@ void blk_finish_plug(struct blk_plug *plug)
 }
 EXPORT_SYMBOL(blk_finish_plug);
 
+/*
+ * For 3rd party modules to access the extended fields of 'struct request'
+ */
+struct request_aux *blk_rq_aux(const struct request *rq)
+{
+	return (struct request_aux *)((void *)rq - sizeof(struct request_aux));
+}
+EXPORT_SYMBOL(blk_rq_aux);
+
 int __init blk_dev_init(void)
 {
 	BUILD_BUG_ON(REQ_OP_LAST >= (1 << REQ_OP_BITS));
