@@ -286,7 +286,6 @@ struct irq_affinity;
 struct pcie_link_state;
 struct pci_vpd;
 struct pci_sriov;
-struct pci_ats;
 struct pci_p2pdma;
 
 struct pci_dev_extended_rh {
@@ -1623,19 +1622,6 @@ static inline bool pci_aer_available(void) { return false; }
 #endif
 
 bool pci_ats_disabled(void);
-
-#ifdef CONFIG_PCI_ATS
-/* Address Translation Service */
-int pci_enable_ats(struct pci_dev *dev, int ps);
-void pci_disable_ats(struct pci_dev *dev);
-int pci_ats_queue_depth(struct pci_dev *dev);
-int pci_ats_page_aligned(struct pci_dev *dev);
-#else
-static inline int pci_enable_ats(struct pci_dev *d, int ps) { return -ENODEV; }
-static inline void pci_disable_ats(struct pci_dev *d) { }
-static inline int pci_ats_queue_depth(struct pci_dev *d) { return -ENODEV; }
-static inline int pci_ats_page_aligned(struct pci_dev *dev) { return 0; }
-#endif
 
 void pci_cfg_access_lock(struct pci_dev *dev);
 bool pci_cfg_access_trylock(struct pci_dev *dev);
