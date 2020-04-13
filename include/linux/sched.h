@@ -258,6 +258,7 @@ struct vtime {
 	seqcount_t		seqcount;
 	unsigned long long	starttime;
 	enum vtime_state	state;
+	/* cpu is defined in struct task_struct->task_struct_rh->vtime_cpu */
 	u64			utime;
 	u64			stime;
 	u64			gtime;
@@ -576,6 +577,8 @@ struct wake_q_node {
 struct task_struct_rh {
 	/* Empty if CONFIG_POSIX_CPUTIMERS=n */
 	struct posix_cputimers posix_cputimers;
+	/* struct vtime->cpu */
+	unsigned int vtime_cpu;
 };
 
 struct task_struct {
