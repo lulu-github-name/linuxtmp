@@ -477,7 +477,9 @@ struct pci_dev {
 #ifdef CONFIG_PCI_PRI
 	RH_KABI_USE(1, u16  pri_cap)	/* PRI Capability offset */
 #endif
-	RH_KABI_RESERVE(2)
+#ifdef CONFIG_PCI_PASID
+	RH_KABI_USE(2, u16  pasid_cap)	/* PASID Capability offset */
+#endif
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
