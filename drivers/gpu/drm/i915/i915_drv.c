@@ -910,8 +910,7 @@ static int i915_driver_init_early(struct drm_i915_private *dev_priv)
 	mutex_init(&dev_priv->backlight_lock);
 
 	mutex_init(&dev_priv->sb_lock);
-	pm_qos_add_request(&dev_priv->sb_qos,
-			   PM_QOS_CPU_DMA_LATENCY, PM_QOS_DEFAULT_VALUE);
+	cpu_latency_qos_add_request(&dev_priv->sb_qos, PM_QOS_DEFAULT_VALUE);
 
 	mutex_init(&dev_priv->av_mutex);
 	mutex_init(&dev_priv->wm.wm_mutex);
@@ -973,7 +972,7 @@ static void i915_driver_cleanup_early(struct drm_i915_private *dev_priv)
 	i915_workqueues_cleanup(dev_priv);
 	i915_engines_cleanup(dev_priv);
 
-	pm_qos_remove_request(&dev_priv->sb_qos);
+	cpu_latency_qos_remove_request(&dev_priv->sb_qos);
 	mutex_destroy(&dev_priv->sb_lock);
 }
 
@@ -1635,8 +1634,7 @@ static int i915_driver_init_hw(struct drm_i915_private *dev_priv)
 		}
 	}
 
-	pm_qos_add_request(&dev_priv->pm_qos, PM_QOS_CPU_DMA_LATENCY,
-			   PM_QOS_DEFAULT_VALUE);
+	cpu_latency_qos_add_request(&dev_priv->pm_qos, PM_QOS_DEFAULT_VALUE);
 
 	intel_uncore_sanitize(dev_priv);
 
@@ -1684,7 +1682,7 @@ static int i915_driver_init_hw(struct drm_i915_private *dev_priv)
 err_msi:
 	if (pdev->msi_enabled)
 		pci_disable_msi(pdev);
-	pm_qos_remove_request(&dev_priv->pm_qos);
+	cpu_latency_qos_remove_request(&dev_priv->pm_qos);
 err_ggtt:
 	i915_ggtt_cleanup_hw(dev_priv);
 err_perf:
@@ -1705,7 +1703,7 @@ static void i915_driver_cleanup_hw(struct drm_i915_private *dev_priv)
 	if (pdev->msi_enabled)
 		pci_disable_msi(pdev);
 
-	pm_qos_remove_request(&dev_priv->pm_qos);
+	cpu_latency_qos_remove_request(&dev_priv->pm_qos);
 }
 
 /**
