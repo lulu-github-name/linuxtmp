@@ -430,6 +430,9 @@ struct pci_dev {
 	RH_KABI_FILL_HOLE(unsigned int	io_window:1)	/* Bridge has I/O window */
 	RH_KABI_FILL_HOLE(unsigned int	pref_window:1)	/* Bridge has pref mem window */
 	RH_KABI_FILL_HOLE(unsigned int	pref_64_window:1)/* Pref mem window is 64-bit */
+#ifdef CONFIG_PCI_PRI
+	RH_KABI_FILL_HOLE(unsigned int  pasid_required:1) /* PRG Response PASID Required */
+#endif
 	pci_dev_flags_t dev_flags;
 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
 
