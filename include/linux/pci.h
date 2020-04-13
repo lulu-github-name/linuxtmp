@@ -474,7 +474,9 @@ struct pci_dev {
 
 	unsigned long	priv_flags;	/* Private flags for the PCI driver */
 
-	RH_KABI_RESERVE(1)
+#ifdef CONFIG_PCI_PRI
+	RH_KABI_USE(1, u16  pri_cap)	/* PRI Capability offset */
+#endif
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
