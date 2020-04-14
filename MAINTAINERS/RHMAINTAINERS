@@ -100,7 +100,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 8.0 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
+M:	Brian Masney <bmasney@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git rhel-8.0.0
 S:	Maintained
 F:	redhat/
@@ -160,7 +160,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 7.4 Kernel Maintainer
-M:	Denys Vlasenko <dvlasenk@redhat.com>
+M:	Brian Masney <bmasney@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-7.4.z.git
 S:	Maintained
 F:	redhat/
