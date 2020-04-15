@@ -930,7 +930,7 @@ alloc_histograms:
 }
 
 static int symbol__inc_addr_samples(struct symbol *sym, struct map *map,
-				    struct perf_evsel *evsel, u64 addr,
+				    struct evsel *evsel, u64 addr,
 				    struct perf_sample *sample)
 {
 	struct annotated_source *src;
@@ -1081,13 +1081,13 @@ void annotation__compute_ipc(struct annotation *notes, size_t size)
 }
 
 int addr_map_symbol__inc_samples(struct addr_map_symbol *ams, struct perf_sample *sample,
-				 struct perf_evsel *evsel)
+				 struct evsel *evsel)
 {
 	return symbol__inc_addr_samples(ams->sym, ams->map, evsel, ams->al_addr, sample);
 }
 
 int hist_entry__inc_addr_samples(struct hist_entry *he, struct perf_sample *sample,
-				 struct perf_evsel *evsel, u64 ip)
+				 struct evsel *evsel, u64 ip)
 {
 	return symbol__inc_addr_samples(he->ms.sym, he->ms.map, evsel, ip, sample);
 }
@@ -1135,7 +1135,7 @@ struct annotate_args {
 	size_t			 privsize;
 	struct arch		*arch;
 	struct map_symbol	 ms;
-	struct perf_evsel	*evsel;
+	struct evsel	*evsel;
 	struct annotation_options *options;
 	s64			 offset;
 	char			*line;
@@ -1166,7 +1166,7 @@ static struct annotation_line *
 annotation_line__new(struct annotate_args *args, size_t privsize)
 {
 	struct annotation_line *al;
-	struct perf_evsel *evsel = args->evsel;
+	struct evsel *evsel = args->evsel;
 	size_t size = privsize + sizeof(*al);
 	int nr = 1;
 
@@ -1360,7 +1360,7 @@ static int disasm_line__print(struct disasm_line *dl, u64 start, int addr_fmt_wi
 
 static int
 annotation_line__print(struct annotation_line *al, struct symbol *sym, u64 start,
-		       struct perf_evsel *evsel, u64 len, int min_pcnt, int printed,
+		       struct evsel *evsel, u64 len, int min_pcnt, int printed,
 		       int max_lines, struct annotation_line *queue, int addr_fmt_width,
 		       int percent_type)
 {
@@ -2012,10 +2012,10 @@ static void calc_percent(struct sym_hist *sym_hist,
 }
 
 static void annotation__calc_percent(struct annotation *notes,
-				     struct perf_evsel *leader, s64 len)
+				     struct evsel *leader, s64 len)
 {
 	struct annotation_line *al, *next;
-	struct perf_evsel *evsel;
+	struct evsel *evsel;
 
 	list_for_each_entry(al, &notes->src->source, node) {
 		s64 end;
@@ -2042,7 +2042,7 @@ static void annotation__calc_percent(struct annotation *notes,
 	}
 }
 
-void symbol__calc_percent(struct symbol *sym, struct perf_evsel *evsel)
+void symbol__calc_percent(struct symbol *sym, struct evsel *evsel)
 {
 	struct annotation *notes = symbol__annotation(sym);
 
@@ -2050,7 +2050,7 @@ void symbol__calc_percent(struct symbol *sym, struct perf_evsel *evsel)
 }
 
 int symbol__annotate(struct symbol *sym, struct map *map,
-		     struct perf_evsel *evsel, size_t privsize,
+		     struct evsel *evsel, size_t privsize,
 		     struct annotation_options *options,
 		     struct arch **parch)
 {
@@ -2215,7 +2215,7 @@ static void print_summary(struct rb_root *root, const char *filename)
 	}
 }
 
-static void symbol__annotate_hits(struct symbol *sym, struct perf_evsel *evsel)
+static void symbol__annotate_hits(struct symbol *sym, struct evsel *evsel)
 {
 	struct annotation *notes = symbol__annotation(sym);
 	struct sym_hist *h = annotation__histogram(notes, evsel->idx);
@@ -2242,7 +2242,7 @@ static int annotated_source__addr_fmt_width(struct list_head *lines, u64 start)
 }
 
 int symbol__annotate_printf(struct symbol *sym, struct map *map,
-			    struct perf_evsel *evsel,
+			    struct evsel *evsel,
 			    struct annotation_options *opts)
 {
 	struct dso *dso = map->dso;
@@ -2406,7 +2406,7 @@ static int symbol__annotate_fprintf2(struct symbol *sym, FILE *fp,
 	return 0;
 }
 
-int map_symbol__annotation_dump(struct map_symbol *ms, struct perf_evsel *evsel,
+int map_symbol__annotation_dump(struct map_symbol *ms, struct evsel *evsel,
 				struct annotation_options *opts)
 {
 	const char *ev_name = perf_evsel__name(evsel);
@@ -2658,7 +2658,7 @@ static void symbol__calc_lines(struct symbol *sym, struct map *map,
 }
 
 int symbol__tty_annotate2(struct symbol *sym, struct map *map,
-			  struct perf_evsel *evsel,
+			  struct evsel *evsel,
 			  struct annotation_options *opts)
 {
 	struct dso *dso = map->dso;
@@ -2686,7 +2686,7 @@ int symbol__tty_annotate2(struct symbol *sym, struct map *map,
 }
 
 int symbol__tty_annotate(struct symbol *sym, struct map *map,
-			 struct perf_evsel *evsel,
+			 struct evsel *evsel,
 			 struct annotation_options *opts)
 {
 	struct dso *dso = map->dso;
@@ -2957,7 +2957,7 @@ void annotation_line__write(struct annotation_line *al, struct annotation *notes
 				 wops->write_graph);
 }
 
-int symbol__annotate2(struct symbol *sym, struct map *map, struct perf_evsel *evsel,
+int symbol__annotate2(struct symbol *sym, struct map *map, struct evsel *evsel,
 		      struct annotation_options *options, struct arch **parch)
 {
 	struct annotation *notes = symbol__annotation(sym);
