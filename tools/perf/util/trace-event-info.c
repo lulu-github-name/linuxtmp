@@ -18,7 +18,7 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "util.h"
+#include "util.h" // page_size
 #include <dirent.h>
 #include <mntent.h>
 #include <stdio.h>

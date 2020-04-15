@@ -34,6 +34,7 @@
 #include "ui/progress.h"
 #include "../perf.h"
 #include "arch/common.h"
+#include <internal/lib.h>
 #include <linux/err.h>
 
 #ifdef HAVE_ZSTD_SUPPORT

@@ -7,7 +7,6 @@
  */
 
 #include "target.h"
-#include "util.h"
 
 #include <pwd.h>
 #include <stdio.h>
