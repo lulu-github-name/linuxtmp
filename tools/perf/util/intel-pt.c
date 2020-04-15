@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <linux/kernel.h>
+#include <linux/string.h>
 #include <linux/types.h>
 #include <linux/zalloc.h>
 

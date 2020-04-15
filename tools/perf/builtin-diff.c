@@ -25,6 +25,7 @@
 #include "util/map.h"
 #include <linux/err.h>
 #include <linux/zalloc.h>
+#include <subcmd/pager.h>
 #include <subcmd/parse-options.h>
 
 #include <errno.h>

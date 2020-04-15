@@ -54,6 +54,7 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <linux/err.h>
+#include <linux/string.h>
 #include <linux/time64.h>
 #include <linux/zalloc.h>
 

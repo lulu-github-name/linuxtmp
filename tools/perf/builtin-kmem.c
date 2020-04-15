@@ -15,6 +15,7 @@
 #include "util/time-utils.h"
 #include <linux/err.h>
 
+#include <subcmd/pager.h>
 #include <subcmd/parse-options.h>
 #include "util/trace-event.h"
 #include "util/data.h"
