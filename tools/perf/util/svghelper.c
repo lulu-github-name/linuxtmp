@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <linux/bitmap.h>
+#include <linux/string.h>
 #include <linux/time64.h>
 #include <linux/zalloc.h>
 #include <perf/cpumap.h>
