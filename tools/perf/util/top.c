@@ -6,7 +6,6 @@
  * Released under the GPL v2. (and only v2, not any later version)
  */
 
-#include "cpumap.h"
 #include "event.h"
 #include "evlist.h"
 #include "evsel.h"
