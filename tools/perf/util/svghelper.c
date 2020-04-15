@@ -730,7 +730,7 @@ static int str_to_bitmap(char *s, cpumask_t *b, int nr_cpus)
 {
 	int i;
 	int ret = 0;
-	struct cpu_map *m;
+	struct perf_cpu_map *m;
 	int c;
 
 	m = cpu_map__new(s);
