@@ -886,21 +886,21 @@ static int perf_stat_init_aggr_mode(void)
 
 	switch (stat_config.aggr_mode) {
 	case AGGR_SOCKET:
-		if (cpu_map__build_socket_map(evsel_list->cpus, &stat_config.aggr_map)) {
+		if (cpu_map__build_socket_map(evsel_list->core.cpus, &stat_config.aggr_map)) {
 			perror("cannot build socket map");
 			return -1;
 		}
 		stat_config.aggr_get_id = perf_stat__get_socket_cached;
 		break;
 	case AGGR_DIE:
-		if (cpu_map__build_die_map(evsel_list->cpus, &stat_config.aggr_map)) {
+		if (cpu_map__build_die_map(evsel_list->core.cpus, &stat_config.aggr_map)) {
 			perror("cannot build die map");
 			return -1;
 		}
 		stat_config.aggr_get_id = perf_stat__get_die_cached;
 		break;
 	case AGGR_CORE:
-		if (cpu_map__build_core_map(evsel_list->cpus, &stat_config.aggr_map)) {
+		if (cpu_map__build_core_map(evsel_list->core.cpus, &stat_config.aggr_map)) {
 			perror("cannot build core map");
 			return -1;
 		}
@@ -908,7 +908,7 @@ static int perf_stat_init_aggr_mode(void)
 		break;
 	case AGGR_NONE:
 		if (term_percore_set()) {
-			if (cpu_map__build_core_map(evsel_list->cpus,
+			if (cpu_map__build_core_map(evsel_list->core.cpus,
 						    &stat_config.aggr_map)) {
 				perror("cannot build core map");
 				return -1;
@@ -928,7 +928,7 @@ static int perf_stat_init_aggr_mode(void)
 	 * taking the highest cpu number to be the size of
 	 * the aggregation translate cpumap.
 	 */
-	nr = cpu_map__get_max(evsel_list->cpus);
+	nr = cpu_map__get_max(evsel_list->core.cpus);
 	stat_config.cpus_aggr_map = cpu_map__empty_new(nr + 1);
 	return stat_config.cpus_aggr_map ? 0 : -ENOMEM;
 }
@@ -1059,21 +1059,21 @@ static int perf_stat_init_aggr_mode_file(struct perf_stat *st)
 
 	switch (stat_config.aggr_mode) {
 	case AGGR_SOCKET:
-		if (perf_env__build_socket_map(env, evsel_list->cpus, &stat_config.aggr_map)) {
+		if (perf_env__build_socket_map(env, evsel_list->core.cpus, &stat_config.aggr_map)) {
 			perror("cannot build socket map");
 			return -1;
 		}
 		stat_config.aggr_get_id = perf_stat__get_socket_file;
 		break;
 	case AGGR_DIE:
-		if (perf_env__build_die_map(env, evsel_list->cpus, &stat_config.aggr_map)) {
+		if (perf_env__build_die_map(env, evsel_list->core.cpus, &stat_config.aggr_map)) {
 			perror("cannot build die map");
 			return -1;
 		}
 		stat_config.aggr_get_id = perf_stat__get_die_file;
 		break;
 	case AGGR_CORE:
-		if (perf_env__build_core_map(env, evsel_list->cpus, &stat_config.aggr_map)) {
+		if (perf_env__build_core_map(env, evsel_list->core.cpus, &stat_config.aggr_map)) {
 			perror("cannot build core map");
 			return -1;
 		}
