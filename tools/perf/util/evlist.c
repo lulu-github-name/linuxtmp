@@ -1388,7 +1388,7 @@ out_put:
 	goto out;
 }
 
-int perf_evlist__open(struct evlist *evlist)
+int evlist__open(struct evlist *evlist)
 {
 	struct evsel *evsel;
 	int err;
