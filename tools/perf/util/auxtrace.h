@@ -26,7 +26,6 @@
 #include <asm/bitsperlong.h>
 #include <asm/barrier.h>
 
-#include "../perf.h"
 #include "event.h"
 #include "session.h"
 #include "debug.h"

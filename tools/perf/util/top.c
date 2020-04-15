@@ -13,6 +13,7 @@
 #include "parse-events.h"
 #include "symbol.h"
 #include "top.h"
+#include "../perf.h"
 #include <inttypes.h>
 
 #define SNPRINTF(buf, size, fmt, args...) \
