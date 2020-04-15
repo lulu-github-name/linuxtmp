@@ -178,7 +178,7 @@ static void perf_evlist__propagate_maps(struct evlist *evlist)
 		__perf_evlist__propagate_maps(evlist, evsel);
 }
 
-void perf_evlist__add(struct evlist *evlist, struct evsel *entry)
+void evlist__add(struct evlist *evlist, struct evsel *entry)
 {
 	entry->evlist = evlist;
 	list_add_tail(&entry->node, &evlist->entries);
@@ -205,7 +205,7 @@ void perf_evlist__splice_list_tail(struct evlist *evlist,
 
 	__evlist__for_each_entry_safe(list, temp, evsel) {
 		list_del_init(&evsel->node);
-		perf_evlist__add(evlist, evsel);
+		evlist__add(evlist, evsel);
 	}
 }
 
@@ -238,7 +238,7 @@ int __perf_evlist__add_default(struct evlist *evlist, bool precise)
 	if (evsel == NULL)
 		return -ENOMEM;
 
-	perf_evlist__add(evlist, evsel);
+	evlist__add(evlist, evsel);
 	return 0;
 }
 
@@ -254,11 +254,11 @@ int perf_evlist__add_dummy(struct evlist *evlist)
 	if (evsel == NULL)
 		return -ENOMEM;
 
-	perf_evlist__add(evlist, evsel);
+	evlist__add(evlist, evsel);
 	return 0;
 }
 
-static int perf_evlist__add_attrs(struct evlist *evlist,
+static int evlist__add_attrs(struct evlist *evlist,
 				  struct perf_event_attr *attrs, size_t nr_attrs)
 {
 	struct evsel *evsel, *n;
@@ -290,7 +290,7 @@ int __perf_evlist__add_default_attrs(struct evlist *evlist,
 	for (i = 0; i < nr_attrs; i++)
 		event_attr_init(attrs + i);
 
-	return perf_evlist__add_attrs(evlist, attrs, nr_attrs);
+	return evlist__add_attrs(evlist, attrs, nr_attrs);
 }
 
 struct evsel *
@@ -331,7 +331,7 @@ int perf_evlist__add_newtp(struct evlist *evlist,
 		return -1;
 
 	evsel->handler = handler;
-	perf_evlist__add(evlist, evsel);
+	evlist__add(evlist, evsel);
 	return 0;
 }
 
@@ -1855,7 +1855,7 @@ int perf_evlist__add_sb_event(struct evlist **evlist,
 
 	evsel->side_band.cb = cb;
 	evsel->side_band.data = data;
-	perf_evlist__add(*evlist, evsel);
+	evlist__add(*evlist, evsel);
 	return 0;
 
 out_err:
