@@ -3045,7 +3045,7 @@ struct perf_env *perf_evsel__env(struct evsel *evsel)
 	return NULL;
 }
 
-static int store_evsel_ids(struct evsel *evsel, struct perf_evlist *evlist)
+static int store_evsel_ids(struct evsel *evsel, struct evlist *evlist)
 {
 	int cpu, thread;
 
@@ -3063,7 +3063,7 @@ static int store_evsel_ids(struct evsel *evsel, struct perf_evlist *evlist)
 	return 0;
 }
 
-int perf_evsel__store_ids(struct evsel *evsel, struct perf_evlist *evlist)
+int perf_evsel__store_ids(struct evsel *evsel, struct evlist *evlist)
 {
 	struct perf_cpu_map *cpus = evsel->cpus;
 	struct perf_thread_map *threads = evsel->threads;

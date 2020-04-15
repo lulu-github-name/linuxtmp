@@ -744,7 +744,7 @@ static bool verify_vcpu(int vcpu)
 static s64 perf_kvm__mmap_read_idx(struct perf_kvm_stat *kvm, int idx,
 				   u64 *mmap_time)
 {
-	struct perf_evlist *evlist = kvm->evlist;
+	struct evlist *evlist = kvm->evlist;
 	union perf_event *event;
 	struct perf_mmap *md;
 	u64 timestamp;
@@ -1013,7 +1013,7 @@ static int kvm_live_open_events(struct perf_kvm_stat *kvm)
 {
 	int err, rc = -1;
 	struct evsel *pos;
-	struct perf_evlist *evlist = kvm->evlist;
+	struct evlist *evlist = kvm->evlist;
 	char sbuf[STRERR_BUFSIZE];
 
 	perf_evlist__config(evlist, &kvm->opts, NULL);
@@ -1284,9 +1284,9 @@ kvm_events_report(struct perf_kvm_stat *kvm, int argc, const char **argv)
 }
 
 #ifdef HAVE_TIMERFD_SUPPORT
-static struct perf_evlist *kvm_live_event_list(void)
+static struct evlist *kvm_live_event_list(void)
 {
-	struct perf_evlist *evlist;
+	struct evlist *evlist;
 	char *tp, *name, *sys;
 	int err = -1;
 	const char * const *events_tp;
