@@ -138,7 +138,7 @@ static void perf_evlist__purge(struct evlist *evlist)
 	evlist->core.nr_entries = 0;
 }
 
-void perf_evlist__exit(struct evlist *evlist)
+void evlist__exit(struct evlist *evlist)
 {
 	zfree(&evlist->mmap);
 	zfree(&evlist->overwrite_mmap);
@@ -157,7 +157,7 @@ void evlist__delete(struct evlist *evlist)
 	evlist->core.cpus = NULL;
 	evlist->core.threads = NULL;
 	perf_evlist__purge(evlist);
-	perf_evlist__exit(evlist);
+	evlist__exit(evlist);
 	free(evlist);
 }
 
