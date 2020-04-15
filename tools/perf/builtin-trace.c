@@ -16,6 +16,7 @@
  * Released under the GPL v2. (and only v2, not any later version)
  */
 
+#include "util/record.h"
 #include <traceevent/event-parse.h>
 #include <api/fs/tracing_path.h>
 #include <bpf/bpf.h>

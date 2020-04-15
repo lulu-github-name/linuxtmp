@@ -35,6 +35,7 @@
 #include "thread_map.h"
 #include "target.h"
 #include "perf_regs.h"
+#include "record.h"
 #include "debug.h"
 #include "trace-event.h"
 #include "stat.h"

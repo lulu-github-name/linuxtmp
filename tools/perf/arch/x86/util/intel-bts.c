@@ -26,6 +26,7 @@
 #include "../../util/session.h"
 #include "../../util/pmu.h"
 #include "../../util/debug.h"
+#include "../../util/record.h"
 #include "../../util/tsc.h"
 #include "../../util/auxtrace.h"
 #include "../../util/intel-bts.h"

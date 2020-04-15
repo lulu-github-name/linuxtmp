@@ -35,7 +35,6 @@
 #include <linux/list.h>
 #include <linux/zalloc.h>
 
-#include "../perf.h"
 #include "evlist.h"
 #include "dso.h"
 #include "map.h"
@@ -50,6 +49,7 @@
 #include <linux/hash.h>
 
 #include "event.h"
+#include "record.h"
 #include "session.h"
 #include "debug.h"
 #include <subcmd/parse-options.h>

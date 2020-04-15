@@ -41,7 +41,6 @@
  * Released under the GPL v2. (and only v2, not any later version)
  */
 
-#include "perf.h"
 #include "builtin.h"
 #include "util/cgroup.h"
 #include <subcmd/parse-options.h>
@@ -63,6 +62,7 @@
 #include "util/tool.h"
 #include "util/string2.h"
 #include "util/metricgroup.h"
+#include "util/target.h"
 #include "util/top.h"
 #include "asm/bug.h"
 

@@ -22,7 +22,6 @@
 #include <linux/zalloc.h>
 #include <cpuid.h>
 
-#include "../../perf.h"
 #include "../../util/session.h"
 #include "../../util/event.h"
 #include "../../util/evlist.h"
@@ -33,6 +32,8 @@
 #include "../../util/pmu.h"
 #include "../../util/debug.h"
 #include "../../util/auxtrace.h"
+#include "../../util/record.h"
+#include "../../util/target.h"
 #include "../../util/tsc.h"
 #include "../../util/intel-pt.h"
 
