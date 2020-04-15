@@ -53,6 +53,7 @@
 #include <perf/evlist.h>
 #include <linux/err.h>
 #include "util/record.h"
+#include "util/util.h"
 
 #include <linux/ctype.h>
 
