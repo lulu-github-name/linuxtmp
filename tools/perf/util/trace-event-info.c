@@ -18,7 +18,6 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "util.h" // page_size
 #include <dirent.h>
 #include <mntent.h>
 #include <stdio.h>
@@ -35,6 +34,7 @@
 #include <linux/list.h>
 #include <linux/kernel.h>
 #include <linux/zalloc.h>
+#include <internal/lib.h> // page_size
 
 #include "trace-event.h"
 #include <api/fs/tracing_path.h>
