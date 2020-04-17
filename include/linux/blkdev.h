@@ -223,7 +223,7 @@ struct request {
 	unsigned short write_hint;
 	unsigned short ioprio;
 
-	void *special;		/* opaque pointer available for LLD use */
+	RH_KABI_DEPRECATE(void *, special)          /* opaque pointer available for LLD use */
 
 	unsigned int extra_len;	/* length of alignment and padding */
 
