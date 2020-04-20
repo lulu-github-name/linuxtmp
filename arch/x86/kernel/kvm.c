@@ -442,7 +442,27 @@ static void __init sev_map_percpu_data(void)
 	}
 }
 
+static bool pv_tlb_flush_supported(void)
+{
+	return (kvm_para_has_feature(KVM_FEATURE_PV_TLB_FLUSH) &&
+		!kvm_para_has_hint(KVM_HINTS_REALTIME) &&
+		kvm_para_has_feature(KVM_FEATURE_STEAL_TIME));
+}
+
 #ifdef CONFIG_SMP
+
+static bool pv_ipi_supported(void)
+{
+	return kvm_para_has_feature(KVM_FEATURE_PV_SEND_IPI);
+}
+
+static bool pv_sched_yield_supported(void)
+{
+	return (kvm_para_has_feature(KVM_FEATURE_PV_SCHED_YIELD) &&
+		!kvm_para_has_hint(KVM_HINTS_REALTIME) &&
+	    kvm_para_has_feature(KVM_FEATURE_STEAL_TIME));
+}
+
 #define KVM_IPI_CLUSTER_SIZE	(2 * BITS_PER_LONG)
 
 static void __send_ipi_mask(const struct cpumask *mask, int vector)
@@ -636,9 +656,7 @@ static void __init kvm_guest_init(void)
 		pv_time_ops.steal_clock = kvm_steal_clock;
 	}
 
-	if (kvm_para_has_feature(KVM_FEATURE_PV_TLB_FLUSH) &&
-	    !kvm_para_has_hint(KVM_HINTS_REALTIME) &&
-	    kvm_para_has_feature(KVM_FEATURE_STEAL_TIME)) {
+	if (pv_tlb_flush_supported()) {
 		pv_mmu_ops.flush_tlb_others = kvm_flush_tlb_others;
 		pv_mmu_ops.tlb_remove_table = tlb_remove_table;
 	}
@@ -649,9 +667,7 @@ static void __init kvm_guest_init(void)
 #ifdef CONFIG_SMP
 	smp_ops.smp_prepare_cpus = kvm_smp_prepare_cpus;
 	smp_ops.smp_prepare_boot_cpu = kvm_smp_prepare_boot_cpu;
-	if (kvm_para_has_feature(KVM_FEATURE_PV_SCHED_YIELD) &&
-	    !kvm_para_has_hint(KVM_HINTS_REALTIME) &&
-	    kvm_para_has_feature(KVM_FEATURE_STEAL_TIME)) {
+	if (pv_sched_yield_supported()) {
 		smp_ops.send_call_func_ipi = kvm_smp_send_call_func_ipi;
 		pr_info("KVM setup pv sched yield\n");
 	}
@@ -717,7 +733,7 @@ static uint32_t __init kvm_detect(void)
 static void __init kvm_apic_init(void)
 {
 #if defined(CONFIG_SMP)
-	if (kvm_para_has_feature(KVM_FEATURE_PV_SEND_IPI))
+	if (pv_ipi_supported())
 		kvm_setup_pv_ipi();
 #endif
 }
@@ -756,9 +772,7 @@ static __init int kvm_setup_pv_tlb_flush(void)
 	if (!kvm_para_available() || nopv)
 		return 0;
 
-	if (kvm_para_has_feature(KVM_FEATURE_PV_TLB_FLUSH) &&
-	    !kvm_para_has_hint(KVM_HINTS_REALTIME) &&
-	    kvm_para_has_feature(KVM_FEATURE_STEAL_TIME)) {
+	if (pv_tlb_flush_supported()) {
 		for_each_possible_cpu(cpu) {
 			zalloc_cpumask_var_node(per_cpu_ptr(&__pv_tlb_mask, cpu),
 				GFP_KERNEL, cpu_to_node(cpu));
