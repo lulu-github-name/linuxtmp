@@ -1213,7 +1213,7 @@ struct mem_section {
 	RH_KABI_REPLACE(
 		unsigned long *pageblock_flags,
 		struct mem_section_usage *usage)
-#ifdef CONFIG_PAGE_EXTENSION
+#if defined(CONFIG_PAGE_EXTENSION) && !defined(__GENKSYMS__)
 	/*
 	 * If SPARSEMEM, pgdat doesn't have page_ext pointer. We use
 	 * section. (see page_ext.h about this.)
