@@ -5335,7 +5335,6 @@ static void vmx_enable_tdp(void)
 		VMX_EPT_RWX_MASK, 0ull);
 
 	ept_set_mmio_spte_mask();
-	kvm_enable_tdp();
 }
 
 /*
@@ -7777,8 +7776,7 @@ static __init int hardware_setup(void)
 
 	if (enable_ept)
 		vmx_enable_tdp();
-	else
-		kvm_disable_tdp();
+	kvm_configure_mmu(enable_ept);
 
 	/*
 	 * Only enable PML when hardware supports PML feature, and both EPT
