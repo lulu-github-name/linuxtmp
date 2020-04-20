@@ -844,10 +844,12 @@ struct task_struct {
 	unsigned long			min_flt;
 	unsigned long			maj_flt;
 
-#ifdef CONFIG_POSIX_TIMERS
 	RH_KABI_DEPRECATE(struct task_cputime, cputime_expires)
-	RH_KABI_DEPRECATE(struct list_head, cpu_timers[3])
+#ifdef CONFIG_FUTEX
+	RH_KABI_REPLACE(struct list_head	cpu_timers[3],
+			unsigned int		futex_state)
 #endif
+
 	/* Process credentials: */
 
 	/* Tracer's credentials at attach: */
@@ -1419,7 +1421,6 @@ extern struct pid *cad_pid;
  */
 #define PF_IDLE			0x00000002	/* I am an IDLE thread */
 #define PF_EXITING		0x00000004	/* Getting shut down */
-#define PF_EXITPIDONE		0x00000008	/* PI exit done on shut down */
 #define PF_VCPU			0x00000010	/* I'm a virtual CPU */
 #define PF_WQ_WORKER		0x00000020	/* I'm a workqueue worker */
 #define PF_FORKNOEXEC		0x00000040	/* Forked but didn't exec */
