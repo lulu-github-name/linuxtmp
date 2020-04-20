@@ -368,6 +368,18 @@ F:      drivers/bluetooth
 F:      include/net/bluetooth/
 F:      net/bluetooth
 
+BPF (Safe dynamic programs and tools)
+M:	Jiri Olsa <jolsa@redhat.com>
+M:	Yauheni Kaliuta <ykaliuta@redhat.com>
+L:	ktrace-team@redhat.com
+F:	arch/*/net/*
+F:	Documentation/networking/filter.txt
+F:	include/linux/filter.h
+F:	include/trace/events/xdp.h
+F:	include/uapi/linux/filter.h
+F:	net/core/filter.c
+N:	b[pt]f
+
 BROADCOM B44 10/100 ETHERNET DRIVER
 M:	Stanislaw Gruszka <sgruszka@redhat.com>
 S:	Maintained
@@ -1645,6 +1657,18 @@ F:	include/xen/
 F:	arch/x86/include/asm/xen/
 F:	arch/x86/pci/xen.c
 F:	arch/x86/xen/
+
+XDP (eXpress Data Path)
+M:	Jesper Dangaard Brouer <brouer@redhat.com>
+M:	Jiri Benc <jbenc@redhat.com>
+M:	Toke Høiland-Jørgensen <toke@redhat.com>
+L:	ebpf-xdp-discussions-rh-only@redhat.com
+F:	kernel/bpf/devmap.c
+F:	kernel/bpf/cpumap.c
+F:	include/net/page_pool.h
+F:	net/core/page_pool.c
+F:	net/core/sock_map.c
+N:	xdp
 
 ZBUD COMPRESSED PAGE ALLOCATOR
 M:	Steve Best <sbest@redhat.com>
