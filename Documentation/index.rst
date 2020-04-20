@@ -84,6 +84,7 @@ needed).
    infiniband/index
    media/index
    networking/index
+   virtual/index
    input/index
    gpu/index
    security/index
