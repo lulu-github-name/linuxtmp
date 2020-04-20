@@ -846,8 +846,9 @@ struct task_struct {
 
 	RH_KABI_DEPRECATE(struct task_cputime, cputime_expires)
 #ifdef CONFIG_FUTEX
-	RH_KABI_REPLACE(struct list_head	cpu_timers[3],
-			unsigned int		futex_state)
+	RH_KABI_REPLACE_SPLIT(struct list_head	cpu_timers[3],
+			      struct mutex	futex_exit_mutex,
+			      unsigned int	futex_state)
 #endif
 
 	/* Process credentials: */
