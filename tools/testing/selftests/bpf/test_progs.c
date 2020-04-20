@@ -11,14 +11,12 @@
 
 /* defined in test_progs.h */
 struct test_env env;
-int error_cnt, pass_cnt;
 
 struct prog_test_def {
 	const char *test_name;
 	int test_num;
 	void (*run_test)(void);
 	bool force_log;
-	int pass_cnt;
 	int error_cnt;
 	int skip_cnt;
 	bool tested;
@@ -27,7 +25,6 @@ struct prog_test_def {
 	int subtest_num;
 
 	/* store counts before subtest started */
-	int old_pass_cnt;
 	int old_error_cnt;
 };
 
@@ -71,7 +68,7 @@ static void skip_account(void)
 void test__end_subtest()
 {
 	struct prog_test_def *test = env.test;
-	int sub_error_cnt = error_cnt - test->old_error_cnt;
+	int sub_error_cnt = test->error_cnt - test->old_error_cnt;
 
 	if (sub_error_cnt)
 		env.fail_cnt++;
@@ -108,8 +105,7 @@ bool test__start_subtest(const char *name)
 		return false;
 
 	test->subtest_name = name;
-	env.test->old_pass_cnt = pass_cnt;
-	env.test->old_error_cnt = error_cnt;
+	env.test->old_error_cnt = env.test->error_cnt;
 
 	return true;
 }
@@ -121,6 +117,11 @@ void test__force_log() {
 void test__skip(void)
 {
 	env.test->skip_cnt++;
+}
+
+void test__fail(void)
+{
+	env.test->error_cnt++;
 }
 
 struct ipv4_packet pkt_v4 = {
@@ -147,7 +148,7 @@ int bpf_find_map(const char *test, struct bpf_object *obj, const char *name)
 	map = bpf_object__find_map_by_name(obj, name);
 	if (!map) {
 		printf("%s:FAIL:map '%s' not found\n", test, name);
-		error_cnt++;
+		test__fail();
 		return -1;
 	}
 	return bpf_map__fd(map);
@@ -506,8 +507,6 @@ int main(int argc, char **argv)
 	stdio_hijack();
 	for (i = 0; i < prog_test_cnt; i++) {
 		struct prog_test_def *test = &prog_test_defs[i];
-		int old_pass_cnt = pass_cnt;
-		int old_error_cnt = error_cnt;
 
 		env.test = test;
 		test->test_num = i + 1;
@@ -522,8 +521,6 @@ int main(int argc, char **argv)
 			test__end_subtest();
 
 		test->tested = true;
-		test->pass_cnt = pass_cnt - old_pass_cnt;
-		test->error_cnt = error_cnt - old_error_cnt;
 		if (test->error_cnt)
 			env.fail_cnt++;
 		else
@@ -543,5 +540,5 @@ int main(int argc, char **argv)
 	free(env.test_selector.num_set);
 	free(env.subtest_selector.num_set);
 
-	return error_cnt ? EXIT_FAILURE : EXIT_SUCCESS;
+	return env.fail_cnt ? EXIT_FAILURE : EXIT_SUCCESS;
 }
