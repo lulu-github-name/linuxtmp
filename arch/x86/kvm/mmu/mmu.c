@@ -4931,7 +4931,6 @@ static void init_kvm_tdp_mmu(struct kvm_vcpu *vcpu)
 	context->update_pte = nonpaging_update_pte;
 	context->shadow_root_level = kvm_x86_ops->get_tdp_level(vcpu);
 	context->direct_map = true;
-	context->set_cr3 = kvm_x86_ops->set_tdp_cr3;
 	context->get_guest_pgd = get_cr3;
 	context->get_pdptr = kvm_pdptr_read;
 	context->inject_page_fault = kvm_inject_page_fault;
@@ -5078,7 +5077,6 @@ static void init_kvm_softmmu(struct kvm_vcpu *vcpu)
 	struct kvm_mmu *context = vcpu->arch.mmu;
 
 	kvm_init_shadow_mmu(vcpu);
-	context->set_cr3           = kvm_x86_ops->set_cr3;
 	context->get_guest_pgd     = get_cr3;
 	context->get_pdptr         = kvm_pdptr_read;
 	context->inject_page_fault = kvm_inject_page_fault;
@@ -5183,7 +5181,7 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
 	kvm_mmu_sync_roots(vcpu);
 	if (r)
 		goto out;
-	kvm_mmu_load_cr3(vcpu);
+	kvm_mmu_load_pgd(vcpu);
 	kvm_x86_ops->tlb_flush(vcpu, true);
 out:
 	return r;
