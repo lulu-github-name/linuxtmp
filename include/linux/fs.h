@@ -696,7 +696,7 @@ struct inode {
 #endif
 
 	void			*i_private; /* fs or device private pointer */
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, atomic64_t i_sequence) /* see futex */
 	RH_KABI_RESERVE(2)
 } __randomize_layout;
 
