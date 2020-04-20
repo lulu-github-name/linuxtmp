@@ -392,9 +392,11 @@ unsigned int fib6_tables_seq_read(struct net *net)
 
 static int call_fib6_entry_notifier(struct notifier_block *nb,
 				    enum fib_event_type event_type,
-				    struct fib6_info *rt)
+				    struct fib6_info *rt,
+				    struct netlink_ext_ack *extack)
 {
 	struct fib6_entry_notifier_info info = {
+		.info.extack = extack,
 		.rt = rt,
 	};
 
@@ -434,13 +436,15 @@ int call_fib6_multipath_entry_notifiers(struct net *net,
 struct fib6_dump_arg {
 	struct net *net;
 	struct notifier_block *nb;
+	struct netlink_ext_ack *extack;
 };
 
 static int fib6_rt_dump(struct fib6_info *rt, struct fib6_dump_arg *arg)
 {
 	if (rt == arg->net->ipv6.fib6_null_entry)
 		return 0;
-	return call_fib6_entry_notifier(arg->nb, FIB_EVENT_ENTRY_ADD, rt);
+	return call_fib6_entry_notifier(arg->nb, FIB_EVENT_ENTRY_ADD,
+					rt, arg->extack);
 }
 
 static int fib6_node_dump(struct fib6_walker *w)
@@ -470,7 +474,8 @@ static int fib6_table_dump(struct net *net, struct fib6_table *tb,
 }
 
 /* Called with rcu_read_lock() */
-int fib6_tables_dump(struct net *net, struct notifier_block *nb)
+int fib6_tables_dump(struct net *net, struct notifier_block *nb,
+		     struct netlink_ext_ack *extack)
 {
 	struct fib6_dump_arg arg;
 	struct fib6_walker *w;
@@ -484,6 +489,7 @@ int fib6_tables_dump(struct net *net, struct notifier_block *nb)
 	w->func = fib6_node_dump;
 	arg.net = net;
 	arg.nb = nb;
+	arg.extack = extack;
 	w->args = &arg;
 
 	for (h = 0; h < FIB6_TABLE_HASHSZ; h++) {
