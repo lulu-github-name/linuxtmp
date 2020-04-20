@@ -86,6 +86,9 @@ extern u16 __read_mostly tlb_lld_1g[NR_INFO];
 struct cpuinfo_x86_extended_rh {
 	u16			cpu_die_id;
 	u16			logical_die_id;
+#ifdef CONFIG_X86_VMX_FEATURE_NAMES
+	__u32			vmx_capability[NVMXINTS];
+#endif
 };
 
 /*
