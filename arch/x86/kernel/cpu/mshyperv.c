@@ -350,7 +350,9 @@ static void __init ms_hyperv_init_platform(void)
 
 void hv_setup_sched_clock(void *sched_clock)
 {
+#ifdef CONFIG_PARAVIRT
 	pv_time_ops.sched_clock = sched_clock;
+#endif
 }
 
 const __initconst struct hypervisor_x86 x86_hyper_ms_hyperv = {
