@@ -123,6 +123,7 @@ enum cpuhp_state {
 	CPUHP_AP_QCOM_TIMER_STARTING,
 	CPUHP_AP_ARMADA_TIMER_STARTING,
 	CPUHP_AP_MARCO_TIMER_STARTING,
+	/* kABI: CPUHP_AP_HYPERV_TIMER_STARTING, */
 	CPUHP_AP_MIPS_GIC_TIMER_STARTING,
 	CPUHP_AP_ARC_TIMER_STARTING,
 	CPUHP_AP_KVM_STARTING,
@@ -183,6 +184,9 @@ enum cpuhp_state {
 
 #define CPUHP_AP_PERF_POWERPC_TRACE_IMC_ONLINE \
 		CPUHP_AP_X86_HPET_ONLINE
+
+#define CPUHP_AP_HYPERV_TIMER_STARTING \
+		CPUHP_AP_MIPS_GIC_TIMER_STARTING
 
 int __cpuhp_setup_state(enum cpuhp_state state,	const char *name, bool invoke,
 			int (*startup)(unsigned int cpu),
