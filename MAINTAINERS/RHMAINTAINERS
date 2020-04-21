@@ -223,15 +223,10 @@ M:	Corinna Vinschen <vinschen@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/realtek/r8169.c
 
-8139CP 10/100/1000 GIGABIT ETHERNET DRIVER (8139cp)
+8139CP 10/100 MEGABIT ETHERNET DRIVER (8139cp)
 M:	Ivan Vecera <ivecera@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/realtek/8139cp.c
-
-8139TOO 10/100/1000 GIGABIT ETHERNET DRIVER (8139too)
-M:	Corinna Vinschen <vinschen@redhat.com>
-S:	Maintained
-F:	drivers/net/ethernet/realtek/8139too.c
 
 ACPI SUBSYSTEM
 M:	Al Stone <ahs3@redhat.com>
