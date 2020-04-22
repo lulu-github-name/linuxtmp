@@ -183,11 +183,47 @@ void ethtool_convert_legacy_u32_to_link_mode(unsigned long *dst,
 bool ethtool_convert_link_mode_to_legacy_u32(u32 *legacy_u32,
 				     const unsigned long *src);
 
+#define ETHTOOL_COALESCE_RX_USECS		BIT(0)
+#define ETHTOOL_COALESCE_RX_MAX_FRAMES		BIT(1)
+#define ETHTOOL_COALESCE_RX_USECS_IRQ		BIT(2)
+#define ETHTOOL_COALESCE_RX_MAX_FRAMES_IRQ	BIT(3)
+#define ETHTOOL_COALESCE_TX_USECS		BIT(4)
+#define ETHTOOL_COALESCE_TX_MAX_FRAMES		BIT(5)
+#define ETHTOOL_COALESCE_TX_USECS_IRQ		BIT(6)
+#define ETHTOOL_COALESCE_TX_MAX_FRAMES_IRQ	BIT(7)
+#define ETHTOOL_COALESCE_STATS_BLOCK_USECS	BIT(8)
+#define ETHTOOL_COALESCE_USE_ADAPTIVE_RX	BIT(9)
+#define ETHTOOL_COALESCE_USE_ADAPTIVE_TX	BIT(10)
+#define ETHTOOL_COALESCE_PKT_RATE_LOW		BIT(11)
+#define ETHTOOL_COALESCE_RX_USECS_LOW		BIT(12)
+#define ETHTOOL_COALESCE_RX_MAX_FRAMES_LOW	BIT(13)
+#define ETHTOOL_COALESCE_TX_USECS_LOW		BIT(14)
+#define ETHTOOL_COALESCE_TX_MAX_FRAMES_LOW	BIT(15)
+#define ETHTOOL_COALESCE_PKT_RATE_HIGH		BIT(16)
+#define ETHTOOL_COALESCE_RX_USECS_HIGH		BIT(17)
+#define ETHTOOL_COALESCE_RX_MAX_FRAMES_HIGH	BIT(18)
+#define ETHTOOL_COALESCE_TX_USECS_HIGH		BIT(19)
+#define ETHTOOL_COALESCE_TX_MAX_FRAMES_HIGH	BIT(20)
+#define ETHTOOL_COALESCE_RATE_SAMPLE_INTERVAL	BIT(21)
+
+#define ETHTOOL_COALESCE_USECS						\
+	(ETHTOOL_COALESCE_RX_USECS | ETHTOOL_COALESCE_TX_USECS)
+#define ETHTOOL_COALESCE_MAX_FRAMES					\
+	(ETHTOOL_COALESCE_RX_MAX_FRAMES | ETHTOOL_COALESCE_TX_MAX_FRAMES)
+#define ETHTOOL_COALESCE_USECS_IRQ					\
+	(ETHTOOL_COALESCE_RX_USECS_IRQ | ETHTOOL_COALESCE_TX_USECS_IRQ)
+#define ETHTOOL_COALESCE_MAX_FRAMES_IRQ		\
+	(ETHTOOL_COALESCE_RX_MAX_FRAMES_IRQ |	\
+	 ETHTOOL_COALESCE_TX_MAX_FRAMES_IRQ)
+#define ETHTOOL_COALESCE_USE_ADAPTIVE					\
+	(ETHTOOL_COALESCE_USE_ADAPTIVE_RX | ETHTOOL_COALESCE_USE_ADAPTIVE_TX)
+
 struct ethtool_ops_extended_rh {
 };
 
 /**
  * struct ethtool_ops - optional netdev operations
+ * @supported_coalesce_params: supported types of interrupt coalescing.
  * @get_settings: DEPRECATED, use %get_link_ksettings/%set_link_ksettings
  *	API. Get various device settings including Ethernet link
  *	settings. The @cmd parameter is expected to have been cleared
@@ -224,8 +260,9 @@ struct ethtool_ops_extended_rh {
  *	or zero.
  * @get_coalesce: Get interrupt coalescing parameters.  Returns a negative
  *	error code or zero.
- * @set_coalesce: Set interrupt coalescing parameters.  Returns a negative
- *	error code or zero.
+ * @set_coalesce: Set interrupt coalescing parameters.  Supported coalescing
+ *	types should be set in @supported_coalesce_params.
+ *	Returns a negative error code or zero.
  * @get_ringparam: Report ring sizes
  * @set_ringparam: Set ring sizes.  Returns a negative error code or zero.
  * @get_pauseparam: Report pause parameters
@@ -300,7 +337,8 @@ struct ethtool_ops_extended_rh {
  * @set_per_queue_coalesce: Set interrupt coalescing parameters per queue.
  *	It must check that the given queue number is valid. If neither a RX nor
  *	a TX queue has this number, return -EINVAL. If only a RX queue or a TX
- *	queue has this number, ignore the inapplicable fields.
+ *	queue has this number, ignore the inapplicable fields. Supported
+ *	coalescing types should be set in @supported_coalesce_params.
  *	Returns a negative error code or zero.
  * @get_link_ksettings: When defined, takes precedence over the
  *	%get_settings method. Get various device settings
@@ -428,7 +466,7 @@ struct ethtool_ops {
 				      struct ethtool_link_ksettings *))
 	RH_KABI_USE(2, int	(*set_link_ksettings)(struct net_device *,
 				      const struct ethtool_link_ksettings *))
-	RH_KABI_RESERVE(3)
+	RH_KABI_USE(3, u32	supported_coalesce_params)
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
