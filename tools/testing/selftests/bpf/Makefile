@@ -70,8 +70,7 @@ TEST_PROGS := test_kmod.sh \
 	test_tcp_check_syncookie.sh \
 	test_tc_tunnel.sh \
 	test_tc_edt.sh \
-	test_xdping.sh \
-	test_bpftool_build.sh
+	test_xdping.sh
 
 TEST_PROGS_EXTENDED := with_addr.sh \
 	with_tunnels.sh \
