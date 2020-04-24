@@ -117,7 +117,7 @@ xt_ct_set_timeout(struct nf_conn *ct, const struct xt_tgchk_param *par,
 				    "use inversions on it");
 		return -EINVAL;
 	}
-	l4proto = __nf_ct_l4proto_find(par->family, proto);
+	l4proto = __nf_ct_l4proto_find(proto);
 	return nf_ct_set_timeout(par->net, ct, par->family, l4proto->l4proto,
 				 timeout_name);
 

@@ -380,7 +380,7 @@ bool nf_ct_get_tuplepr(const struct sk_buff *skb, unsigned int nhoff,
 		return false;
 	}
 
-	l4proto = __nf_ct_l4proto_find(l3num, protonum);
+	l4proto = __nf_ct_l4proto_find(protonum);
 
 	ret = nf_ct_get_tuple(skb, nhoff, protoff, l3num, protonum, net, tuple,
 			      l4proto);
@@ -574,7 +574,7 @@ destroy_conntrack(struct nf_conntrack *nfct)
 		nf_ct_tmpl_free(ct);
 		return;
 	}
-	l4proto = __nf_ct_l4proto_find(nf_ct_l3num(ct), nf_ct_protonum(ct));
+	l4proto = __nf_ct_l4proto_find(nf_ct_protonum(ct));
 	if (l4proto->destroy)
 		l4proto->destroy(ct);
 
@@ -1017,7 +1017,7 @@ nf_ct_resolve_clash(struct sk_buff *skb, struct nf_conntrack_tuple_hash *h,
 	loser_ct = nf_ct_get(skb, &ctinfo);
 	net = nf_ct_net(loser_ct);
 
-	l4proto = __nf_ct_l4proto_find(nf_ct_l3num(ct), nf_ct_protonum(ct));
+	l4proto = __nf_ct_l4proto_find(nf_ct_protonum(ct));
 	if (!l4proto->allow_clash)
 		goto drop;
 
@@ -1297,7 +1297,7 @@ static bool gc_worker_can_early_drop(const struct nf_conn *ct)
 	if (!test_bit(IPS_ASSURED_BIT, &ct->status))
 		return true;
 
-	l4proto = __nf_ct_l4proto_find(nf_ct_l3num(ct), nf_ct_protonum(ct));
+	l4proto = __nf_ct_l4proto_find(nf_ct_protonum(ct));
 	if (l4proto->can_early_drop && l4proto->can_early_drop(ct))
 		return true;
 
@@ -1738,7 +1738,7 @@ nf_conntrack_in(struct sk_buff *skb, const struct nf_hook_state *state)
 		goto out;
 	}
 
-	l4proto = __nf_ct_l4proto_find(state->pf, protonum);
+	l4proto = __nf_ct_l4proto_find(protonum);
 
 	if (protonum == IPPROTO_ICMP || protonum == IPPROTO_ICMPV6) {
 		ret = nf_conntrack_handle_icmp(tmpl, skb, dataoff,
@@ -1807,8 +1807,7 @@ bool nf_ct_invert_tuplepr(struct nf_conntrack_tuple *inverse,
 
 	rcu_read_lock();
 	ret = nf_ct_invert_tuple(inverse, orig,
-				 __nf_ct_l4proto_find(orig->src.l3num,
-						      orig->dst.protonum));
+				 __nf_ct_l4proto_find(orig->dst.protonum));
 	rcu_read_unlock();
 	return ret;
 }
@@ -1965,7 +1964,7 @@ static int nf_conntrack_update(struct net *net, struct sk_buff *skb)
 	if (dataoff <= 0)
 		return -1;
 
-	l4proto = nf_ct_l4proto_find_get(l3num, l4num);
+	l4proto = nf_ct_l4proto_find_get(l4num);
 
 	if (!nf_ct_get_tuple(skb, skb_network_offset(skb), dataoff, l3num,
 			     l4num, net, &tuple, l4proto))
