@@ -22,6 +22,7 @@
 #include <linux/netfilter_ipv6.h>
 #include <net/netfilter/nf_conntrack_l4proto.h>
 #include <net/netfilter/nf_conntrack_ecache.h>
+#include <net/netfilter/nf_conntrack_timeout.h>
 #include <net/netfilter/nf_log.h>
 #include <net/netfilter/ipv4/nf_conntrack_ipv4.h>
 #include <net/netfilter/ipv6/nf_conntrack_ipv6.h>
@@ -57,9 +58,14 @@ static void nf_conntrack_udp_refresh_unreplied(struct nf_conn *ct,
 static int udp_packet(struct nf_conn *ct,
 		      const struct sk_buff *skb,
 		      unsigned int dataoff,
-		      enum ip_conntrack_info ctinfo,
-		      unsigned int *timeouts)
+		      enum ip_conntrack_info ctinfo)
 {
+	unsigned int *timeouts;
+
+	timeouts = nf_ct_timeout_lookup(ct);
+	if (!timeouts)
+		timeouts = udp_get_timeouts(nf_ct_net(ct));
+
 	/* If we've seen traffic both ways, this is some kind of UDP
 	   stream.  Extend timeout. */
 	if (test_bit(IPS_SEEN_REPLY_BIT, &ct->status)) {
@@ -77,7 +83,7 @@ static int udp_packet(struct nf_conn *ct,
 
 /* Called when a new connection for this protocol found. */
 static bool udp_new(struct nf_conn *ct, const struct sk_buff *skb,
-		    unsigned int dataoff, unsigned int *timeouts)
+		    unsigned int dataoff)
 {
 	return true;
 }
@@ -188,6 +194,9 @@ static int udp_timeout_nlattr_to_obj(struct nlattr *tb[],
 	unsigned int *timeouts = data;
 	struct nf_udp_net *un = udp_pernet(net);
 
+	if (!timeouts)
+		timeouts = un->timeouts;
+
 	/* set default timeouts for UDP. */
 	timeouts[UDP_CT_UNREPLIED] = un->timeouts[UDP_CT_UNREPLIED];
 	timeouts[UDP_CT_REPLIED] = un->timeouts[UDP_CT_REPLIED];
@@ -287,7 +296,6 @@ const struct nf_conntrack_l4proto nf_conntrack_l4proto_udp4 =
 	.l4proto		= IPPROTO_UDP,
 	.allow_clash		= true,
 	.packet			= udp_packet,
-	.get_timeouts		= udp_get_timeouts,
 	.new			= udp_new,
 	.error			= udp_error,
 #if IS_ENABLED(CONFIG_NF_CT_NETLINK)
@@ -317,7 +325,6 @@ const struct nf_conntrack_l4proto nf_conntrack_l4proto_udplite4 =
 	.l4proto		= IPPROTO_UDPLITE,
 	.allow_clash		= true,
 	.packet			= udp_packet,
-	.get_timeouts		= udp_get_timeouts,
 	.new			= udp_new,
 	.error			= udplite_error,
 #if IS_ENABLED(CONFIG_NF_CT_NETLINK)
@@ -347,7 +354,6 @@ const struct nf_conntrack_l4proto nf_conntrack_l4proto_udp6 =
 	.l4proto		= IPPROTO_UDP,
 	.allow_clash		= true,
 	.packet			= udp_packet,
-	.get_timeouts		= udp_get_timeouts,
 	.new			= udp_new,
 	.error			= udp_error,
 #if IS_ENABLED(CONFIG_NF_CT_NETLINK)
@@ -377,7 +383,6 @@ const struct nf_conntrack_l4proto nf_conntrack_l4proto_udplite6 =
 	.l4proto		= IPPROTO_UDPLITE,
 	.allow_clash		= true,
 	.packet			= udp_packet,
-	.get_timeouts		= udp_get_timeouts,
 	.new			= udp_new,
 	.error			= udplite_error,
 #if IS_ENABLED(CONFIG_NF_CT_NETLINK)
@@ -400,3 +405,4 @@ const struct nf_conntrack_l4proto nf_conntrack_l4proto_udplite6 =
 };
 EXPORT_SYMBOL_GPL(nf_conntrack_l4proto_udplite6);
 #endif
+#include <net/netfilter/nf_conntrack_timeout.h>
