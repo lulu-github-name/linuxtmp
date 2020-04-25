@@ -100,7 +100,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 8.0 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
+M:	Brian Masney <bmasney@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git rhel-8.0.0
 S:	Maintained
 F:	redhat/
@@ -160,7 +160,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 7.4 Kernel Maintainer
-M:	Denys Vlasenko <dvlasenk@redhat.com>
+M:	Brian Masney <bmasney@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-7.4.z.git
 S:	Maintained
 F:	redhat/
@@ -319,7 +319,6 @@ F:	drivers/perf/*
 F:	include/linux/perf/arm_pmu.h
 
 ARM SMMU DRIVERS
-M:	Jerry Snitselaar <jsnitsel@redhat.com>
 M:	Mark Salter <msalter@redhat.com>
 M:	Jeremy Linton <jlinton@redhat.com>
 S:	Maintained
@@ -891,7 +890,6 @@ F:	include/uapi/linux/if_infiniband.h
 F:	Documentation/infiniband/
 
 IOMMU DRIVERS
-M:	Jerry Snitselaar <jsnitsel@redhat.com>
 M:	Myron Stowe <myron.stowe@redhat.com>
 M:	Alex Williamson <alex.williamson@redhat.com>
 M:	Don Dutile <ddutile@redhat.com>
