@@ -2588,8 +2588,6 @@ static struct nft_rule *nft_rule_lookup_byid(const struct net *net,
 
 #define NFT_RULE_MAXEXPRS	128
 
-static struct nft_expr_info *info;
-
 static int nf_tables_newrule(struct net *net, struct sock *nlsk,
 			     struct sk_buff *skb, const struct nlmsghdr *nlh,
 			     const struct nlattr * const nla[],
@@ -2597,6 +2595,7 @@ static int nf_tables_newrule(struct net *net, struct sock *nlsk,
 {
 	const struct nfgenmsg *nfmsg = nlmsg_data(nlh);
 	u8 genmask = nft_genmask_next(net);
+	struct nft_expr_info *info = NULL;
 	int family = nfmsg->nfgen_family;
 	struct nft_table *table;
 	struct nft_chain *chain;
@@ -2670,6 +2669,12 @@ static int nf_tables_newrule(struct net *net, struct sock *nlsk,
 	n = 0;
 	size = 0;
 	if (nla[NFTA_RULE_EXPRESSIONS]) {
+		info = kvmalloc_array(NFT_RULE_MAXEXPRS,
+				      sizeof(struct nft_expr_info),
+				      GFP_KERNEL);
+		if (!info)
+			return -ENOMEM;
+
 		nla_for_each_nested(tmp, nla[NFTA_RULE_EXPRESSIONS], rem) {
 			err = -EINVAL;
 			if (nla_type(tmp) != NFTA_LIST_ELEM)
@@ -2755,6 +2760,7 @@ static int nf_tables_newrule(struct net *net, struct sock *nlsk,
 				list_add_rcu(&rule->list, &chain->rules);
 		}
 	}
+	kvfree(info);
 	chain->use++;
 
 	if (net->nft.validate_state == NFT_VALIDATE_DO)
@@ -2768,6 +2774,7 @@ err1:
 		if (info[i].ops != NULL)
 			module_put(info[i].ops->type->owner);
 	}
+	kvfree(info);
 	return err;
 }
 
@@ -7508,39 +7515,30 @@ static int __init nf_tables_module_init(void)
 	if (err < 0)
 		goto err1;
 
-	info = kmalloc_array(NFT_RULE_MAXEXPRS, sizeof(struct nft_expr_info),
-			     GFP_KERNEL);
-	if (info == NULL) {
-		err = -ENOMEM;
-		goto err2;
-	}
-
 	err = nf_tables_core_module_init();
 	if (err < 0)
-		goto err3;
+		goto err2;
 
 	err = register_netdevice_notifier(&nf_tables_flowtable_notifier);
 	if (err < 0)
-		goto err4;
+		goto err3;
 
 	err = rhltable_init(&nft_objname_ht, &nft_objname_ht_params);
 	if (err < 0)
-		goto err5;
+		goto err4;
 
 	/* must be last */
 	err = nfnetlink_subsys_register(&nf_tables_subsys);
 	if (err < 0)
-		goto err6;
+		goto err5;
 
 	return err;
-err6:
-	rhltable_destroy(&nft_objname_ht);
 err5:
-	unregister_netdevice_notifier(&nf_tables_flowtable_notifier);
+	rhltable_destroy(&nft_objname_ht);
 err4:
-	nf_tables_core_module_exit();
+	unregister_netdevice_notifier(&nf_tables_flowtable_notifier);
 err3:
-	kfree(info);
+	nf_tables_core_module_exit();
 err2:
 	nft_chain_filter_fini();
 err1:
@@ -7557,7 +7555,6 @@ static void __exit nf_tables_module_exit(void)
 	rcu_barrier();
 	rhltable_destroy(&nft_objname_ht);
 	nf_tables_core_module_exit();
-	kfree(info);
 }
 
 module_init(nf_tables_module_init);
