@@ -195,8 +195,7 @@ s32 igc_phy_hw_reset(struct igc_hw *hw)
 	wr32(IGC_CTRL, ctrl);
 	wrfl();
 
-	mdelay(100); /* RHEL Only */
-	/* Was: usleep_range(1500, 2000);*/
+	usleep_range(1500, 2000);
 
 	phy->ops.release(hw);
 
