@@ -534,7 +534,21 @@ struct mm_struct {
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
 	RH_KABI_RESERVE(7)
+
+#if defined(CONFIG_PPC64) && defined (CONFIG_PPC_VAS)
+	/*
+	 * In upstream vas_windows is defined in arch specific mm_context struct
+	 * (arch/powerpc/include/asm/mmu.h).
+	 * To fix kABI breakage, adding here but will be defined only for powerpc.
+	 * Though used only on powerNV and P9 (or later) right now, will be needed
+	 * in future when we add NX-GZIP support on powerVM.
+	 * Leaving first 7 reserves for arch independent elements if needed in future
+	 * so that will be placed in same location for all archs.
+	 */
+	RH_KABI_USE(8, atomic_t vas_windows)
+#else
 	RH_KABI_RESERVE(8)
+#endif
 
 	/*
 	 * The mm_cpumask needs to be at the end of mm_struct, because it

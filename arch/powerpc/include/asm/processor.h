@@ -10,6 +10,7 @@
  * 2 of the License, or (at your option) any later version.
  */
 
+#include <linux/rh_kabi.h>
 #include <asm/reg.h>
 
 #ifdef CONFIG_VSX
@@ -267,7 +268,7 @@ struct thread_struct {
 	unsigned 	mmcr0;
 
 	unsigned 	used_ebb;
-	unsigned int	used_vas;
+	RH_KABI_DEPRECATE(unsigned int, used_vas)
 #endif
 };
 
