@@ -114,7 +114,8 @@ static int bnxt_tc_parse_tunnel_set(struct bnxt *bp,
 
 static int bnxt_tc_parse_actions(struct bnxt *bp,
 				 struct bnxt_tc_actions *actions,
-				 struct flow_action *flow_action)
+				 struct flow_action *flow_action,
+				 struct netlink_ext_ack *extack)
 {
 	struct flow_action_entry *act;
 	int i, rc;
@@ -123,6 +124,9 @@ static int bnxt_tc_parse_actions(struct bnxt *bp,
 		netdev_info(bp->dev, "no actions");
 		return -EINVAL;
 	}
+
+	if (!flow_action_basic_hw_stats_types_check(flow_action, extack))
+		return -EOPNOTSUPP;
 
 	flow_action_for_each(i, act, flow_action) {
 		switch (act->id) {
@@ -301,7 +305,8 @@ static int bnxt_tc_parse_flow(struct bnxt *bp,
 		flow->tun_mask.tp_src = match.mask->src;
 	}
 
-	return bnxt_tc_parse_actions(bp, &flow->actions, &rule->action);
+	return bnxt_tc_parse_actions(bp, &flow->actions, &rule->action,
+				     tc_flow_cmd->common.extack);
 }
 
 static int bnxt_hwrm_cfa_flow_free(struct bnxt *bp,
