@@ -613,17 +613,17 @@ int __rh_call_get_link_ksettings(struct net_device *dev,
 		if (!err) {
 			link_ksettings->base = tmp.base;
 			bitmap_zero(link_ksettings->link_modes.supported,
-				    __ETHTOOL_LINK_MODE_LAST);
+				    __ETHTOOL_LINK_MODE_MASK_NBITS - 1);
 			bitmap_copy(link_ksettings->link_modes.supported,
 				    tmp.link_modes.supported,
 				    __ETHTOOL_LINK_MODE_LAST_RH80);
 			bitmap_zero(link_ksettings->link_modes.advertising,
-				    __ETHTOOL_LINK_MODE_LAST);
+				    __ETHTOOL_LINK_MODE_MASK_NBITS - 1);
 			bitmap_copy(link_ksettings->link_modes.advertising,
 				    tmp.link_modes.advertising,
 				    __ETHTOOL_LINK_MODE_LAST_RH80);
 			bitmap_zero(link_ksettings->link_modes.lp_advertising,
-				    __ETHTOOL_LINK_MODE_LAST);
+				    __ETHTOOL_LINK_MODE_MASK_NBITS - 1);
 			bitmap_copy(link_ksettings->link_modes.lp_advertising,
 				    tmp.link_modes.lp_advertising,
 				    __ETHTOOL_LINK_MODE_LAST_RH80);
