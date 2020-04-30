@@ -403,6 +403,25 @@ static const struct blk_integrity_profile nop_profile = {
 	.ext_ops = &nop_profile_ops,
 };
 
+/*
+ * We know all in-tree profiles are static variable
+ */
+static bool is_3rd_party_dynamic_profile(const struct blk_integrity_profile *profile)
+{
+	unsigned long start = (unsigned long) &_stext,
+		      end   = (unsigned long) &_end,
+		      addr  = (unsigned long) profile;
+
+	/* static variable? */
+	if ((addr >= start) && (addr < end))
+		return false;
+
+	if(is_module_address(addr))
+		return false;
+
+	return true;
+}
+
 /**
  * blk_integrity_register - Register a gendisk as being integrity-capable
  * @disk:	struct gendisk pointer to make integrity-aware
@@ -417,7 +436,6 @@ static const struct blk_integrity_profile nop_profile = {
 void blk_integrity_register(struct gendisk *disk, struct blk_integrity *template)
 {
 	struct blk_integrity *bi = &disk->queue->integrity;
-	unsigned long addr = (unsigned long)template->profile;
 
 	bi->flags = BLK_INTEGRITY_VERIFY | BLK_INTEGRITY_GENERATE |
 		template->flags;
@@ -440,8 +458,7 @@ void blk_integrity_register(struct gendisk *disk, struct blk_integrity *template
 	 * If any such 3rd party module wants to define its own .ext_ops in
 	 * future, please assign them after blk_integrity_register returns.
 	 */
-	if (!(addr >= (unsigned long)_stext && addr < (unsigned long)_end) &&
-			!is_module_address(addr))
+	if (is_3rd_party_dynamic_profile(bi->profile))
 		((struct blk_integrity_profile *)bi->profile)->ext_ops =
 			&nop_profile_ops;
 }
