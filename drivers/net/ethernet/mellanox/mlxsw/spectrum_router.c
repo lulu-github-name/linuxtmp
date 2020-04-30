@@ -4720,31 +4720,31 @@ static void mlxsw_sp_fib_node_entry_del(struct mlxsw_sp *mlxsw_sp,
 	mlxsw_sp_fib_entry_del(mlxsw_sp, fib_entry);
 }
 
-static int mlxsw_sp_fib4_node_entry_link(struct mlxsw_sp *mlxsw_sp,
-					 struct mlxsw_sp_fib4_entry *fib4_entry)
+static int mlxsw_sp_fib_node_entry_link(struct mlxsw_sp *mlxsw_sp,
+					struct mlxsw_sp_fib_entry *fib_entry)
 {
-	struct mlxsw_sp_fib_node *fib_node = fib4_entry->common.fib_node;
+	struct mlxsw_sp_fib_node *fib_node = fib_entry->fib_node;
 	int err;
 
-	list_add(&fib4_entry->common.list, &fib_node->entry_list);
+	list_add(&fib_entry->list, &fib_node->entry_list);
 
-	err = mlxsw_sp_fib_node_entry_add(mlxsw_sp, &fib4_entry->common);
+	err = mlxsw_sp_fib_node_entry_add(mlxsw_sp, fib_entry);
 	if (err)
 		goto err_fib_node_entry_add;
 
 	return 0;
 
 err_fib_node_entry_add:
-	list_del(&fib4_entry->common.list);
+	list_del(&fib_entry->list);
 	return err;
 }
 
 static void
-mlxsw_sp_fib4_node_entry_unlink(struct mlxsw_sp *mlxsw_sp,
-				struct mlxsw_sp_fib4_entry *fib4_entry)
+mlxsw_sp_fib_node_entry_unlink(struct mlxsw_sp *mlxsw_sp,
+			       struct mlxsw_sp_fib_entry *fib_entry)
 {
-	mlxsw_sp_fib_node_entry_del(mlxsw_sp, &fib4_entry->common);
-	list_del(&fib4_entry->common.list);
+	mlxsw_sp_fib_node_entry_del(mlxsw_sp, fib_entry);
+	list_del(&fib_entry->list);
 }
 
 static void mlxsw_sp_fib4_entry_replace(struct mlxsw_sp *mlxsw_sp,
@@ -4759,7 +4759,7 @@ static void mlxsw_sp_fib4_entry_replace(struct mlxsw_sp *mlxsw_sp,
 	/* We inserted the new entry before replaced one */
 	replaced = list_next_entry(fib4_entry, common.list);
 
-	mlxsw_sp_fib4_node_entry_unlink(mlxsw_sp, replaced);
+	mlxsw_sp_fib_node_entry_unlink(mlxsw_sp, &replaced->common);
 	mlxsw_sp_fib4_entry_destroy(mlxsw_sp, replaced);
 	mlxsw_sp_fib_node_put(mlxsw_sp, fib_node);
 }
@@ -4791,17 +4791,17 @@ mlxsw_sp_router_fib4_replace(struct mlxsw_sp *mlxsw_sp,
 		goto err_fib4_entry_create;
 	}
 
-	err = mlxsw_sp_fib4_node_entry_link(mlxsw_sp, fib4_entry);
+	err = mlxsw_sp_fib_node_entry_link(mlxsw_sp, &fib4_entry->common);
 	if (err) {
 		dev_warn(mlxsw_sp->bus_info->dev, "Failed to link FIB entry to node\n");
-		goto err_fib4_node_entry_link;
+		goto err_fib_node_entry_link;
 	}
 
 	mlxsw_sp_fib4_entry_replace(mlxsw_sp, fib4_entry);
 
 	return 0;
 
-err_fib4_node_entry_link:
+err_fib_node_entry_link:
 	mlxsw_sp_fib4_entry_destroy(mlxsw_sp, fib4_entry);
 err_fib4_entry_create:
 	mlxsw_sp_fib_node_put(mlxsw_sp, fib_node);
@@ -4822,7 +4822,7 @@ static void mlxsw_sp_router_fib4_del(struct mlxsw_sp *mlxsw_sp,
 		return;
 	fib_node = fib4_entry->common.fib_node;
 
-	mlxsw_sp_fib4_node_entry_unlink(mlxsw_sp, fib4_entry);
+	mlxsw_sp_fib_node_entry_unlink(mlxsw_sp, &fib4_entry->common);
 	mlxsw_sp_fib4_entry_destroy(mlxsw_sp, fib4_entry);
 	mlxsw_sp_fib_node_put(mlxsw_sp, fib_node);
 }
@@ -5281,33 +5281,6 @@ static void mlxsw_sp_fib6_entry_destroy(struct mlxsw_sp *mlxsw_sp,
 	kfree(fib6_entry);
 }
 
-static int mlxsw_sp_fib6_node_entry_link(struct mlxsw_sp *mlxsw_sp,
-					 struct mlxsw_sp_fib6_entry *fib6_entry)
-{
-	struct mlxsw_sp_fib_node *fib_node = fib6_entry->common.fib_node;
-	int err;
-
-	list_add(&fib6_entry->common.list, &fib_node->entry_list);
-
-	err = mlxsw_sp_fib_node_entry_add(mlxsw_sp, &fib6_entry->common);
-	if (err)
-		goto err_fib_node_entry_add;
-
-	return 0;
-
-err_fib_node_entry_add:
-	list_del(&fib6_entry->common.list);
-	return err;
-}
-
-static void
-mlxsw_sp_fib6_node_entry_unlink(struct mlxsw_sp *mlxsw_sp,
-				struct mlxsw_sp_fib6_entry *fib6_entry)
-{
-	mlxsw_sp_fib_node_entry_del(mlxsw_sp, &fib6_entry->common);
-	list_del(&fib6_entry->common.list);
-}
-
 static struct mlxsw_sp_fib6_entry *
 mlxsw_sp_fib6_entry_lookup(struct mlxsw_sp *mlxsw_sp,
 			   const struct fib6_info *rt)
@@ -5352,7 +5325,7 @@ static void mlxsw_sp_fib6_entry_replace(struct mlxsw_sp *mlxsw_sp,
 	/* We inserted the new entry before replaced one */
 	replaced = list_next_entry(fib6_entry, common.list);
 
-	mlxsw_sp_fib6_node_entry_unlink(mlxsw_sp, replaced);
+	mlxsw_sp_fib_node_entry_unlink(mlxsw_sp, &replaced->common);
 	mlxsw_sp_fib6_entry_destroy(mlxsw_sp, replaced);
 	mlxsw_sp_fib_node_put(mlxsw_sp, fib_node);
 }
@@ -5390,15 +5363,15 @@ static int mlxsw_sp_router_fib6_replace(struct mlxsw_sp *mlxsw_sp,
 		goto err_fib6_entry_create;
 	}
 
-	err = mlxsw_sp_fib6_node_entry_link(mlxsw_sp, fib6_entry);
+	err = mlxsw_sp_fib_node_entry_link(mlxsw_sp, &fib6_entry->common);
 	if (err)
-		goto err_fib6_node_entry_link;
+		goto err_fib_node_entry_link;
 
 	mlxsw_sp_fib6_entry_replace(mlxsw_sp, fib6_entry);
 
 	return 0;
 
-err_fib6_node_entry_link:
+err_fib_node_entry_link:
 	mlxsw_sp_fib6_entry_destroy(mlxsw_sp, fib6_entry);
 err_fib6_entry_create:
 	mlxsw_sp_fib_node_put(mlxsw_sp, fib_node);
@@ -5484,7 +5457,7 @@ static void mlxsw_sp_router_fib6_del(struct mlxsw_sp *mlxsw_sp,
 
 	fib_node = fib6_entry->common.fib_node;
 
-	mlxsw_sp_fib6_node_entry_unlink(mlxsw_sp, fib6_entry);
+	mlxsw_sp_fib_node_entry_unlink(mlxsw_sp, &fib6_entry->common);
 	mlxsw_sp_fib6_entry_destroy(mlxsw_sp, fib6_entry);
 	mlxsw_sp_fib_node_put(mlxsw_sp, fib_node);
 }
@@ -5644,7 +5617,7 @@ static void mlxsw_sp_fib4_node_flush(struct mlxsw_sp *mlxsw_sp,
 				 common.list) {
 		bool do_break = &tmp->common.list == &fib_node->entry_list;
 
-		mlxsw_sp_fib4_node_entry_unlink(mlxsw_sp, fib4_entry);
+		mlxsw_sp_fib_node_entry_unlink(mlxsw_sp, &fib4_entry->common);
 		mlxsw_sp_fib4_entry_destroy(mlxsw_sp, fib4_entry);
 		mlxsw_sp_fib_node_put(mlxsw_sp, fib_node);
 		/* Break when entry list is empty and node was freed.
@@ -5665,7 +5638,7 @@ static void mlxsw_sp_fib6_node_flush(struct mlxsw_sp *mlxsw_sp,
 				 common.list) {
 		bool do_break = &tmp->common.list == &fib_node->entry_list;
 
-		mlxsw_sp_fib6_node_entry_unlink(mlxsw_sp, fib6_entry);
+		mlxsw_sp_fib_node_entry_unlink(mlxsw_sp, &fib6_entry->common);
 		mlxsw_sp_fib6_entry_destroy(mlxsw_sp, fib6_entry);
 		mlxsw_sp_fib_node_put(mlxsw_sp, fib_node);
 		if (do_break)
