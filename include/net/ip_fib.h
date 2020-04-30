@@ -194,6 +194,9 @@ struct fib_rt_info {
 	int			dst_len;
 	u8			tos;
 	u8			type;
+	u8			offload:1,
+				trap:1,
+				unused:6;
 };
 
 struct fib_entry_notifier_info {
@@ -431,6 +434,7 @@ void fib_select_path(struct net *net, struct fib_result *res,
 		     struct flowi4 *fl4, const struct sk_buff *skb);
 
 /* Exported by fib_trie.c */
+void fib_alias_hw_flags_set(struct net *net, const struct fib_rt_info *fri);
 void fib_trie_init(void);
 struct fib_table *fib_trie_table(u32 id, struct fib_table *alias);
 
