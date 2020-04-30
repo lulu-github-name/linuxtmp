@@ -3300,15 +3300,10 @@ static int __ip6_del_rt_siblings(struct fib6_info *rt, struct fib6_config *cfg)
 								  replace_rt);
 			else
 				call_fib6_multipath_entry_notifiers(net,
-						       FIB_EVENT_ENTRY_DEL_TMP,
+						       FIB_EVENT_ENTRY_DEL,
 						       rt, rt->fib6_nsiblings,
 						       NULL);
 		}
-		call_fib6_multipath_entry_notifiers(net,
-						    FIB_EVENT_ENTRY_DEL,
-						    rt,
-						    rt->fib6_nsiblings,
-						    NULL);
 		list_for_each_entry_safe(sibling, next_sibling,
 					 &rt->fib6_siblings,
 					 fib6_siblings) {
@@ -4454,7 +4449,6 @@ static int ip6_route_multipath_add(struct fib6_config *cfg,
 {
 	struct fib6_info *rt_notif = NULL, *rt_last = NULL;
 	struct nl_info *info = &cfg->fc_nlinfo;
-	enum fib_event_type event_type;
 	struct fib6_config r_cfg;
 	struct rtnexthop *rtnh;
 	struct fib6_info *rt;
@@ -4590,7 +4584,7 @@ static int ip6_route_multipath_add(struct fib6_config *cfg,
 		if (rt_notif->fib6_nsiblings != nhn - 1)
 			fib_event = FIB_EVENT_ENTRY_APPEND;
 		else
-			fib_event = FIB_EVENT_ENTRY_REPLACE_TMP;
+			fib_event = FIB_EVENT_ENTRY_REPLACE;
 
 		err = call_fib6_multipath_entry_notifiers(info->nl_net,
 							  fib_event, rt_notif,
@@ -4600,14 +4594,6 @@ static int ip6_route_multipath_add(struct fib6_config *cfg,
 			err_nh = NULL;
 			goto add_errout;
 		}
-	}
-	event_type = replace ? FIB_EVENT_ENTRY_REPLACE : FIB_EVENT_ENTRY_ADD;
-	err = call_fib6_multipath_entry_notifiers(info->nl_net, event_type,
-						  rt_notif, nhn - 1, extack);
-	if (err) {
-		/* Delete all the siblings that were just added */
-		err_nh = NULL;
-		goto add_errout;
 	}
 
 	/* success ... tell user about new route */
