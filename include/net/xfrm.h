@@ -466,7 +466,6 @@ struct xfrm_mode {
 	 * xfrm4_prepare_input that would in turn call input2.
 	 */
 	int (*input)(struct xfrm_state *x, struct sk_buff *skb);
-	) /* RH_KABI_BROKEN_REMOVE_BLOCK */
 
 	/*
 	 * Add encapsulation header.
@@ -481,7 +480,6 @@ struct xfrm_mode {
 	 */
 	int (*output2)(struct xfrm_state *x,struct sk_buff *skb);
 
-	RH_KABI_BROKEN_REMOVE_BLOCK(
 	/*
 	 * This is the actual output entry point.
 	 *
