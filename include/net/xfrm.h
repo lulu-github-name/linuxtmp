@@ -499,10 +499,12 @@ struct xfrm_mode {
 	 */
 	struct sk_buff *(*gso_segment)(struct xfrm_state *x, struct sk_buff *skb, netdev_features_t features);
 
+	RH_KABI_BROKEN_REMOVE_BLOCK(
 	/*
 	 * Adjust pointers into the packet when IPsec is done at layer2.
 	 */
 	void (*xmit)(struct xfrm_state *x, struct sk_buff *skb);
+	) /* RH_KABI_BROKEN_REMOVE_BLOCK */
 
 	struct xfrm_state_afinfo *afinfo;
 	struct module *owner;
