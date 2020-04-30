@@ -250,9 +250,9 @@ struct xfrm_state {
 	/* Reference to data common to all the instances of this
 	 * transformer. */
 	const struct xfrm_type	*type;
-	struct xfrm_mode	*inner_mode;
-	struct xfrm_mode	*inner_mode_iaf;
-	struct xfrm_mode	*outer_mode;
+	RH_KABI_CONST struct xfrm_mode	*inner_mode;
+	RH_KABI_CONST struct xfrm_mode	*inner_mode_iaf;
+	RH_KABI_CONST struct xfrm_mode	*outer_mode;
 
 	const struct xfrm_type_offload	*type_offload;
 
@@ -367,7 +367,7 @@ struct xfrm_state_afinfo {
 	struct module			*owner;
 	const struct xfrm_type		*type_map[IPPROTO_MAX];
 	const struct xfrm_type_offload	*type_offload_map[IPPROTO_MAX];
-	struct xfrm_mode		*mode_map[XFRM_MODE_MAX];
+	RH_KABI_DEPRECATE(struct xfrm_mode *, mode_map[XFRM_MODE_MAX])
 
 	int			(*init_flags)(struct xfrm_state *x);
 	void			(*init_tempsel)(struct xfrm_selector *sel,
@@ -502,8 +502,8 @@ struct xfrm_mode {
 	void (*xmit)(struct xfrm_state *x, struct sk_buff *skb);
 
 	struct xfrm_state_afinfo *afinfo;
-	) /* RH_KABI_BROKEN_REMOVE_BLOCK */
 	struct module *owner;
+	) /* RH_KABI_BROKEN_REMOVE_BLOCK */
 	RH_KABI_REPLACE_SPLIT(unsigned int encap, u8 encap, u8 family)
 	RH_KABI_REPLACE(int flags, u8 flags)
 };
@@ -512,9 +512,6 @@ struct xfrm_mode {
 enum {
 	XFRM_MODE_FLAG_TUNNEL = 1,
 };
-
-int xfrm_register_mode(struct xfrm_mode *mode);
-void xfrm_unregister_mode(struct xfrm_mode *mode);
 
 static inline int xfrm_af2proto(unsigned int family)
 {
@@ -528,7 +525,7 @@ static inline int xfrm_af2proto(unsigned int family)
 	}
 }
 
-static inline struct xfrm_mode *xfrm_ip2inner_mode(struct xfrm_state *x, int ipproto)
+static inline const struct xfrm_mode *xfrm_ip2inner_mode(struct xfrm_state *x, int ipproto)
 {
 	if ((ipproto == IPPROTO_IPIP && x->props.family == AF_INET) ||
 	    (ipproto == IPPROTO_IPV6 && x->props.family == AF_INET6))
