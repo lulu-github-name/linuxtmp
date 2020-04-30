@@ -173,7 +173,8 @@ struct fib6_info {
 					dst_host:1,
 #ifndef __GENKSYMS__
 					fib6_destroying:1,
-					unused:2;
+					offload:1,
+					trap:1;
 #else
 					unused:3;
 #endif
@@ -298,6 +299,13 @@ static inline void fib6_info_release(struct fib6_info *f6i)
 {
 	if (f6i && atomic_dec_and_test(&f6i->fib6_ref))
 		call_rcu(&f6i->rcu, fib6_info_destroy_rcu);
+}
+
+static inline void fib6_info_hw_flags_set(struct fib6_info *f6i, bool offload,
+					  bool trap)
+{
+	f6i->offload = offload;
+	f6i->trap = trap;
 }
 
 enum fib6_walk_state {
