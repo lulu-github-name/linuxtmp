@@ -500,9 +500,9 @@ struct xfrm_mode {
 	 * Adjust pointers into the packet when IPsec is done at layer2.
 	 */
 	void (*xmit)(struct xfrm_state *x, struct sk_buff *skb);
-	) /* RH_KABI_BROKEN_REMOVE_BLOCK */
 
 	struct xfrm_state_afinfo *afinfo;
+	) /* RH_KABI_BROKEN_REMOVE_BLOCK */
 	struct module *owner;
 	RH_KABI_REPLACE_SPLIT(unsigned int encap, u8 encap, u8 family)
 	RH_KABI_REPLACE(int flags, u8 flags)
