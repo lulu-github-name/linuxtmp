@@ -443,6 +443,7 @@ int xfrm_register_type_offload(const struct xfrm_type_offload *type, unsigned sh
 int xfrm_unregister_type_offload(const struct xfrm_type_offload *type, unsigned short family);
 
 struct xfrm_mode {
+	RH_KABI_BROKEN_REMOVE_BLOCK(
 	/*
 	 * Remove encapsulation header.
 	 *
@@ -456,7 +457,6 @@ struct xfrm_mode {
 	 */
 	int (*input2)(struct xfrm_state *x, struct sk_buff *skb);
 
-	RH_KABI_BROKEN_REMOVE_BLOCK(
 	/*
 	 * This is the actual input entry point.
 	 *
