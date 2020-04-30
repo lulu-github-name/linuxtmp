@@ -332,3 +332,21 @@ void vm_vcpu_add_default(struct kvm_vm *vm, uint32_t vcpuid, void *guest_code)
 {
 	aarch64_vcpu_add_default(vm, vcpuid, NULL, guest_code);
 }
+
+void vcpu_args_set(struct kvm_vm *vm, uint32_t vcpuid, unsigned int num, ...)
+{
+	va_list ap;
+	int i;
+
+	TEST_ASSERT(num >= 1 && num <= 8, "Unsupported number of args,\n"
+		    "  num: %u\n", num);
+
+	va_start(ap, num);
+
+	for (i = 0; i < num; i++) {
+		set_reg(vm, vcpuid, ARM64_CORE_REG(regs.regs[i]),
+			va_arg(ap, uint64_t));
+	}
+
+	va_end(ap);
+}
