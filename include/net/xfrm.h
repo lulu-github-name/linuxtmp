@@ -492,14 +492,12 @@ struct xfrm_mode {
 	 * call output2.
 	 */
 	int (*output)(struct xfrm_state *x, struct sk_buff *skb);
-	) /* RH_KABI_BROKEN_REMOVE_BLOCK */
 
 	/*
 	 * Adjust pointers into the packet and do GSO segmentation.
 	 */
 	struct sk_buff *(*gso_segment)(struct xfrm_state *x, struct sk_buff *skb, netdev_features_t features);
 
-	RH_KABI_BROKEN_REMOVE_BLOCK(
 	/*
 	 * Adjust pointers into the packet when IPsec is done at layer2.
 	 */
