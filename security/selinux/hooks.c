@@ -503,6 +503,9 @@ static int selinux_is_genfs_special_handling(struct super_block *sb)
 		!strcmp(sb->s_type->name, "debugfs") ||
 		!strcmp(sb->s_type->name, "tracefs") ||
 		!strcmp(sb->s_type->name, "rootfs") ||
+#ifdef CONFIG_CEPH_FS_SECURITY_LABEL
+		!strcmp(sb->s_type->name, "ceph") ||
+#endif
 		(selinux_policycap_cgroupseclabel() &&
 		 (!strcmp(sb->s_type->name, "cgroup") ||
 		  !strcmp(sb->s_type->name, "cgroup2")));
@@ -770,6 +773,9 @@ static int selinux_set_mnt_opts(struct super_block *sb,
 		sbsec->flags |= SE_SBGENFS;
 
 	if (!strcmp(sb->s_type->name, "sysfs") ||
+#ifdef CONFIG_CEPH_FS_SECURITY_LABEL
+	    !strcmp(sb->s_type->name, "ceph") ||
+#endif
 	    !strcmp(sb->s_type->name, "cgroup") ||
 	    !strcmp(sb->s_type->name, "cgroup2"))
 		sbsec->flags |= SE_SBGENFS | SE_SBGENFS_XATTR;
