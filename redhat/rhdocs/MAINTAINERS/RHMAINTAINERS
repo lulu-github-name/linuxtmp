@@ -219,19 +219,14 @@ S:	Maintained
 F:	drivers/scsi/3w-9xxx*
 
 8169 10/100/1000 GIGABIT ETHERNET DRIVER (r8169)
-M:	Corinna Vinschen <vinschen@redhat.com>
+M:	Josef Oskera <joskera@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/realtek/r8169.c
 
-8139CP 10/100/1000 GIGABIT ETHERNET DRIVER (8139cp)
+8139CP 10/100 MEGABIT ETHERNET DRIVER (8139cp)
 M:	Ivan Vecera <ivecera@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/realtek/8139cp.c
-
-8139TOO 10/100/1000 GIGABIT ETHERNET DRIVER (8139too)
-M:	Corinna Vinschen <vinschen@redhat.com>
-S:	Maintained
-F:	drivers/net/ethernet/realtek/8139too.c
 
 ACPI SUBSYSTEM
 M:	Al Stone <ahs3@redhat.com>
@@ -319,6 +314,7 @@ F:	drivers/perf/*
 F:	include/linux/perf/arm_pmu.h
 
 ARM SMMU DRIVERS
+M:	Jerry Snitselaar <jsnitsel@redhat.com>
 M:	Mark Salter <msalter@redhat.com>
 M:	Jeremy Linton <jlinton@redhat.com>
 S:	Maintained
@@ -693,18 +689,16 @@ F:	include/uapi/rdma/i40iw-abi.h
 
 INTEL IGB ETHERNET DRIVERS (igb)
 M:	Corinna Vinschen <vinschen@redhat.com>
-M:	Stefan Assmann <sassmann@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/intel/igb/
 
 INTEL IGBVF ETHERNET DRIVERS (igbvf)
 M:	Corinna Vinschen <vinschen@redhat.com>
-M:	Stefan Assmann <sassmann@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/intel/igbvf/
 
 INTEL IGC ETHERNET DRIVERS (igc)
-M:	David Arcari <darcari@redhat.com>
+M:	Corinna Vinschen <vinschen@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/intel/igc/
 
@@ -890,6 +884,7 @@ F:	include/uapi/linux/if_infiniband.h
 F:	Documentation/infiniband/
 
 IOMMU DRIVERS
+M:	Jerry Snitselaar <jsnitsel@redhat.com>
 M:	Myron Stowe <myron.stowe@redhat.com>
 M:	Alex Williamson <alex.williamson@redhat.com>
 M:	Don Dutile <ddutile@redhat.com>
