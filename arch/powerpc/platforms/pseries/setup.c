@@ -42,6 +42,7 @@
 #include <linux/of.h>
 #include <linux/of_pci.h>
 #include <linux/memblock.h>
+#include <linux/swiotlb.h>
 
 #include <asm/mmu.h>
 #include <asm/processor.h>
@@ -70,6 +71,7 @@
 #include <asm/kexec.h>
 #include <asm/isa-bridge.h>
 #include <asm/security_features.h>
+#include <asm/swiotlb.h>
 
 #include "pseries.h"
 #include "../../../../drivers/pci/pci.h"
@@ -766,6 +768,9 @@ static void __init pSeries_setup_arch(void)
 	}
 
 	ppc_md.pcibios_root_bridge_prepare = pseries_root_bridge_prepare;
+
+	if (swiotlb_force == SWIOTLB_FORCE)
+		ppc_swiotlb_enable = 1;
 }
 
 static void pseries_panic(char *str)
