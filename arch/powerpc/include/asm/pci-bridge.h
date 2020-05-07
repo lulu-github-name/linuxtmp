@@ -19,8 +19,6 @@ struct device_node;
 struct pci_controller_ops {
 	void		(*dma_dev_setup)(struct pci_dev *pdev);
 	void		(*dma_bus_setup)(struct pci_bus *bus);
-	bool		(*iommu_bypass_supported)(struct pci_dev *pdev,
-				u64 mask);
 
 	int		(*probe_mode)(struct pci_bus *bus);
 
@@ -46,7 +44,9 @@ struct pci_controller_ops {
 #endif
 
 	int             (*dma_set_mask)(struct pci_dev *pdev, u64 dma_mask);
-	RH_KABI_DEPRECATE_FN(u64, dma_get_required_mask, struct pci_dev *pdev)
+	RH_KABI_REPLACE(u64 (*dma_get_required_mask)(struct pci_dev *pdev),
+			bool (*iommu_bypass_supported)(struct pci_dev *pdev,
+				u64 mask))
 
 	void		(*shutdown)(struct pci_controller *hose);
 };
