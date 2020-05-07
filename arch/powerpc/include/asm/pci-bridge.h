@@ -46,7 +46,7 @@ struct pci_controller_ops {
 #endif
 
 	int             (*dma_set_mask)(struct pci_dev *pdev, u64 dma_mask);
-	u64		(*dma_get_required_mask)(struct pci_dev *pdev);
+	RH_KABI_DEPRECATE_FN(u64, dma_get_required_mask, struct pci_dev *pdev)
 
 	void		(*shutdown)(struct pci_controller *hose);
 };
