@@ -16,6 +16,17 @@
 #include <linux/vmalloc.h>
 
 /*
+ * Avoid KABI breakage due to struct device opacity change when relocating
+ * dma_set_mask/dma_set_coherent_mask/dma_get_required_mask definitions
+ * from arch/powerpc/kernel/dma.c to here
+ */
+#ifdef CONFIG_PPC64
+#include RH_KABI_FAKE_INCLUDE(<linux/cred.h>)
+#include RH_KABI_FAKE_INCLUDE(<linux/seq_file.h>)
+#include RH_KABI_FAKE_INCLUDE(<asm/iommu.h>)
+#endif
+
+/*
  * Managed DMA API
  */
 struct dma_devres {
