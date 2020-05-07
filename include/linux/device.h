@@ -1058,7 +1058,12 @@ struct device {
 	bool			dma_coherent:1;
 #endif
 	/* Use device_extended after all RESERVE fields used */
-	RH_KABI_RESERVE(1)
+
+	/*
+	 * Set to %true if the dma_iommu_ops are requested to use a direct
+	 * window instead of dynamically mapping memory.
+	 */
+	RH_KABI_USE(1, bool iommu_bypass : 1)
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
