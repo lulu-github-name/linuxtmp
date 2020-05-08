@@ -1715,14 +1715,6 @@ nvme_rdma_timeout(struct request *rq, bool reserved)
 	if (ctrl->ctrl.state == NVME_CTRL_RESETTING)
 		return BLK_EH_RESET_TIMER;
 
-	/*
-	 * Restart the timer if a controller reset is already scheduled. Any
-	 * timed out commands would be handled before entering the connecting
-	 * state.
-	 */
-	if (ctrl->ctrl.state == NVME_CTRL_RESETTING)
-		return BLK_EH_RESET_TIMER;
-
 	if (ctrl->ctrl.state != NVME_CTRL_LIVE) {
 		/*
 		 * Teardown immediately if controller times out while starting
