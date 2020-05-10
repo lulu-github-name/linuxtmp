@@ -2158,7 +2158,9 @@ int esw_offloads_enable(struct mlx5_eswitch *esw)
 	mlx5_esw_for_each_vf_vport(esw, i, vport, esw->esw_funcs.num_vfs)
 		vport->info.link_state = MLX5_VPORT_ADMIN_STATE_DOWN;
 
-	mlx5_eswitch_enable_pf_vf_vports(esw, MLX5_VPORT_UC_ADDR_CHANGE);
+	err = mlx5_eswitch_enable_pf_vf_vports(esw, MLX5_VPORT_UC_ADDR_CHANGE);
+	if (err)
+		goto err_vports;
 
 	err = esw_offloads_load_all_reps(esw);
 	if (err)
@@ -2171,6 +2173,7 @@ int esw_offloads_enable(struct mlx5_eswitch *esw)
 
 err_reps:
 	mlx5_eswitch_disable_pf_vf_vports(esw);
+err_vports:
 	esw_set_passing_vport_metadata(esw, false);
 err_vport_metadata:
 	esw_offloads_steering_cleanup(esw);
