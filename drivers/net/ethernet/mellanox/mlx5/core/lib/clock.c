@@ -249,6 +249,12 @@ static int mlx5_extts_configure(struct ptp_clock_info *ptp,
 	    (rq->extts.flags & PTP_EXTTS_EDGES) == PTP_EXTTS_EDGES)
 		return -EOPNOTSUPP;
 
+	/* Reject requests with unsupported flags */
+	if (rq->extts.flags & ~(PTP_ENABLE_FEATURE |
+				PTP_RISING_EDGE |
+				PTP_FALLING_EDGE))
+		return -EOPNOTSUPP;
+
 	if (rq->extts.index >= clock->ptp_info.n_pins)
 		return -EINVAL;
 
