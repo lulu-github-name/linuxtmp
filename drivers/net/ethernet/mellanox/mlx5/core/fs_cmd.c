@@ -226,7 +226,7 @@ static int mlx5_cmd_create_flow_table(struct mlx5_flow_root_namespace *ns,
 		} else {
 			MLX5_SET(create_flow_table_in, in,
 				 flow_table_context.table_miss_action,
-				 ns->def_miss_action);
+				 ft->def_miss_action);
 		}
 		break;
 
@@ -306,7 +306,7 @@ static int mlx5_cmd_modify_flow_table(struct mlx5_flow_root_namespace *ns,
 		} else {
 			MLX5_SET(modify_flow_table_in, in,
 				 flow_table_context.table_miss_action,
-				 ns->def_miss_action);
+				 ft->def_miss_action);
 		}
 	}
 
