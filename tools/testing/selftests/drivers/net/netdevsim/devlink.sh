@@ -4,7 +4,7 @@
 lib_dir=$(dirname $0)/../../../net/forwarding
 
 ALL_TESTS="fw_flash_test params_test regions_test reload_test \
-	   netns_reload_test resource_test \
+	   netns_reload_test resource_test dev_info_test \
 	   empty_reporter_test dummy_reporter_test"
 NUM_NETIFS=0
 source $lib_dir/lib.sh
