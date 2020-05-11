@@ -621,6 +621,7 @@ It provides the kernel source files common to all builds.
 %package -n perf
 Summary: Performance monitoring for the Linux kernel
 Group: Development/System
+Requires: bzip2
 License: GPLv2
 %description -n perf
 This package contains the perf tool, which enables performance monitoring
