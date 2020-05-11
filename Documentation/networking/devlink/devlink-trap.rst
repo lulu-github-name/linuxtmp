@@ -256,6 +256,8 @@ drivers:
 
   * :doc:`netdevsim`
 
+.. _Generic-Packet-Trap-Groups:
+
 Generic Packet Trap Groups
 ==========================
 
