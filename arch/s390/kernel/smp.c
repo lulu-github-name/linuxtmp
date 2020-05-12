@@ -813,6 +813,7 @@ static void smp_init_secondary(void)
 	else
 		clear_cpu_flag(CIF_DEDICATED_CPU);
 	set_cpu_online(cpu, true);
+	update_cpu_masks();
 	inc_irq_stat(CPU_RST);
 	local_irq_enable();
 	cpu_startup_entry(CPUHP_AP_ONLINE_IDLE);
@@ -886,6 +887,7 @@ int __cpu_disable(void)
 	/* Handle possible pending IPIs */
 	smp_handle_ext_call();
 	set_cpu_online(smp_processor_id(), false);
+	update_cpu_masks();
 	/* Disable pseudo page faults on this cpu. */
 	pfault_fini();
 	/* Disable interrupt sources via control register. */
