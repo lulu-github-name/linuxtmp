@@ -2773,6 +2773,8 @@ free_in:
 	return err;
 }
 
+static MLX5E_DEFINE_PREACTIVATE_WRAPPER_CTX(mlx5e_modify_tirs_lro);
+
 static int mlx5e_set_mtu(struct mlx5_core_dev *mdev,
 			 struct mlx5e_params *params, u16 mtu)
 {
@@ -2821,6 +2823,8 @@ int mlx5e_set_dev_port_mtu(struct mlx5e_priv *priv)
 	params->sw_mtu = mtu;
 	return 0;
 }
+
+MLX5E_DEFINE_PREACTIVATE_WRAPPER_CTX(mlx5e_set_dev_port_mtu);
 
 void mlx5e_set_netdev_mtu_boundaries(struct mlx5e_priv *priv)
 {
@@ -2904,6 +2908,8 @@ int mlx5e_num_channels_changed(struct mlx5e_priv *priv)
 	return 0;
 }
 
+MLX5E_DEFINE_PREACTIVATE_WRAPPER_CTX(mlx5e_num_channels_changed);
+
 static void mlx5e_build_txq_maps(struct mlx5e_priv *priv)
 {
 	int i, ch;
@@ -2959,7 +2965,8 @@ void mlx5e_deactivate_priv_channels(struct mlx5e_priv *priv)
 
 static int mlx5e_switch_priv_channels(struct mlx5e_priv *priv,
 				      struct mlx5e_channels *new_chs,
-				      mlx5e_fp_preactivate preactivate)
+				      mlx5e_fp_preactivate preactivate,
+				      void *context)
 {
 	struct net_device *netdev = priv->netdev;
 	struct mlx5e_channels old_chs;
@@ -2978,7 +2985,7 @@ static int mlx5e_switch_priv_channels(struct mlx5e_priv *priv,
 	 * to modify HW settings or update kernel parameters.
 	 */
 	if (preactivate) {
-		err = preactivate(priv);
+		err = preactivate(priv, context);
 		if (err) {
 			priv->channels = old_chs;
 			goto out;
@@ -3000,7 +3007,8 @@ out:
 
 int mlx5e_safe_switch_channels(struct mlx5e_priv *priv,
 			       struct mlx5e_channels *new_chs,
-			       mlx5e_fp_preactivate preactivate)
+			       mlx5e_fp_preactivate preactivate,
+			       void *context)
 {
 	int err;
 
@@ -3008,7 +3016,7 @@ int mlx5e_safe_switch_channels(struct mlx5e_priv *priv,
 	if (err)
 		return err;
 
-	err = mlx5e_switch_priv_channels(priv, new_chs, preactivate);
+	err = mlx5e_switch_priv_channels(priv, new_chs, preactivate, context);
 	if (err)
 		goto err_close;
 
@@ -3025,7 +3033,7 @@ int mlx5e_safe_reopen_channels(struct mlx5e_priv *priv)
 	struct mlx5e_channels new_channels = {};
 
 	new_channels.params = priv->channels.params;
-	return mlx5e_safe_switch_channels(priv, &new_channels, NULL);
+	return mlx5e_safe_switch_channels(priv, &new_channels, NULL, NULL);
 }
 
 void mlx5e_timestamp_init(struct mlx5e_priv *priv)
@@ -3475,7 +3483,8 @@ static int mlx5e_setup_tc_mqprio(struct mlx5e_priv *priv,
 		goto out;
 	}
 
-	err = mlx5e_safe_switch_channels(priv, &new_channels, mlx5e_num_channels_changed);
+	err = mlx5e_safe_switch_channels(priv, &new_channels,
+					 mlx5e_num_channels_changed_ctx, NULL);
 	if (err)
 		goto out;
 
@@ -3688,7 +3697,8 @@ static int set_feature_lro(struct net_device *netdev, bool enable)
 		goto out;
 	}
 
-	err = mlx5e_safe_switch_channels(priv, &new_channels, mlx5e_modify_tirs_lro);
+	err = mlx5e_safe_switch_channels(priv, &new_channels,
+					 mlx5e_modify_tirs_lro_ctx, NULL);
 out:
 	mutex_unlock(&priv->state_lock);
 	return err;
@@ -3907,7 +3917,7 @@ static bool mlx5e_xsk_validate_mtu(struct net_device *netdev,
 }
 
 int mlx5e_change_mtu(struct net_device *netdev, int new_mtu,
-		     change_hw_mtu_cb set_mtu_cb)
+		     mlx5e_fp_preactivate preactivate)
 {
 	struct mlx5e_priv *priv = netdev_priv(netdev);
 	struct mlx5e_channels new_channels = {};
@@ -3956,13 +3966,13 @@ int mlx5e_change_mtu(struct net_device *netdev, int new_mtu,
 
 	if (!reset) {
 		params->sw_mtu = new_mtu;
-		if (set_mtu_cb)
-			set_mtu_cb(priv);
+		if (preactivate)
+			preactivate(priv, NULL);
 		netdev->mtu = params->sw_mtu;
 		goto out;
 	}
 
-	err = mlx5e_safe_switch_channels(priv, &new_channels, set_mtu_cb);
+	err = mlx5e_safe_switch_channels(priv, &new_channels, preactivate, NULL);
 	if (err)
 		goto out;
 
@@ -3975,7 +3985,7 @@ out:
 
 static int mlx5e_change_nic_mtu(struct net_device *netdev, int new_mtu)
 {
-	return mlx5e_change_mtu(netdev, new_mtu, mlx5e_set_dev_port_mtu);
+	return mlx5e_change_mtu(netdev, new_mtu, mlx5e_set_dev_port_mtu_ctx);
 }
 
 int mlx5e_hwstamp_set(struct mlx5e_priv *priv, struct ifreq *ifr)
@@ -4441,7 +4451,7 @@ static int mlx5e_xdp_set(struct net_device *netdev, struct bpf_prog *prog)
 		mlx5e_set_rq_type(priv->mdev, &new_channels.params);
 		old_prog = priv->channels.params.xdp_prog;
 
-		err = mlx5e_safe_switch_channels(priv, &new_channels, NULL);
+		err = mlx5e_safe_switch_channels(priv, &new_channels, NULL, NULL);
 		if (err)
 			goto unlock;
 	} else {
