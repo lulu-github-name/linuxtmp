@@ -160,7 +160,8 @@ struct eeh_dev {
 	struct pci_dev *pdev;		/* Associated PCI device	*/
 	bool in_error;			/* Error flag for edev		*/
 	struct pci_dev *physfn;		/* Associated SRIOV PF		*/
-	RH_KABI_DEPRECATE(struct pci_bus *, bus)
+	RH_KABI_REPLACE(struct pci_bus * bus, struct pci_controller *controller)
+	RH_KABI_EXTEND(int bdfn)	/* bdfn of device (for cfg ops) */
 };
 
 static inline struct pci_dn *eeh_dev_to_pdn(struct eeh_dev *edev)
