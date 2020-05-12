@@ -177,7 +177,7 @@ struct gpio_irq_chip {
 	 */
 	void		(*irq_disable)(struct irq_data *data);
 };
-#endif
+#endif /* CONFIG_GPIOLIB_IRQCHIP */
 
 #define GPIO_LINE_DIRECTION_IN	1
 #define GPIO_LINE_DIRECTION_OUT	0
@@ -325,7 +325,7 @@ struct gpio_chip {
 	spinlock_t bgpio_lock;
 	unsigned long bgpio_data;
 	unsigned long bgpio_dir;
-#endif
+#endif /* CONFIG_GPIO_GENERIC */
 
 #ifdef CONFIG_GPIOLIB_IRQCHIP
 	/*
@@ -340,7 +340,7 @@ struct gpio_chip {
 	 * used to handle IRQs for most practical cases.
 	 */
 	struct gpio_irq_chip irq;
-#endif
+#endif /* CONFIG_GPIOLIB_IRQCHIP */
 
 	/**
 	 * @need_valid_mask:
@@ -387,7 +387,7 @@ struct gpio_chip {
 	 */
 	int (*of_xlate)(struct gpio_chip *gc,
 			const struct of_phandle_args *gpiospec, u32 *flags);
-#endif
+#endif /* CONFIG_OF_GPIO */
 };
 
 extern const char *gpiochip_is_requested(struct gpio_chip *chip,
@@ -430,7 +430,7 @@ extern int gpiochip_add_data_with_key(struct gpio_chip *chip, void *data,
 	})
 #else
 #define gpiochip_add_data(chip, data) gpiochip_add_data_with_key(chip, data, NULL, NULL)
-#endif
+#endif /* CONFIG_LOCKDEP */
 
 static inline int gpiochip_add(struct gpio_chip *chip)
 {
@@ -485,7 +485,7 @@ int bgpio_init(struct gpio_chip *gc, struct device *dev,
 #define BGPIOF_READ_OUTPUT_REG_SET	BIT(4) /* reg_set stores output value */
 #define BGPIOF_NO_OUTPUT		BIT(5) /* only input */
 
-#endif
+#endif /* CONFIG_GPIO_GENERIC */
 
 #ifdef CONFIG_GPIOLIB_IRQCHIP
 
@@ -555,7 +555,7 @@ static inline int gpiochip_irqchip_add_nested(struct gpio_chip *gpiochip,
 					handler, type, true,
 					&lock_key, &request_key);
 }
-#else
+#else /* ! CONFIG_LOCKDEP */
 static inline int gpiochip_irqchip_add(struct gpio_chip *gpiochip,
 				       struct irq_chip *irqchip,
 				       unsigned int first_irq,
@@ -606,7 +606,7 @@ int gpiochip_add_pingroup_range(struct gpio_chip *chip,
 			unsigned int gpio_offset, const char *pin_group);
 void gpiochip_remove_pin_ranges(struct gpio_chip *chip);
 
-#else
+#else /* ! CONFIG_PINCTRL */
 
 struct pinctrl_dev;
 
