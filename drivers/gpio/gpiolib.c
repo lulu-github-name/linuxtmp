@@ -2036,6 +2036,7 @@ static int gpiochip_hierarchy_irq_domain_alloc(struct irq_domain *d,
 
 	chip_info(gc, "alloc_irqs_parent for %d parent hwirq %d\n",
 		  irq, parent_hwirq);
+	irq_set_lockdep_class(irq, gc->irq.lock_key, gc->irq.request_key);
 	ret = irq_domain_alloc_irqs_parent(d, irq, 1, parent_arg);
 	/*
 	 * If the parent irqdomain is msi, the interrupts have already
