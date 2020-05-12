@@ -3070,7 +3070,6 @@ static int gpio_do_set_config(struct gpio_chip *gc, unsigned int offset,
 static int gpio_set_config(struct gpio_chip *gc, unsigned int offset,
 			   enum pin_config_param mode)
 {
-	unsigned long config;
 	unsigned arg;
 
 	switch (mode) {
@@ -3084,7 +3083,6 @@ static int gpio_set_config(struct gpio_chip *gc, unsigned int offset,
 		arg = 0;
 	}
 
-	config = PIN_CONF_PACKED(mode, arg);
 	return gpio_do_set_config(gc, offset, mode);
 }
 
