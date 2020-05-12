@@ -2959,8 +2959,8 @@ int gpiod_get_array_value_complex(bool raw, bool can_sleep,
 			__set_bit(hwgpio, mask);
 
 			if (array_info)
-				find_next_zero_bit(array_info->get_mask,
-						   array_size, i);
+				i = find_next_zero_bit(array_info->get_mask,
+						       array_size, i);
 			else
 				i++;
 		} while ((i < array_size) &&
@@ -2984,7 +2984,8 @@ int gpiod_get_array_value_complex(bool raw, bool can_sleep,
 			trace_gpio_value(desc_to_gpio(desc), 1, value);
 
 			if (array_info)
-				find_next_zero_bit(array_info->get_mask, i, j);
+				j = find_next_zero_bit(array_info->get_mask, i,
+						       j);
 			else
 				j++;
 		}
@@ -3271,8 +3272,8 @@ int gpiod_set_array_value_complex(bool raw, bool can_sleep,
 			}
 
 			if (array_info)
-				find_next_zero_bit(array_info->set_mask,
-						   array_size, i);
+				i = find_next_zero_bit(array_info->set_mask,
+						       array_size, i);
 			else
 				i++;
 		} while ((i < array_size) &&
