@@ -213,6 +213,8 @@ struct gpio_irq_chip {
  * @dbg_show: optional routine to show contents in debugfs; default code
  *	will be used when this is omitted, but custom code can show extra
  *	state (such as pullup/pulldown configuration).
+ * @init_valid_mask: optional routine to initialize @valid_mask, to be used if
+ *	not all GPIOs are valid.
  * @add_pin_ranges: optional routine to initialize pin ranges, to be used when
  *	requires special mapping of the pins that provides GPIO functionality.
  *	It is called after adding GPIO chip and before adding IRQ chip.
