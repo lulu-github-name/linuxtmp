@@ -78,6 +78,19 @@ struct iommu_table_ops {
 	unsigned long (*get)(struct iommu_table *tbl, long index);
 	void (*flush)(struct iommu_table *tbl);
 	void (*free)(struct iommu_table *tbl);
+
+#ifdef CONFIG_IOMMU_API
+	RH_KABI_EXTEND(int (*xchg_no_kill)(struct iommu_table *tbl,
+					   long index,
+					   unsigned long *hpa,
+					   enum dma_data_direction *direction,
+					   bool realmode);)
+
+	RH_KABI_EXTEND(void (*tce_kill)(struct iommu_table *tbl,
+					unsigned long index,
+					unsigned long pages,
+					bool realmode);)
+#endif
 };
 
 /* These are used by VIO */
@@ -218,6 +231,12 @@ extern void iommu_del_device(struct device *dev);
 extern long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
 		unsigned long entry, unsigned long *hpa,
 		enum dma_data_direction *direction);
+extern long iommu_tce_xchg_no_kill(struct mm_struct *mm,
+		struct iommu_table *tbl,
+		unsigned long entry, unsigned long *hpa,
+		enum dma_data_direction *direction);
+extern void iommu_tce_kill(struct iommu_table *tbl,
+		unsigned long entry, unsigned long pages);
 #else
 static inline void iommu_register_group(struct iommu_table_group *table_group,
 					int pci_domain_number,
