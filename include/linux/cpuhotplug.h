@@ -58,6 +58,7 @@ enum cpuhp_state {
 	CPUHP_PCI_XGENE_DEAD,
 	CPUHP_IOMMU_INTEL_DEAD,
 	CPUHP_LUSTRE_CFS_DEAD,
+	/* kABI: CPUHP_PADATA_DEAD, */
 	CPUHP_AP_ARM_CACHE_B15_RAC_DEAD,
 	CPUHP_WORKQUEUE_PREP,
 	CPUHP_POWER_NUMA_PREPARE,
@@ -191,6 +192,9 @@ enum cpuhp_state {
 
 #define CPUHP_AP_HYPERV_TIMER_STARTING \
 		CPUHP_AP_MIPS_GIC_TIMER_STARTING
+
+#define CPUHP_PADATA_DEAD \
+		CPUHP_AP_ARM_CACHE_B15_RAC_DEAD
 
 int __cpuhp_setup_state(enum cpuhp_state state,	const char *name, bool invoke,
 			int (*startup)(unsigned int cpu),
