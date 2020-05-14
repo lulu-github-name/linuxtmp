@@ -512,9 +512,6 @@ extern int devm_gpiochip_add_data(struct device *dev, struct gpio_chip *chip,
 extern struct gpio_chip *gpiochip_find(void *data,
 			      int (*match)(struct gpio_chip *chip, void *data));
 
-/* lock/unlock as IRQ */
-int gpiochip_lock_as_irq(struct gpio_chip *chip, unsigned int offset);
-void gpiochip_unlock_as_irq(struct gpio_chip *chip, unsigned int offset);
 bool gpiochip_line_is_irq(struct gpio_chip *chip, unsigned int offset);
 int gpiochip_reqres_irq(struct gpio_chip *chip, unsigned int offset);
 void gpiochip_relres_irq(struct gpio_chip *chip, unsigned int offset);
@@ -730,6 +727,11 @@ void devprop_gpiochip_set_names(struct gpio_chip *chip,
 
 #ifdef CONFIG_GPIOLIB
 
+/* lock/unlock as IRQ */
+int gpiochip_lock_as_irq(struct gpio_chip *chip, unsigned int offset);
+void gpiochip_unlock_as_irq(struct gpio_chip *chip, unsigned int offset);
+
+
 struct gpio_chip *gpiod_to_chip(const struct gpio_desc *desc);
 
 #else /* CONFIG_GPIOLIB */
@@ -741,6 +743,18 @@ static inline struct gpio_chip *gpiod_to_chip(const struct gpio_desc *desc)
 	return ERR_PTR(-ENODEV);
 }
 
+static inline int gpiochip_lock_as_irq(struct gpio_chip *chip,
+				       unsigned int offset)
+{
+	WARN_ON(1);
+	return -EINVAL;
+}
+
+static inline void gpiochip_unlock_as_irq(struct gpio_chip *chip,
+					  unsigned int offset)
+{
+	WARN_ON(1);
+}
 #endif /* CONFIG_GPIOLIB */
 
 #endif /* __LINUX_GPIO_DRIVER_H */
