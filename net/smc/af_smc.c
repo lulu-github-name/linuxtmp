@@ -379,7 +379,6 @@ static int smcr_lgr_reg_rmbs(struct smc_link_group *lgr,
 
 static int smcr_clnt_conf_first_link(struct smc_sock *smc)
 {
-	struct net *net = sock_net(smc->clcsock->sk);
 	struct smc_link *link = smc->conn.lnk;
 	int rest;
 	int rc;
@@ -431,7 +430,7 @@ static int smcr_clnt_conf_first_link(struct smc_sock *smc)
 	if (rc < 0)
 		return SMC_CLC_DECL_TIMEOUT_AL;
 
-	smc_llc_link_active(link, net->ipv4.sysctl_tcp_keepalive_time);
+	smc_llc_link_active(link);
 
 	return 0;
 }
@@ -1017,7 +1016,6 @@ void smc_close_non_accepted(struct sock *sk)
 
 static int smcr_serv_conf_first_link(struct smc_sock *smc)
 {
-	struct net *net = sock_net(smc->clcsock->sk);
 	struct smc_link *link = smc->conn.lnk;
 	int rest;
 	int rc;
@@ -1063,7 +1061,7 @@ static int smcr_serv_conf_first_link(struct smc_sock *smc)
 		return rc == -EAGAIN ? SMC_CLC_DECL_TIMEOUT_AL : rc;
 	}
 
-	smc_llc_link_active(link, net->ipv4.sysctl_tcp_keepalive_time);
+	smc_llc_link_active(link);
 
 	return 0;
 }
