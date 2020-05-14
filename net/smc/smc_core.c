@@ -262,6 +262,7 @@ static void smc_lgr_free_work(struct work_struct *work)
 			if (smc_link_usable(lnk))
 				lnk->state = SMC_LNK_INACTIVE;
 		}
+		wake_up_interruptible_all(&lgr->llc_waiter);
 	}
 	smc_lgr_free(lgr);
 }
@@ -695,6 +696,7 @@ static void smc_lgr_cleanup(struct smc_link_group *lgr)
 			if (smc_link_usable(lnk))
 				lnk->state = SMC_LNK_INACTIVE;
 		}
+		wake_up_interruptible_all(&lgr->llc_waiter);
 	}
 }
 
