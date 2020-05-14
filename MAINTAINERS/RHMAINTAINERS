@@ -117,9 +117,21 @@ T:	git git://git.host.prod.eng.bos.redhat.com/rhel-alt-7.6.z.git
 S:	Maintained
 F:	redhat/
 
-RHEL 7.8 Kernel Maintainer
+RHEL 7.9 Kernel Maintainer
 M:	Jan Stancek <jstancek@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel7.git
+S:	Maintained
+F:	redhat/
+
+RHEL 7.9 Real Time Kernel Maintainer
+M:	Tom Rix <trix@redhat.com>
+T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rt.git rhel-7.9/rt-master
+S:	Maintained
+F:	redhat/
+
+RHEL 7.8 Kernel Maintainer
+M:	Augusto Caringi <acaringi@redhat.com>
+T:	git git://git.host.prod.eng.bos.redhat.com/rhel-7.8.z.git
 S:	Maintained
 F:	redhat/
 
