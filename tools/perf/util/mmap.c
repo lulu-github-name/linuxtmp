@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h> // sysconf()
+#include <perf/mmap.h>
 #ifdef HAVE_LIBNUMA_SUPPORT
 #include <numaif.h>
 #endif
@@ -96,7 +97,7 @@ union perf_event *perf_mmap__read_event(struct mmap *map)
 
 	/* non-overwirte doesn't pause the ringbuffer */
 	if (!map->core.overwrite)
-		map->core.end = perf_mmap__read_head(map);
+		map->core.end = perf_mmap__read_head(&map->core);
 
 	event = perf_mmap__read(map, &map->core.start, map->core.end);
 
@@ -104,25 +105,6 @@ union perf_event *perf_mmap__read_event(struct mmap *map)
 		map->core.prev = map->core.start;
 
 	return event;
-}
-
-static bool perf_mmap__empty(struct mmap *map)
-{
-	struct perf_event_mmap_page *pc = map->core.base;
-
-	return perf_mmap__read_head(map) == map->core.prev && !pc->aux_size;
-}
-
-void perf_mmap__consume(struct mmap *map)
-{
-	if (!map->core.overwrite) {
-		u64 old = map->core.prev;
-
-		perf_mmap__write_tail(map, old);
-	}
-
-	if (refcount_read(&map->core.refcnt) == 1 && perf_mmap__empty(map))
-		perf_mmap__put(&map->core);
 }
 
 int __weak auxtrace_mmap__mmap(struct auxtrace_mmap *mm __maybe_unused,
@@ -421,7 +403,7 @@ static int overwrite_rb_find_range(void *buf, int mask, u64 *start, u64 *end)
  */
 static int __perf_mmap__read_init(struct mmap *md)
 {
-	u64 head = perf_mmap__read_head(md);
+	u64 head = perf_mmap__read_head(&md->core);
 	u64 old = md->core.prev;
 	unsigned char *data = md->core.base + page_size;
 	unsigned long size;
@@ -438,7 +420,7 @@ static int __perf_mmap__read_init(struct mmap *md)
 			WARN_ONCE(1, "failed to keep up with mmap data. (warn only once)\n");
 
 			md->core.prev = head;
-			perf_mmap__consume(md);
+			perf_mmap__consume(&md->core);
 			return -EAGAIN;
 		}
 
@@ -467,7 +449,7 @@ int perf_mmap__read_init(struct mmap *map)
 int perf_mmap__push(struct mmap *md, void *to,
 		    int push(struct mmap *map, void *to, void *buf, size_t size))
 {
-	u64 head = perf_mmap__read_head(md);
+	u64 head = perf_mmap__read_head(&md->core);
 	unsigned char *data = md->core.base + page_size;
 	unsigned long size;
 	void *buf;
@@ -500,7 +482,7 @@ int perf_mmap__push(struct mmap *md, void *to,
 	}
 
 	md->core.prev = head;
-	perf_mmap__consume(md);
+	perf_mmap__consume(&md->core);
 out:
 	return rc;
 }
@@ -519,5 +501,5 @@ void perf_mmap__read_done(struct mmap *map)
 	if (!refcount_read(&map->core.refcnt))
 		return;
 
-	map->core.prev = perf_mmap__read_head(map);
+	map->core.prev = perf_mmap__read_head(&map->core);
 }
