@@ -61,6 +61,8 @@ static inline void nf_ct_set_acct(struct net *net, bool enable)
 	net->ct.sysctl_acct = enable;
 }
 
+void nf_ct_acct_update(struct nf_conn *ct, u32 dir, unsigned int bytes);
+
 int nf_conntrack_acct_pernet_init(struct net *net);
 void nf_conntrack_acct_pernet_fini(struct net *net);
 
