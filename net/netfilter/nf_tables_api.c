@@ -7753,6 +7753,11 @@ static struct pernet_operations nf_tables_net_ops = {
 	.exit	= nf_tables_exit_net,
 };
 
+static struct flow_indr_block_entry block_ing_entry = {
+	.cb = nft_indr_block_get_and_ing_cmd,
+	.list = LIST_HEAD_INIT(block_ing_entry.list),
+};
+
 static int __init nf_tables_module_init(void)
 {
 	int err;
@@ -7783,6 +7788,7 @@ static int __init nf_tables_module_init(void)
 	if (err < 0)
 		goto err5;
 
+	flow_indr_add_block_cb(&block_ing_entry);
 	return err;
 err5:
 	rhltable_destroy(&nft_objname_ht);
@@ -7799,6 +7805,7 @@ err1:
 
 static void __exit nf_tables_module_exit(void)
 {
+	flow_indr_del_block_cb(&block_ing_entry);
 	nfnetlink_subsys_unregister(&nf_tables_subsys);
 	unregister_netdevice_notifier(&nf_tables_flowtable_notifier);
 	nft_chain_filter_fini();
