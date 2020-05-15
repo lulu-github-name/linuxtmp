@@ -2425,7 +2425,8 @@ static inline void membarrier_switch_mm(struct rq *rq,
 					struct mm_struct *prev_mm,
 					struct mm_struct *next_mm)
 {
-#endif 
+}
+#endif
 
 #ifdef CONFIG_SMP
 static inline bool is_per_cpu_kthread(struct task_struct *p)
