@@ -1167,7 +1167,7 @@ static struct proto_ops mptcp_stream_ops;
 
 static struct inet_protosw mptcp_protosw = {
 	.type		= SOCK_STREAM,
-	.protocol	= IPPROTO_MPTCP,
+	.protocol	= IPPROTO_MPTCP_KERN,
 	.prot		= &mptcp_prot,
 	.ops		= &mptcp_stream_ops,
 	.flags		= INET_PROTOSW_ICSK,
@@ -1205,7 +1205,7 @@ static void mptcp_v6_destroy(struct sock *sk)
 
 static struct inet_protosw mptcp_v6_protosw = {
 	.type		= SOCK_STREAM,
-	.protocol	= IPPROTO_MPTCP,
+	.protocol	= IPPROTO_MPTCP_KERN,
 	.prot		= &mptcp_v6_prot,
 	.ops		= &mptcp_v6_stream_ops,
 	.flags		= INET_PROTOSW_ICSK,
