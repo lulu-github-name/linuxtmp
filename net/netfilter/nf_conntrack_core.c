@@ -276,8 +276,10 @@ nf_ct_get_tuple(const struct sk_buff *skb,
 	tuple->dst.dir = IP_CT_DIR_ORIGINAL;
 
 	switch (protonum) {
+#if IS_ENABLED(CONFIG_IPV6)
 	case IPPROTO_ICMPV6:
 		return icmpv6_pkt_to_tuple(skb, dataoff, net, tuple);
+#endif
 	case IPPROTO_ICMP:
 		return icmp_pkt_to_tuple(skb, dataoff, net, tuple);
 	}
@@ -1730,8 +1732,10 @@ static int nf_conntrack_handle_packet(struct nf_conn *ct,
 					       ctinfo, state);
 	case IPPROTO_ICMP:
 		return nf_conntrack_icmp_packet(ct, skb, ctinfo, state);
+#if IS_ENABLED(CONFIG_IPV6)
 	case IPPROTO_ICMPV6:
 		return nf_conntrack_icmpv6_packet(ct, skb, ctinfo, state);
+#endif
 #ifdef CONFIG_NF_CT_PROTO_UDPLITE
 	case IPPROTO_UDPLITE:
 		return nf_conntrack_udplite_packet(ct, skb, dataoff,
