@@ -557,8 +557,15 @@ static int __mptcp_init_sock(struct sock *sk)
 
 static int mptcp_init_sock(struct sock *sk)
 {
+	static bool warned;
+
 	if (!mptcp_is_enabled(sock_net(sk)))
 		return -ENOPROTOOPT;
+
+	if (!warned) {
+		warned = true;
+		mark_tech_preview("Multipath TCP", NULL);
+	}
 
 	return __mptcp_init_sock(sk);
 }
