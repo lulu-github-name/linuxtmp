@@ -1705,6 +1705,7 @@ struct linux_efi_random_seed {
 
 struct linux_efi_tpm_eventlog {
 	u32	size;
+	u32	final_events_preboot_size;
 	u8	version;
 	u8	log[];
 };
