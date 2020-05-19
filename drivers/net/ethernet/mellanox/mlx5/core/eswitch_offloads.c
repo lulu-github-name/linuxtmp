@@ -2582,11 +2582,16 @@ static int mlx5_eswitch_check(const struct mlx5_core_dev *dev)
 	if(!MLX5_ESWITCH_MANAGER(dev))
 		return -EPERM;
 
-	if (dev->priv.eswitch->mode == MLX5_ESWITCH_NONE &&
-	    !mlx5_core_is_ecpf_esw_manager(dev))
-		return -EOPNOTSUPP;
-
 	return 0;
+}
+
+static int eswitch_devlink_esw_mode_check(const struct mlx5_eswitch *esw)
+{
+	/* devlink commands in NONE eswitch mode are currently supported only
+	 * on ECPF.
+	 */
+	return (esw->mode == MLX5_ESWITCH_NONE &&
+		!mlx5_core_is_ecpf_esw_manager(esw->dev)) ? -EOPNOTSUPP : 0;
 }
 
 int mlx5_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode,
@@ -2597,6 +2602,10 @@ int mlx5_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode,
 	int err;
 
 	err = mlx5_eswitch_check(dev);
+	if (err)
+		return err;
+
+	err = eswitch_devlink_esw_mode_check(dev->priv.eswitch);
 	if (err)
 		return err;
 
@@ -2625,6 +2634,10 @@ int mlx5_devlink_eswitch_mode_get(struct devlink *devlink, u16 *mode)
 	if (err)
 		return err;
 
+	err = eswitch_devlink_esw_mode_check(dev->priv.eswitch);
+	if (err)
+		return err;
+
 	return esw_mode_to_devlink(dev->priv.eswitch->mode, mode);
 }
 
@@ -2637,6 +2650,10 @@ int mlx5_devlink_eswitch_inline_mode_set(struct devlink *devlink, u8 mode,
 	u8 mlx5_mode;
 
 	err = mlx5_eswitch_check(dev);
+	if (err)
+		return err;
+
+	err = eswitch_devlink_esw_mode_check(esw);
 	if (err)
 		return err;
 
@@ -2694,6 +2711,10 @@ int mlx5_devlink_eswitch_inline_mode_get(struct devlink *devlink, u8 *mode)
 	if (err)
 		return err;
 
+	err = eswitch_devlink_esw_mode_check(esw);
+	if (err)
+		return err;
+
 	return esw_inline_mode_to_devlink(esw->offloads.inline_mode, mode);
 }
 
@@ -2746,6 +2767,10 @@ int mlx5_devlink_eswitch_encap_mode_set(struct devlink *devlink,
 	if (err)
 		return err;
 
+	err = eswitch_devlink_esw_mode_check(esw);
+	if (err)
+		return err;
+
 	if (encap != DEVLINK_ESWITCH_ENCAP_MODE_NONE &&
 	    (!MLX5_CAP_ESW_FLOWTABLE_FDB(dev, reformat) ||
 	     !MLX5_CAP_ESW_FLOWTABLE_FDB(dev, decap)))
@@ -2792,6 +2817,10 @@ int mlx5_devlink_eswitch_encap_mode_get(struct devlink *devlink,
 	int err;
 
 	err = mlx5_eswitch_check(dev);
+	if (err)
+		return err;
+
+	err = eswitch_devlink_esw_mode_check(esw);
 	if (err)
 		return err;
 
