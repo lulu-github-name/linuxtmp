@@ -168,6 +168,8 @@ enum {
 	Opt_noquotadf,
 	Opt_copyfrom,
 	Opt_nocopyfrom,
+	Opt_wsync,
+	Opt_nowsync,
 };
 
 static match_table_t fsopt_tokens = {
@@ -210,6 +212,8 @@ static match_table_t fsopt_tokens = {
 	{Opt_noquotadf, "noquotadf"},
 	{Opt_copyfrom, "copyfrom"},
 	{Opt_nocopyfrom, "nocopyfrom"},
+	{Opt_wsync, "wsync"},
+	{Opt_nowsync, "nowsync"},
 	{-1, NULL}
 };
 
@@ -401,6 +405,11 @@ static int parse_fsopt_token(char *c, void *private)
 	case Opt_noacl:
 		fsopt->sb_flags &= ~SB_POSIXACL;
 		break;
+	case Opt_wsync:
+		fsopt->flags &= ~CEPH_MOUNT_OPT_ASYNC_DIROPS;
+		break;
+	case Opt_nowsync:
+		fsopt->flags |= CEPH_MOUNT_OPT_ASYNC_DIROPS;
 	default:
 		BUG_ON(token);
 	}
@@ -628,6 +637,9 @@ static int ceph_show_options(struct seq_file *m, struct dentry *root)
 
 	if (fsopt->flags & CEPH_MOUNT_OPT_CLEANRECOVER)
 		seq_show_option(m, "recover_session", "clean");
+
+	if (fsopt->flags & CEPH_MOUNT_OPT_ASYNC_DIROPS)
+		seq_puts(m, ",nowsync");
 
 	if (fsopt->wsize != CEPH_MAX_WRITE_SIZE)
 		seq_printf(m, ",wsize=%d", fsopt->wsize);
