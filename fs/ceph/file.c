@@ -2107,6 +2107,8 @@ static ssize_t __ceph_copy_file_range(struct file *src_file, loff_t src_off,
 		do_final_copy = true;
 
 	file_update_time(dst_file);
+	inode_inc_iversion_raw(dst_inode);
+
 	if (endoff > size) {
 		int caps_flags = 0;
 
