@@ -1964,6 +1964,9 @@ static ssize_t ceph_copy_file_range(struct file *src_file, loff_t src_off,
 	 * efficient).
 	 */
 
+	if (ceph_test_mount_opt(ceph_inode_to_client(src_inode), NOCOPYFROM))
+		return -EOPNOTSUPP;
+
 	if ((src_ci->i_layout.stripe_unit != dst_ci->i_layout.stripe_unit) ||
 	    (src_ci->i_layout.stripe_count != dst_ci->i_layout.stripe_count) ||
 	    (src_ci->i_layout.object_size != dst_ci->i_layout.object_size))
