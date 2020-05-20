@@ -268,6 +268,12 @@ struct css_set {
 
 	/* For RCU-protected deletion */
 	struct rcu_head rcu_head;
+
+	/*
+	 * RHEL8: css_set structures are dynamically allocated and
+	 *	  used by core kernel only.
+	 */
+	RH_KABI_EXTEND(struct list_head dying_tasks)
 };
 
 struct cgroup_base_stat {
