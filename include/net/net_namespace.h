@@ -180,6 +180,7 @@ struct net {
 #ifdef CONFIG_NF_CT_PROTO_GRE
 	RH_KABI_EXTEND(struct nf_gre_net	nf_ct_gre)
 #endif
+	RH_KABI_EXTEND(DEFINE_SNMP_STAT(struct linux_tls_mib, mib_tls_statistics))
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
