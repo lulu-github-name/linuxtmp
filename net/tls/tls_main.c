@@ -59,7 +59,7 @@ static DEFINE_MUTEX(tcpv6_prot_mutex);
 static struct proto *saved_tcpv4_prot;
 static DEFINE_MUTEX(tcpv4_prot_mutex);
 static LIST_HEAD(device_list);
-static DEFINE_MUTEX(device_mutex);
+static DEFINE_SPINLOCK(device_spinlock);
 static struct proto tls_prots[TLS_NUM_PROTS][TLS_NUM_CONFIG][TLS_NUM_CONFIG];
 static struct proto_ops tls_sw_proto_ops;
 static void build_protos(struct proto prot[TLS_NUM_CONFIG][TLS_NUM_CONFIG],
@@ -663,18 +663,14 @@ static int tls_hw_prot(struct sock *sk)
 	struct tls_device *dev;
 	int rc = 0;
 
-	/* RHEL: fix up the locking below after commit df9d4a178022 is
-	 * backported */
-	mutex_lock(&device_mutex);
+	spin_lock_bh(&device_spinlock);
 	list_for_each_entry(dev, &device_list, dev_list) {
 		if (dev->feature && dev->feature(dev)) {
 			ctx = create_ctx(sk);
 			if (!ctx)
 				goto out;
 
-#if 0
 			spin_unlock_bh(&device_spinlock);
-#endif
 			tls_build_proto(sk);
 			ctx->hash = sk->sk_prot->hash;
 			ctx->unhash = sk->sk_prot->unhash;
@@ -684,15 +680,13 @@ static int tls_hw_prot(struct sock *sk)
 			ctx->rx_conf = TLS_HW_RECORD;
 			ctx->tx_conf = TLS_HW_RECORD;
 			update_sk_prot(sk, ctx);
-#if 0
 			spin_lock_bh(&device_spinlock);
-#endif
 			rc = 1;
 			break;
 		}
 	}
 out:
-	mutex_unlock(&device_mutex);
+	spin_unlock_bh(&device_spinlock);
 	return rc;
 }
 
@@ -701,12 +695,17 @@ static void tls_hw_unhash(struct sock *sk)
 	struct tls_context *ctx = tls_get_ctx(sk);
 	struct tls_device *dev;
 
-	mutex_lock(&device_mutex);
+	spin_lock_bh(&device_spinlock);
 	list_for_each_entry(dev, &device_list, dev_list) {
-		if (dev->unhash)
+		if (dev->unhash) {
+			kref_get(&dev->kref);
+			spin_unlock_bh(&device_spinlock);
 			dev->unhash(dev, sk);
+			kref_put(&dev->kref, dev->release);
+			spin_lock_bh(&device_spinlock);
+		}
 	}
-	mutex_unlock(&device_mutex);
+	spin_unlock_bh(&device_spinlock);
 	ctx->unhash(sk);
 }
 
@@ -717,12 +716,17 @@ static int tls_hw_hash(struct sock *sk)
 	int err;
 
 	err = ctx->hash(sk);
-	mutex_lock(&device_mutex);
+	spin_lock_bh(&device_spinlock);
 	list_for_each_entry(dev, &device_list, dev_list) {
-		if (dev->hash)
+		if (dev->hash) {
+			kref_get(&dev->kref);
+			spin_unlock_bh(&device_spinlock);
 			err |= dev->hash(dev, sk);
+			kref_put(&dev->kref, dev->release);
+			spin_lock_bh(&device_spinlock);
+		}
 	}
-	mutex_unlock(&device_mutex);
+	spin_unlock_bh(&device_spinlock);
 
 	if (err)
 		tls_hw_unhash(sk);
@@ -887,17 +891,17 @@ static size_t tls_get_info_size(const struct sock *sk)
 
 void tls_register_device(struct tls_device *device)
 {
-	mutex_lock(&device_mutex);
+	spin_lock_bh(&device_spinlock);
 	list_add_tail(&device->dev_list, &device_list);
-	mutex_unlock(&device_mutex);
+	spin_unlock_bh(&device_spinlock);
 }
 EXPORT_SYMBOL(tls_register_device);
 
 void tls_unregister_device(struct tls_device *device)
 {
-	mutex_lock(&device_mutex);
+	spin_lock_bh(&device_spinlock);
 	list_del(&device->dev_list);
-	mutex_unlock(&device_mutex);
+	spin_unlock_bh(&device_spinlock);
 }
 EXPORT_SYMBOL(tls_unregister_device);
 
