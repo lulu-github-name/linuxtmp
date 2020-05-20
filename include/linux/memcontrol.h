@@ -90,7 +90,7 @@ struct mem_cgroup_id {
 enum mem_cgroup_events_target {
 	MEM_CGROUP_TARGET_THRESH,
 	MEM_CGROUP_TARGET_SOFTLIMIT,
-	MEM_CGROUP_TARGET_NUMAINFO,
+	__MEM_CGROUP_TARGET_NUMAINFO,	/* Deprecated */
 	MEM_CGROUP_NTARGETS,
 };
 
@@ -308,11 +308,11 @@ struct mem_cgroup {
 	struct list_head kmem_caches;
 #endif
 
-	int last_scanned_node;
+	RH_KABI_DEPRECATE(int, last_scanned_node)
 #if MAX_NUMNODES > 1
-	nodemask_t	scan_nodes;
-	atomic_t	numainfo_events;
-	atomic_t	numainfo_updating;
+	RH_KABI_DEPRECATE(nodemask_t, scan_nodes)
+	RH_KABI_DEPRECATE(atomic_t, numainfo_events)
+	RH_KABI_DEPRECATE(atomic_t, numainfo_updating)
 #endif
 
 #ifdef CONFIG_CGROUP_WRITEBACK
