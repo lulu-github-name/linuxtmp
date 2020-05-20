@@ -63,7 +63,7 @@ Red Hat Maintainers List (try to look for most precise areas first)
 		-----------------------------------
 
 ARK Kernel Maintainer
-M:	Jeremy Cline <jcline@redhat.com>
+M:	Justin Forbes <jforbes@redhat.com>
 T:	git https://gitlab.com/cki-project/kernel-ark.git
 S:	Maintained
 F:	redhat/
@@ -117,9 +117,21 @@ T:	git git://git.host.prod.eng.bos.redhat.com/rhel-alt-7.6.z.git
 S:	Maintained
 F:	redhat/
 
-RHEL 7.8 Kernel Maintainer
+RHEL 7.9 Kernel Maintainer
 M:	Jan Stancek <jstancek@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel7.git
+S:	Maintained
+F:	redhat/
+
+RHEL 7.9 Real Time Kernel Maintainer
+M:	Tom Rix <trix@redhat.com>
+T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rt.git rhel-7.9/rt-master
+S:	Maintained
+F:	redhat/
+
+RHEL 7.8 Kernel Maintainer
+M:	Augusto Caringi <acaringi@redhat.com>
+T:	git git://git.host.prod.eng.bos.redhat.com/rhel-7.8.z.git
 S:	Maintained
 F:	redhat/
 
@@ -336,11 +348,11 @@ S:	Maintained
 F:	drivers/net/ethernet/atheros/
 
 AUDIT SUBSYSTEM
-M:      Richard Guy Briggs <rbriggs@redhat.com>
-S:      Supported
-F:      include/linux/audit.h
-F:      include/uapi/linux/audit.h
-F:      kernel/audit*
+M:	Richard Guy Briggs <rbriggs@redhat.com>
+S:	Supported
+F:	include/linux/audit.h
+F:	include/uapi/linux/audit.h
+F:	kernel/audit*
 
 AQUANTIA ATLANTIC ETHERNET DRIVER
 M:	Igor Russkikh <irusskik@redhat.com>
@@ -366,11 +378,11 @@ S:	Maintained
 F:	block/
 
 BLUETOOTH SUBSYSTEM
-M:      Gopal Tiwari <gtiwari@redhat.com>
-S:      Maintained
-F:      drivers/bluetooth
-F:      include/net/bluetooth/
-F:      net/bluetooth
+M:	Gopal Tiwari <gtiwari@redhat.com>
+S:	Maintained
+F:	drivers/bluetooth
+F:	include/net/bluetooth/
+F:	net/bluetooth
 
 BPF (Safe dynamic programs and tools)
 M:	Jiri Olsa <jolsa@redhat.com>
@@ -548,14 +560,14 @@ S:	Maintained
 F:	drivers/scsi/hpsa*
 
 MICROSEMI SMART ARRAY SMARTPQI DRIVER (smartpqi)
-M:      Don Brace <dbrace@redhat.com>
-S:      Maintained
-F:      drivers/scsi/smartpqi/smartpqi*.[ch]
-F:      drivers/scsi/smartpqi/Kconfig
-F:      drivers/scsi/smartpqi/Makefile
-F:      include/linux/cciss*.h
-F:      include/uapi/linux/cciss*.h
-F:      Documentation/scsi/smartpqi.txt
+M:	Don Brace <dbrace@redhat.com>
+S:	Maintained
+F:	drivers/scsi/smartpqi/smartpqi*.[ch]
+F:	drivers/scsi/smartpqi/Kconfig
+F:	drivers/scsi/smartpqi/Makefile
+F:	include/linux/cciss*.h
+F:	include/uapi/linux/cciss*.h
+F:	Documentation/scsi/smartpqi.txt
 
 DMA MAPPING SUPPORT
 M:	Donald Dutile <ddutile@redhat.com>
@@ -579,7 +591,7 @@ S:	Maintained
 F:	drivers/scsi/lpfc
 
 ETHERNET BRIDGE
-M:	Ivan Vecera <cera@redhat.com>
+M:	Ivan Vecera <ivecera@redhat.com>
 S:	Maintained
 F:	net/bridge/
 F:	include/linux/if_bridge.h
@@ -601,7 +613,7 @@ F:	include/uapi/linux/mii.h
 
 FCOE (libfc, libfcoe)
 M:	Chris Leech <cleech@redhat.com>
-M:     Neil Horman <nhorman@redhat.com>
+M:	Neil Horman <nhorman@redhat.com>
 S:	Maintained
 F:	drivers/scsi/libfc/
 F:	drivers/scsi/fcoe/
@@ -901,11 +913,11 @@ S:	Maintained
 F:	drivers/i2c/busses/i2c-ismt.c
 
 MMC LAYER
-M:      Gopal Tiwari <gtiwari@redhat.com>
-S:      Maintained
-F:      Documentation/mmc/
-F:      include/linux/mmc/
-F:      drivers/mmc/
+M:	Gopal Tiwari <gtiwari@redhat.com>
+S:	Maintained
+F:	Documentation/mmc/
+F:	include/linux/mmc/
+F:	drivers/mmc/
 
 Lenovo Hardware Support
 M:	Ocean He <ohe@redhat.com>
@@ -969,9 +981,9 @@ S:	Maintained
 F:	arch/x86/kernel/cpu/mcheck/
 
 MELLANOX ETHERNET SWITCH DRIVERS
-M:      Ivan Vecera <ivecera@redhat.com>
-S:      Maintained
-F:      drivers/net/ethernet/mellanox/mlxsw/
+M:	Ivan Vecera <ivecera@redhat.com>
+S:	Maintained
+F:	drivers/net/ethernet/mellanox/mlxsw/
 
 MEMORY MANAGEMENT
 M:	Larry Woodman <lwoodman@redhat.com>
@@ -1137,19 +1149,19 @@ X:	net/wimax/
 X:	net/wireless/
 
 NETWORKING [LABELED] (NetLabel, Labeled IPsec, SECMARK)
-M:      Ondrej Mosnacek <omosnace@redhat.com>
-S:      Supported
-F:      Documentation/netlabel/
-F:      include/net/calipso.h
-F:      include/net/cipso_ipv4.h
-F:      include/net/netlabel.h
-F:      include/uapi/linux/netfilter/xt_SECMARK.h
-F:      include/uapi/linux/netfilter/xt_CONNSECMARK.h
-F:      net/netlabel/
-F:      net/ipv4/cipso_ipv4.c
-F:      net/ipv6/calipso.c
-F:      net/netfilter/xt_CONNSECMARK.c
-F:      net/netfilter/xt_SECMARK.c
+M:	Ondrej Mosnacek <omosnace@redhat.com>
+S:	Supported
+F:	Documentation/netlabel/
+F:	include/net/calipso.h
+F:	include/net/cipso_ipv4.h
+F:	include/net/netlabel.h
+F:	include/uapi/linux/netfilter/xt_SECMARK.h
+F:	include/uapi/linux/netfilter/xt_CONNSECMARK.h
+F:	net/netlabel/
+F:	net/ipv4/cipso_ipv4.c
+F:	net/ipv6/calipso.c
+F:	net/netfilter/xt_CONNSECMARK.c
+F:	net/netfilter/xt_SECMARK.c
 
 NETWORKING [NETDEVSIM]
 I:	net
@@ -1395,12 +1407,12 @@ F:	include/net/sctp/
 F:	include/uapi/linux/sctp.h
 
 SELINUX SECURITY MODULE
-M:      Ondrej Mosnacek <omosnace@redhat.com>
-S:      Supported
-F:      include/linux/selinux*
-F:      security/selinux/
-F:      scripts/selinux/
-F:      Documentation/admin-guide/LSM/SELinux.rst
+M:	Ondrej Mosnacek <omosnace@redhat.com>
+S:	Supported
+F:	include/linux/selinux*
+F:	security/selinux/
+F:	scripts/selinux/
+F:	Documentation/admin-guide/LSM/SELinux.rst
 
 SERIAL ATA (SATA) SUBSYSTEM
 M:	David Milburn <dmilburn@redhat.com>
@@ -1503,7 +1515,7 @@ F:	drivers/staging/unisys
 UNIVERSAL EXTENSIBLE FIRMWARE INTERFACE (UEFI/EFI)
 M:	Al Stone <ahs3@redhat.com>
 M:	Lenny Szubowicz <lszubowi@redhat.com>
-M:	Myron Stowe	<mstowe@redhat.com>
+M:	Myron Stowe <myron.stowe@redhat.com>
 M:	Prarit Bhargava <prarit@redhat.com>
 S:	Maintained
 F:	arch/x86/kernel/efi*
