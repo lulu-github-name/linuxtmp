@@ -649,9 +649,10 @@ F:	kernel/trace/ftrace.c
 F:	include/linux/ftrace*
 
 FUSE FILESYSTEM
-M:	Brian Foster <bfoster@redhat.com>
-S:	Maintained
+M:	Miklos Szeredi <mszeredi@redhat.com>
+S:	Supported
 F:	fs/fuse/
+F:	include/uapi/linux/fuse.h
 
 Fusion MPT SAS Host driver (mptsas)
 M:	Tomas Henzl <thenzl@redhat.com>
@@ -1233,6 +1234,11 @@ S:	Maintained
 F:	net/openvswitch/
 F:	include/linux/openvswitch.h
 F:	include/uapi/linux/openvswitch.h
+
+OVERLAY FILESYSTEM
+M:	Miklos Szeredi <mszeredi@redhat.com>
+S:	Supported
+F:	fs/overlayfs/
 
 PCI SUBSYSTEM
 M:	Myron Stowe <myron.stowe@redhat.com>
