@@ -1712,8 +1712,7 @@ static int sh_mobile_ceu_probe(struct platform_device *pdev)
 	if (res) {
 		err = dma_declare_coherent_memory(&pdev->dev, res->start,
 						  res->start,
-						  resource_size(res),
-						  DMA_MEMORY_EXCLUSIVE);
+						  resource_size(res));
 		if (err) {
 			dev_err(&pdev->dev, "Unable to declare CEU memory.\n");
 			return err;
