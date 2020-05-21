@@ -987,7 +987,7 @@ S:	Maintained
 F:	drivers/net/ethernet/mellanox/mlxsw/
 
 MEMORY MANAGEMENT
-M:	Larry Woodman <lwoodman@redhat.com>
+M:	Rafael Aquini <aquini@redhat.com>
 S:	Maintained
 F:	include/linux/mm.h
 F:	mm/
