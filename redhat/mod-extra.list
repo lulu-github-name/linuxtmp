@@ -187,5 +187,6 @@ warrior.ko
 whci.ko
 wire.ko
 xpad.ko
+xt_u32.ko
 yam.ko
 zhenhua.ko
