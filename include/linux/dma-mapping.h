@@ -762,7 +762,6 @@ static inline int dma_get_cache_alignment(void)
 #ifdef CONFIG_HAVE_GENERIC_DMA_COHERENT
 int dma_declare_coherent_memory(struct device *dev, phys_addr_t phys_addr,
 				dma_addr_t device_addr, size_t size);
-void dma_release_declared_memory(struct device *dev);
 void *dma_mark_declared_memory_occupied(struct device *dev,
 					dma_addr_t device_addr, size_t size);
 #else
@@ -771,11 +770,6 @@ dma_declare_coherent_memory(struct device *dev, phys_addr_t phys_addr,
 			    dma_addr_t device_addr, size_t size)
 {
 	return -ENOSYS;
-}
-
-static inline void
-dma_release_declared_memory(struct device *dev)
-{
 }
 
 static inline void *

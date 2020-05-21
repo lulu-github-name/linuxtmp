@@ -597,17 +597,6 @@ you should use the dma_pool() API.
 
 ::
 
-	void
-	dma_release_declared_memory(struct device *dev)
-
-Remove the memory region previously declared from the system.  This
-API performs *no* in-use checking for this region and will return
-unconditionally having removed all the required structures.  It is the
-driver's job to ensure that no parts of this memory region are
-currently in use.
-
-::
-
 	void *
 	dma_mark_declared_memory_occupied(struct device *dev,
 					  dma_addr_t device_addr, size_t size)
