@@ -12,9 +12,11 @@
 #include <linux/device.h>
 #include <trace/events/writeback.h>
 
+static char noop_bdi_dev_name[BDI_DEV_NAME_LEN];
 struct backing_dev_info noop_backing_dev_info = {
 	.name		= "noop",
 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
+	.dev_name	= noop_bdi_dev_name,
 };
 EXPORT_SYMBOL_GPL(noop_backing_dev_info);
 
@@ -870,7 +872,14 @@ struct backing_dev_info *bdi_alloc_node(gfp_t gfp_mask, int node_id)
 	if (!bdi)
 		return NULL;
 
+	bdi->dev_name = kzalloc(BDI_DEV_NAME_LEN, GFP_KERNEL);
+	if (!bdi->dev_name) {
+		kfree(bdi);
+		return NULL;
+	}
+
 	if (bdi_init(bdi)) {
+		kfree(bdi->dev_name);
 		kfree(bdi);
 		return NULL;
 	}
@@ -881,11 +890,23 @@ EXPORT_SYMBOL(bdi_alloc_node);
 int bdi_register_va(struct backing_dev_info *bdi, const char *fmt, va_list args)
 {
 	struct device *dev;
+	char name[BDI_DEV_NAME_LEN];
+	char *devname;
 
 	if (bdi->dev)	/* The driver needs to use separate queues per device */
 		return 0;
 
-	dev = device_create_vargs(bdi_class, NULL, MKDEV(0, 0), bdi, fmt, args);
+	/*
+	 * RHEL only: 3rd party module may define one BDI instance in static
+	 * memorym, and .dev_name may not be allocated.
+	 */
+	if (bdi->dev_name)
+		devname = bdi->dev_name;
+	else
+		devname = name;
+
+	vsnprintf(devname, BDI_DEV_NAME_LEN, fmt, args);
+	dev = device_create(bdi_class, NULL, MKDEV(0, 0), bdi, devname);
 	if (IS_ERR(dev))
 		return PTR_ERR(dev);
 
@@ -975,6 +996,7 @@ static void release_bdi(struct kref *ref)
 #ifdef CONFIG_CGROUP_WRITEBACK
 	kfree(bdi->wb_switch_rwsem);
 #endif
+	kfree(bdi->dev_name);
 	kfree(bdi);
 }
 
@@ -986,9 +1008,9 @@ EXPORT_SYMBOL(bdi_put);
 
 const char *bdi_dev_name(struct backing_dev_info *bdi)
 {
-	if (!bdi || !bdi->dev)
+	if (!bdi || !bdi->dev || !bdi->dev_name)
 		return bdi_unknown_name;
-	return dev_name(bdi->dev);
+	return bdi->dev_name;
 }
 EXPORT_SYMBOL_GPL(bdi_dev_name);
 
