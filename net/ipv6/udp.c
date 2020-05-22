@@ -290,8 +290,7 @@ int udpv6_recvmsg(struct sock *sk, struct msghdr *msg, size_t len,
 	struct inet_sock *inet = inet_sk(sk);
 	struct sk_buff *skb;
 	unsigned int ulen, copied;
-	int peeked, peeking, off;
-	int err;
+	int off, err, peeking = flags & MSG_PEEK;
 	int is_udplite = IS_UDPLITE(sk);
 	bool checksum_valid = false;
 	int is_udp4;
@@ -303,9 +302,8 @@ int udpv6_recvmsg(struct sock *sk, struct msghdr *msg, size_t len,
 		return ipv6_recv_rxpmtu(sk, msg, len, addr_len);
 
 try_again:
-	peeking = flags & MSG_PEEK;
 	off = sk_peek_offset(sk, flags);
-	skb = __skb_recv_udp(sk, flags, noblock, &peeked, &off, &err);
+	skb = __skb_recv_udp(sk, flags, noblock, &off, &err);
 	if (!skb)
 		return err;
 
@@ -343,7 +341,7 @@ try_again:
 			goto csum_copy_err;
 	}
 	if (unlikely(err)) {
-		if (!peeked) {
+		if (!peeking) {
 			atomic_inc(&sk->sk_drops);
 			if (is_udp4)
 				UDP_INC_STATS(sock_net(sk), UDP_MIB_INERRORS,
@@ -355,7 +353,7 @@ try_again:
 		kfree_skb(skb);
 		return err;
 	}
-	if (!peeked) {
+	if (!peeking) {
 		if (is_udp4)
 			UDP_INC_STATS(sock_net(sk), UDP_MIB_INDATAGRAMS,
 				      is_udplite);
