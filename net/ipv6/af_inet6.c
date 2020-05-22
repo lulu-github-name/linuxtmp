@@ -63,6 +63,7 @@
 #endif
 #include <net/calipso.h>
 #include <net/seg6.h>
+#include <net/xfrm.h>
 
 #include <linux/uaccess.h>
 #include <linux/mroute6.h>
@@ -953,6 +954,9 @@ static const struct ipv6_stub ipv6_stub_impl = {
 	.fib6_rt_update	   = fib6_rt_update,
 	.udpv6_encap_enable = udpv6_encap_enable,
 	.ndisc_send_na = ndisc_send_na,
+#if IS_ENABLED(CONFIG_XFRM)
+	.xfrm6_udp_encap_rcv = xfrm6_udp_encap_rcv,
+#endif
 	.nd_tbl	= &nd_tbl,
 };
 
