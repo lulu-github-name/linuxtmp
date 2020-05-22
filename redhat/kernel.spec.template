@@ -913,6 +913,9 @@ summary: kernel meta-package for the %{1} kernel\
 group: system environment/kernel\
 Requires: %{name}-%{1}-core-uname-r = %{KVERREL}%{?variant}+%{1}\
 Requires: %{name}-%{1}-modules-uname-r = %{KVERREL}%{?variant}+%{1}\
+%if %{with_realtime}\
+Requires: rt-setup\
+%endif\
 Provides: installonlypkg(kernel)\
 %description %{1}\
 The meta-package for the %{1} kernel\
