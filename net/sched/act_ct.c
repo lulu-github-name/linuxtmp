@@ -30,6 +30,8 @@
 #include <net/netfilter/nf_conntrack_helper.h>
 #include <net/netfilter/ipv6/nf_defrag_ipv6.h>
 #include <uapi/linux/netfilter/nf_nat.h>
+#include <net/netfilter/nf_nat_core.h>
+#include <net/netfilter/nf_nat_l3proto.h>
 
 static struct tc_action_ops act_ct_ops;
 static unsigned int ct_net_id;
