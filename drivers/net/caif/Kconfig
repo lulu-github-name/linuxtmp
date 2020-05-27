@@ -50,7 +50,3 @@ config CAIF_VIRTIO
 	default n
 	---help---
 	The caif driver for CAIF over Virtio.
-
-if CAIF_VIRTIO
-source "drivers/vhost/Kconfig.vringh"
-endif
