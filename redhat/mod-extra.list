@@ -120,6 +120,7 @@ rds_tcp.ko
 rose.ko
 sch_atm.ko
 sch_cbq.ko
+sch_cbs.ko
 sch_choke.ko
 sch_drr.ko
 sch_dsmark.ko
