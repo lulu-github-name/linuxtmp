@@ -67,7 +67,6 @@ enum mem_cgroup_protection {
 
 struct mem_cgroup_reclaim_cookie {
 	pg_data_t *pgdat;
-	int priority;
 	unsigned int generation;
 };
 
@@ -132,7 +131,10 @@ struct mem_cgroup_per_node {
 
 	unsigned long		lru_zone_size[MAX_NR_ZONES][NR_LRU_LISTS];
 
-	struct mem_cgroup_reclaim_iter	iter[DEF_PRIORITY + 1];
+	RH_KABI_REPLACE_SPLIT(struct mem_cgroup_reclaim_iter iter[DEF_PRIORITY + 1],
+			      struct mem_cgroup_reclaim_iter iter,
+			      /* Legacy local VM stats */
+			      struct lruvec_stat __percpu *lruvec_stat_local)
 
 	struct rb_node		tree_node;	/* RB tree node */
 	unsigned long		usage_in_excess;/* Set to the value by which */
@@ -150,8 +152,6 @@ struct mem_cgroup_per_node {
 #ifdef CONFIG_MEMCG_KMEM
 	RH_KABI_EXTEND(struct memcg_shrinker_map __rcu	*shrinker_map)
 #endif
-	/* Legacy local VM stats */
-	RH_KABI_BROKEN_INSERT(struct lruvec_stat __percpu *lruvec_stat_local)
 };
 
 struct mem_cgroup_threshold {
