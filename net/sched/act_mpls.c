@@ -6,6 +6,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/mpls.h>
+#include <linux/rh_features.h>
 #include <linux/rtnetlink.h>
 #include <linux/skbuff.h>
 #include <linux/tc_act/tc_mpls.h>
@@ -399,7 +400,13 @@ static struct pernet_operations mpls_net_ops = {
 
 static int __init mpls_init_module(void)
 {
-	return tcf_register_action(&act_mpls_ops, &mpls_net_ops);
+	int err;
+
+	err = tcf_register_action(&act_mpls_ops, &mpls_net_ops);
+	if (!err)
+		rh_mark_used_feature("act_mpls");
+
+	return err;
 }
 
 static void __exit mpls_cleanup_module(void)
