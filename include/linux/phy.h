@@ -108,6 +108,14 @@ typedef enum {
 	PHY_INTERFACE_MODE_XAUI,
 	/* 10GBASE-KR, XFI, SFI - single lane 10G Serdes */
 	PHY_INTERFACE_MODE_10GKR,
+        /* RHEL: Fields adding at the end are safe. But code, which iterate
+	 * over all modes and use PHY_INTERFACE_MODE_MAX will need recompile
+	 * for use new interface modes. It is for example fuctions like
+	 * of_get_phy_mode()
+        */
+#ifndef __GENKSYMS__
+	PHY_INTERFACE_MODE_USXGMII,
+#endif
 	PHY_INTERFACE_MODE_MAX,
 } phy_interface_t;
 
@@ -183,6 +191,8 @@ static inline const char *phy_modes(phy_interface_t interface)
 		return "xaui";
 	case PHY_INTERFACE_MODE_10GKR:
 		return "10gbase-kr";
+	case PHY_INTERFACE_MODE_USXGMII:
+		return "usxgmii";
 	default:
 		return "unknown";
 	}
