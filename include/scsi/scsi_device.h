@@ -203,6 +203,7 @@ struct scsi_device {
 	unsigned unmap_limit_for_ws:1;	/* Use the UNMAP limit for WRITE SAME */
 
 	RH_KABI_FILL_HOLE(unsigned set_dbd_for_ms:1) /* Set "DBD" field in mode sense */
+	RH_KABI_FILL_HOLE(unsigned offline_already:1) /* Device offline message logged */
 
 	atomic_t disk_events_disable_depth; /* disable depth for disk events */
 
