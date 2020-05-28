@@ -489,6 +489,7 @@ struct phy_device {
 	__ETHTOOL_DECLARE_LINK_MODE_MASK(supported);
 	__ETHTOOL_DECLARE_LINK_MODE_MASK(advertising);
 	__ETHTOOL_DECLARE_LINK_MODE_MASK(lp_advertising);
+	__ETHTOOL_DECLARE_LINK_MODE_MASK(adv_old);
 	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 
 	void (*phy_link_change)(struct phy_device *, bool up, bool do_carrier);
@@ -1199,9 +1200,9 @@ void phy_drivers_unregister(struct phy_driver *drv, int n);
  * hide checksum change and old driver loaded with new kernel will crash. We
  * need change phy_driver{s}_register
  */
-RH_KABI_FORCE_CHANGE(3)
+RH_KABI_FORCE_CHANGE(4)
 int phy_driver_register(struct phy_driver *new_driver, struct module *owner);
-RH_KABI_FORCE_CHANGE(3)
+RH_KABI_FORCE_CHANGE(4)
 int phy_drivers_register(struct phy_driver *new_driver, int n,
 			 struct module *owner);
 void phy_state_machine(struct work_struct *work);
