@@ -691,6 +691,9 @@ struct phy_driver {
          * Should only set phydev->supported.
          */
 	RH_KABI_BROKEN_INSERT(int (*get_features)(struct phy_device *phydev))
+
+	/* Override default interrupt handling */
+        RH_KABI_BROKEN_INSERT(int (*handle_interrupt)(struct phy_device *phydev))
 };
 #define to_phy_driver(d) container_of(to_mdio_common_driver(d),		\
 				      struct phy_driver, mdiodrv)
