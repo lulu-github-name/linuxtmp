@@ -205,4 +205,18 @@ LIBBPF_0.0.5 {
 } LIBBPF_0.0.4;
 
 LIBBPF_0.0.6 {
+	global:
+		bpf_object__open_file;
+		bpf_object__open_mem;
+		bpf_program__get_expected_attach_type;
+		bpf_program__get_type;
+	local:
+		bpf_object__open_file_v0_0_4;
+		bpf_object__open_file_v0_0_6;
+		bpf_object__open_mem_v0_0_4;
+		bpf_object__open_mem_v0_0_6;
+		bpf_program__get_expected_attach_type_v0_0_4;
+		bpf_program__get_expected_attach_type_v0_0_6;
+		bpf_program__get_type_v0_0_4;
+		bpf_program__get_type_v0_0_6;
 } LIBBPF_0.0.5;

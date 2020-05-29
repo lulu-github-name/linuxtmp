@@ -115,7 +115,19 @@ LIBBPF_API struct bpf_object *bpf_object__open(const char *path);
 LIBBPF_API struct bpf_object *
 bpf_object__open_file(const char *path, struct bpf_object_open_opts *opts);
 LIBBPF_API struct bpf_object *
+bpf_object__open_file_v0_0_4(const char *path,
+			     struct bpf_object_open_opts *opts);
+LIBBPF_API struct bpf_object *
+bpf_object__open_file_v0_0_6(const char *path,
+			     struct bpf_object_open_opts *opts);
+LIBBPF_API struct bpf_object *
 bpf_object__open_mem(const void *obj_buf, size_t obj_buf_sz,
+		     struct bpf_object_open_opts *opts);
+LIBBPF_API struct bpf_object *
+bpf_object__open_mem_v0_0_4(const void *obj_buf, size_t obj_buf_sz,
+		     struct bpf_object_open_opts *opts);
+LIBBPF_API struct bpf_object *
+bpf_object__open_mem_v0_0_6(const void *obj_buf, size_t obj_buf_sz,
 		     struct bpf_object_open_opts *opts);
 
 /* deprecated bpf_object__open variants */
@@ -328,11 +340,19 @@ LIBBPF_API int bpf_program__set_xdp(struct bpf_program *prog);
 LIBBPF_API int bpf_program__set_perf_event(struct bpf_program *prog);
 
 LIBBPF_API enum bpf_prog_type bpf_program__get_type(struct bpf_program *prog);
+LIBBPF_API enum bpf_prog_type
+bpf_program__get_type_v0_0_4(struct bpf_program *prog);
+LIBBPF_API enum bpf_prog_type
+bpf_program__get_type_v0_0_6(struct bpf_program *prog);
 LIBBPF_API void bpf_program__set_type(struct bpf_program *prog,
 				      enum bpf_prog_type type);
 
 LIBBPF_API enum bpf_attach_type
 bpf_program__get_expected_attach_type(struct bpf_program *prog);
+LIBBPF_API enum bpf_attach_type
+bpf_program__get_expected_attach_type_v0_0_4(struct bpf_program *prog);
+LIBBPF_API enum bpf_attach_type
+bpf_program__get_expected_attach_type_v0_0_6(struct bpf_program *prog);
 LIBBPF_API void
 bpf_program__set_expected_attach_type(struct bpf_program *prog,
 				      enum bpf_attach_type type);

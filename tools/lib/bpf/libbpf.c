@@ -3902,7 +3902,8 @@ struct bpf_object *bpf_object__open(const char *path)
 }
 
 struct bpf_object *
-bpf_object__open_file(const char *path, struct bpf_object_open_opts *opts)
+bpf_object__open_file_v0_0_4(const char *path,
+			     struct bpf_object_open_opts *opts)
 {
 	if (!path)
 		return ERR_PTR(-EINVAL);
@@ -3913,8 +3914,8 @@ bpf_object__open_file(const char *path, struct bpf_object_open_opts *opts)
 }
 
 struct bpf_object *
-bpf_object__open_mem(const void *obj_buf, size_t obj_buf_sz,
-		     struct bpf_object_open_opts *opts)
+bpf_object__open_mem_v0_0_4(const void *obj_buf, size_t obj_buf_sz,
+			    struct bpf_object_open_opts *opts)
 {
 	if (!obj_buf || obj_buf_sz == 0)
 		return ERR_PTR(-EINVAL);
@@ -4773,7 +4774,7 @@ int bpf_program__nth_fd(const struct bpf_program *prog, int n)
 	return fd;
 }
 
-enum bpf_prog_type bpf_program__get_type(struct bpf_program *prog)
+enum bpf_prog_type bpf_program__get_type_v0_0_4(struct bpf_program *prog)
 {
 	return prog->type;
 }
@@ -4813,7 +4814,7 @@ BPF_PROG_TYPE_FNS(xdp, BPF_PROG_TYPE_XDP);
 BPF_PROG_TYPE_FNS(perf_event, BPF_PROG_TYPE_PERF_EVENT);
 
 enum bpf_attach_type
-bpf_program__get_expected_attach_type(struct bpf_program *prog)
+bpf_program__get_expected_attach_type_v0_0_4(struct bpf_program *prog)
 {
 	return prog->expected_attach_type;
 }
@@ -6377,3 +6378,40 @@ int libbpf_num_possible_cpus(void)
 	WRITE_ONCE(cpus, tmp_cpus);
 	return tmp_cpus;
 }
+
+/* RHEL-only, libbpf version workaround */
+extern struct bpf_object *
+bpf_object__open_file_v0_0_6(const char *path,
+			     struct bpf_object_open_opts *opts)
+	__attribute__((alias("bpf_object__open_file_v0_0_4")));
+extern struct bpf_object *
+bpf_object__open_mem_v0_0_6(const void *obj_buf, size_t obj_buf_sz,
+			    struct bpf_object_open_opts *opts)
+	__attribute__((alias("bpf_object__open_mem_v0_0_4")));
+extern enum bpf_attach_type
+bpf_program__get_expected_attach_type_v0_0_6(struct bpf_program *prog)
+	__attribute__((alias("bpf_program__get_expected_attach_type_v0_0_4")));
+
+extern enum bpf_prog_type
+bpf_program__get_type_v0_0_6(struct bpf_program *prog)
+	__attribute__((alias("bpf_program__get_type_v0_0_4")));
+
+COMPAT_VERSION(bpf_object__open_file_v0_0_4,
+	       bpf_object__open_file, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_object__open_file_v0_0_6,
+	       bpf_object__open_file, LIBBPF_0.0.6)
+
+COMPAT_VERSION(bpf_object__open_mem_v0_0_4,
+	       bpf_object__open_mem, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_object__open_mem_v0_0_6,
+	       bpf_object__open_mem, LIBBPF_0.0.6)
+
+COMPAT_VERSION(bpf_program__get_expected_attach_type_v0_0_4,
+	       bpf_program__get_expected_attach_type, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_program__get_expected_attach_type_v0_0_6,
+	       bpf_program__get_expected_attach_type, LIBBPF_0.0.6)
+
+COMPAT_VERSION(bpf_program__get_type_v0_0_4,
+	       bpf_program__get_type, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_program__get_type_v0_0_6,
+	       bpf_program__get_type, LIBBPF_0.0.6)
