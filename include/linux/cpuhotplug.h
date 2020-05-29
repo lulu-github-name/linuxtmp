@@ -102,6 +102,7 @@ enum cpuhp_state {
 	CPUHP_AP_IRQ_BCM2836_STARTING,
 	CPUHP_AP_IRQ_MIPS_GIC_STARTING,
 	CPUHP_AP_ARM_MVEBU_COHERENCY,
+	/* kABI: CPUHP_AP_MICROCODE_LOADER, */
 	CPUHP_AP_PERF_X86_AMD_UNCORE_STARTING,
 	CPUHP_AP_PERF_X86_STARTING,
 	CPUHP_AP_PERF_X86_AMD_IBS_STARTING,
@@ -195,6 +196,9 @@ enum cpuhp_state {
 
 #define CPUHP_PADATA_DEAD \
 		CPUHP_AP_ARM_CACHE_B15_RAC_DEAD
+
+#define CPUHP_AP_MICROCODE_LOADER \
+		CPUHP_AP_MIPS_OP_LOONGSON3_STARTING
 
 int __cpuhp_setup_state(enum cpuhp_state state,	const char *name, bool invoke,
 			int (*startup)(unsigned int cpu),
