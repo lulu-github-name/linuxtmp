@@ -504,13 +504,15 @@ long hmm_range_dma_unmap(struct hmm_range *range,
  */
 #define HMM_RANGE_DEFAULT_TIMEOUT 1000
 
+#endif /* IS_ENABLED(CONFIG_HMM_MIRROR) */
+
 /* Below are for HMM internal use only! Not to be used by device driver! */
 static inline void hmm_mm_init(struct mm_struct *mm)
 {
 	mm->hmm = NULL;
 }
-#else /* IS_ENABLED(CONFIG_HMM_MIRROR) */
+#else /* IS_ENABLED(CONFIG_HMM) */
 static inline void hmm_mm_init(struct mm_struct *mm) {}
-#endif /* IS_ENABLED(CONFIG_HMM_MIRROR) */
+#endif /* IS_ENABLED(CONFIG_HMM) */
 
 #endif /* LINUX_HMM_H */
