@@ -498,6 +498,10 @@ static inline int bpf_trampoline_unlink_prog(struct bpf_prog *prog)
 static inline void bpf_trampoline_put(struct bpf_trampoline *tr) {}
 #endif
 
+struct bpf_func_info_aux {
+	bool unreliable;
+};
+
 struct bpf_prog_aux {
 	atomic_t refcnt;
 	u32 used_map_cnt;
@@ -513,6 +517,7 @@ struct bpf_prog_aux {
 	RH_KABI_BROKEN_INSERT(bool verifier_zext) /* Zero extensions has been inserted by verifier. */
 	bool offload_requested;
 	RH_KABI_BROKEN_INSERT(bool attach_btf_trace) /* true if attaching to BTF-enabled raw tp */
+	RH_KABI_BROKEN_INSERT(bool func_proto_unreliable)
 	RH_KABI_BROKEN_INSERT(enum bpf_tramp_prog_type trampoline_prog_type)
 	RH_KABI_BROKEN_INSERT(struct bpf_trampoline *trampoline)
 	RH_KABI_BROKEN_INSERT(struct hlist_node tramp_hlist)
@@ -538,6 +543,7 @@ struct bpf_prog_aux {
 	RH_KABI_BROKEN_INSERT_BLOCK(
 	struct btf *btf;
 	struct bpf_func_info *func_info;
+	struct bpf_func_info_aux *func_info_aux;
 	/* bpf_line_info loaded from userspace.  linfo->insn_off
 	 * has the xlated insn offset.
 	 * Both the main and sub prog share the same linfo.
@@ -911,6 +917,8 @@ int btf_distill_func_proto(struct bpf_verifier_log *log,
 			   const struct btf_type *func_proto,
 			   const char *func_name,
 			   struct btf_func_model *m);
+
+int btf_check_func_arg_match(struct bpf_verifier_env *env, int subprog);
 
 #else /* !CONFIG_BPF_SYSCALL */
 static inline struct bpf_prog *bpf_prog_get(u32 ufd)
