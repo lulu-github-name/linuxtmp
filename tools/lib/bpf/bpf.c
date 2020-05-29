@@ -593,7 +593,7 @@ int bpf_map_get_next_id(__u32 start_id, __u32 *next_id)
 	return bpf_obj_get_next_id(start_id, next_id, BPF_MAP_GET_NEXT_ID);
 }
 
-int bpf_btf_get_next_id(__u32 start_id, __u32 *next_id)
+int bpf_btf_get_next_id_v0_0_5(__u32 start_id, __u32 *next_id)
 {
 	return bpf_obj_get_next_id(start_id, next_id, BPF_BTF_GET_NEXT_ID);
 }
@@ -703,3 +703,10 @@ int bpf_task_fd_query(int pid, int fd, __u32 flags, char *buf, __u32 *buf_len,
 
 	return err;
 }
+
+/* RHEL-only, libbpf version workaround */
+extern int bpf_btf_get_next_id_v0_0_4(__u32 start_id, __u32 *next_id)
+	__attribute__((alias("bpf_btf_get_next_id_v0_0_5")));
+
+COMPAT_VERSION(bpf_btf_get_next_id_v0_0_4,  bpf_btf_get_next_id, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_btf_get_next_id_v0_0_5, bpf_btf_get_next_id, LIBBPF_0.0.5)

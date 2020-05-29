@@ -195,3 +195,11 @@ LIBBPF_0.0.4 {
 		bpf_program__size;
 		bpf_btf_get_next_id;
 } LIBBPF_0.0.3;
+
+LIBBPF_0.0.5 {
+	global:
+		bpf_btf_get_next_id;
+	local:
+		bpf_btf_get_next_id_v0_0_4;
+		bpf_btf_get_next_id_v0_0_5;
+} LIBBPF_0.0.4;
