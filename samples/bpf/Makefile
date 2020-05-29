@@ -164,6 +164,7 @@ always += task_fd_query_kern.o
 always += xdp_sample_pkts_kern.o
 always += hbm_out_kern.o
 always += hbm_edt_kern.o
+always += xdpsock_kern.o
 
 ifeq ($(ARCH), arm)
 # Strip all except -D__LINUX_ARM_ARCH__ option needed to handle linux
