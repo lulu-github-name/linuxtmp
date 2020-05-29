@@ -1789,6 +1789,10 @@ pushd tools/testing/selftests
 # We need to install here because we need to call make with ARCH set which
 # doesn't seem possible to do in the install section.
 %{make} -s ARCH=$Arch V=1 TARGETS="bpf livepatch net netfilter" INSTALL_PATH=%{buildroot}%{_libexecdir}/kselftests install
+
+# Unfortunately, bpf `install` is broken.
+# selftests use rsync to copy all attributes and file types
+rsync -a bpf %{buildroot}%{_libexecdir}/kselftests
 popd
 %endif
 
