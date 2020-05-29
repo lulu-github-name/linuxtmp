@@ -128,7 +128,7 @@ struct dev_pagemap {
 	RH_KABI_DEPRECATE(bool, altmap_valid)
 	struct resource res;
 	struct percpu_ref *ref;
-	struct device *dev;
+	RH_KABI_DEPRECATE(struct device *, dev)
 	RH_KABI_DEPRECATE(void *, data)
 	enum memory_type type;
 	u64 pci_p2pdma_bus_offset;
