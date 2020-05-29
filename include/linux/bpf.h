@@ -121,7 +121,7 @@ struct bpf_map {
 	RH_KABI_BROKEN_INSERT(atomic_t refcnt ____cacheline_aligned)
 	atomic_t usercnt;
 	struct work_struct work;
-	char name[BPF_OBJ_NAME_LEN];
+char name[BPF_OBJ_NAME_LEN];
 };
 
 static inline bool map_value_has_spin_lock(const struct bpf_map *map)
@@ -514,6 +514,7 @@ struct bpf_prog_aux {
 	u32 func_cnt; /* used by non-func prog as the number of func progs */
 	RH_KABI_BROKEN_INSERT(u32 func_idx) /* 0 for non-func prog, the index in func array for func prog */
 	RH_KABI_BROKEN_INSERT(u32 attach_btf_id) /* in-kernel BTF type id to attach to */
+	RH_KABI_BROKEN_INSERT(struct bpf_prog *linked_prog)
 	RH_KABI_BROKEN_INSERT(bool verifier_zext) /* Zero extensions has been inserted by verifier. */
 	bool offload_requested;
 	RH_KABI_BROKEN_INSERT(bool attach_btf_trace) /* true if attaching to BTF-enabled raw tp */
