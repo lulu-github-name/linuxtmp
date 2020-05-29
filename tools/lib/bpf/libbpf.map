@@ -203,3 +203,6 @@ LIBBPF_0.0.5 {
 		bpf_btf_get_next_id_v0_0_4;
 		bpf_btf_get_next_id_v0_0_5;
 } LIBBPF_0.0.4;
+
+LIBBPF_0.0.6 {
+} LIBBPF_0.0.5;
