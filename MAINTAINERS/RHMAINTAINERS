@@ -1431,7 +1431,6 @@ F:	drivers/net/ethernet/sfc/
 
 SGI SPECIFIC
 M:	Frank Ramsay <framsay@redhat.com>
-M:	Russ Anderson <randerso@redhat.com>
 S:	Maintained
 F:	drivers/char/uv_mmtimer.c
 F:	drivers/misc/sgi-gru/
