@@ -999,7 +999,6 @@ F:	drivers/block/mtip32xx/mtip32xx.h
 
 MLX4 ETHERNET DRIVER (mlx4)
 M:	Alaa Hleihel <ahleihel@redhat.com>
-M:	Slava Shwartsman <sshwarts@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/mellanox/mlx4/
 
@@ -1013,7 +1012,6 @@ F:	include/uapi/rdma/mlx4-abi.h
 
 MLX5 ETHERNET DRIVER (mlx5)
 M:	Alaa Hleihel <ahleihel@redhat.com>
-M:	Slava Shwartsman <sshwarts@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/mellanox/mlx5/
 
