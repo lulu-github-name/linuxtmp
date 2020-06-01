@@ -2277,10 +2277,9 @@ __mlxsw_sp_router_neighs_update_rauhtd(struct mlxsw_sp *mlxsw_sp,
 	int i, num_rec;
 	int err;
 
-	/* Make sure the neighbour's netdev isn't removed in the
-	 * process.
-	 */
 	rtnl_lock();
+	/* Ensure the RIF we read from the device does not change mid-dump. */
+	mutex_lock(&mlxsw_sp->router->lock);
 	do {
 		mlxsw_reg_rauhtd_pack(rauhtd_pl, type);
 		err = mlxsw_reg_query(mlxsw_sp->core, MLXSW_REG(rauhtd),
@@ -2294,6 +2293,7 @@ __mlxsw_sp_router_neighs_update_rauhtd(struct mlxsw_sp *mlxsw_sp,
 			mlxsw_sp_router_neigh_rec_process(mlxsw_sp, rauhtd_pl,
 							  i);
 	} while (mlxsw_sp_router_rauhtd_is_full(rauhtd_pl));
+	mutex_unlock(&mlxsw_sp->router->lock);
 	rtnl_unlock();
 
 	return err;
@@ -2325,14 +2325,15 @@ static void mlxsw_sp_router_neighs_update_nh(struct mlxsw_sp *mlxsw_sp)
 {
 	struct mlxsw_sp_neigh_entry *neigh_entry;
 
-	/* Take RTNL mutex here to prevent lists from changes */
 	rtnl_lock();
+	mutex_lock(&mlxsw_sp->router->lock);
 	list_for_each_entry(neigh_entry, &mlxsw_sp->router->nexthop_neighs_list,
 			    nexthop_neighs_list_node)
 		/* If this neigh have nexthops, make the kernel think this neigh
 		 * is active regardless of the traffic.
 		 */
 		neigh_event_send(neigh_entry->key.n, NULL);
+	mutex_unlock(&mlxsw_sp->router->lock);
 	rtnl_unlock();
 }
 
@@ -2373,14 +2374,14 @@ static void mlxsw_sp_router_probe_unresolved_nexthops(struct work_struct *work)
 	 * the nexthop wouldn't get offloaded until the neighbor is resolved
 	 * but it wouldn't get resolved ever in case traffic is flowing in HW
 	 * using different nexthop.
-	 *
-	 * Take RTNL mutex here to prevent lists from changes.
 	 */
 	rtnl_lock();
+	mutex_lock(&router->lock);
 	list_for_each_entry(neigh_entry, &router->nexthop_neighs_list,
 			    nexthop_neighs_list_node)
 		if (!neigh_entry->connected)
 			neigh_event_send(neigh_entry->key.n, NULL);
+	mutex_unlock(&router->lock);
 	rtnl_unlock();
 
 	mlxsw_core_schedule_dw(&router->nexthop_probe_dw,
@@ -2520,6 +2521,7 @@ static void mlxsw_sp_router_neigh_event_work(struct work_struct *work)
 	read_unlock_bh(&n->lock);
 
 	rtnl_lock();
+	mutex_lock(&mlxsw_sp->router->lock);
 	mlxsw_sp_span_respin(mlxsw_sp);
 
 	entry_connected = nud_state & NUD_VALID && !dead;
@@ -2541,6 +2543,7 @@ static void mlxsw_sp_router_neigh_event_work(struct work_struct *work)
 		mlxsw_sp_neigh_entry_destroy(mlxsw_sp, neigh_entry);
 
 out:
+	mutex_unlock(&mlxsw_sp->router->lock);
 	rtnl_unlock();
 	neigh_release(n);
 	kfree(net_work);
@@ -5945,8 +5948,8 @@ static void mlxsw_sp_router_fib4_event_work(struct work_struct *work)
 	struct mlxsw_sp *mlxsw_sp = fib_work->mlxsw_sp;
 	int err;
 
-	/* Protect internal structures from changes */
 	rtnl_lock();
+	mutex_lock(&mlxsw_sp->router->lock);
 	mlxsw_sp_span_respin(mlxsw_sp);
 
 	switch (fib_work->event) {
@@ -5968,6 +5971,7 @@ static void mlxsw_sp_router_fib4_event_work(struct work_struct *work)
 		fib_info_put(fib_work->fnh_info.fib_nh->nh_parent);
 		break;
 	}
+	mutex_unlock(&mlxsw_sp->router->lock);
 	rtnl_unlock();
 	kfree(fib_work);
 }
@@ -5980,6 +5984,7 @@ static void mlxsw_sp_router_fib6_event_work(struct work_struct *work)
 	int err;
 
 	rtnl_lock();
+	mutex_lock(&mlxsw_sp->router->lock);
 	mlxsw_sp_span_respin(mlxsw_sp);
 
 	switch (fib_work->event) {
@@ -6006,6 +6011,7 @@ static void mlxsw_sp_router_fib6_event_work(struct work_struct *work)
 		mlxsw_sp_router_fib6_work_fini(&fib_work->fib6_work);
 		break;
 	}
+	mutex_unlock(&mlxsw_sp->router->lock);
 	rtnl_unlock();
 	kfree(fib_work);
 }
@@ -6019,6 +6025,7 @@ static void mlxsw_sp_router_fibmr_event_work(struct work_struct *work)
 	int err;
 
 	rtnl_lock();
+	mutex_lock(&mlxsw_sp->router->lock);
 	switch (fib_work->event) {
 	case FIB_EVENT_ENTRY_REPLACE: /* fall through */
 	case FIB_EVENT_ENTRY_ADD:
@@ -6047,6 +6054,7 @@ static void mlxsw_sp_router_fibmr_event_work(struct work_struct *work)
 		dev_put(fib_work->ven_info.dev);
 		break;
 	}
+	mutex_unlock(&mlxsw_sp->router->lock);
 	rtnl_unlock();
 	kfree(fib_work);
 }
@@ -7037,6 +7045,7 @@ static void mlxsw_sp_inet6addr_event_work(struct work_struct *work)
 	struct mlxsw_sp_rif *rif;
 
 	rtnl_lock();
+	mutex_lock(&mlxsw_sp->router->lock);
 
 	rif = mlxsw_sp_rif_find_by_dev(mlxsw_sp, dev);
 	if (!mlxsw_sp_rif_should_config(rif, dev, event))
@@ -7044,6 +7053,7 @@ static void mlxsw_sp_inet6addr_event_work(struct work_struct *work)
 
 	__mlxsw_sp_inetaddr_event(mlxsw_sp, dev, event, NULL);
 out:
+	mutex_unlock(&mlxsw_sp->router->lock);
 	rtnl_unlock();
 	dev_put(dev);
 	kfree(inet6addr_work);
