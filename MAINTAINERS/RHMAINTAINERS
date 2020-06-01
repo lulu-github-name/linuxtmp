@@ -336,7 +336,6 @@ F:	drivers/iommu/io-pgtable-arm.c
 
 ATHEROS WIRELESS LAN DRIVERS
 M:	Jarod Wilson <jarod@redhat.com>
-M:	Stanislaw Gruszka <sgruszka@redhat.com>
 M:	John Linville <linville@redhat.com>
 S:	Maintained
 F:	drivers/net/wireless/ath5k
@@ -397,7 +396,7 @@ F:	net/core/filter.c
 N:	b[pt]f
 
 BROADCOM B44 10/100 ETHERNET DRIVER
-M:	Stanislaw Gruszka <sgruszka@redhat.com>
+M:	Jarod Wilson <jarod@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/broadcom/b44.*
 
@@ -1024,7 +1023,7 @@ F:	include/linux/mlx5/
 F:	include/uapi/rdma/mlx5-abi.h
 
 MYRICOM MYRI-10G 10GbE DRIVER (MYRI10GE)
-M:	Stanislaw Gruszka <sgruszka@redhat.com>
+M:	Jarod Wilson <jarod@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/myricom/myri10ge/
 
@@ -1334,7 +1333,6 @@ F:	drivers/block/rbd_types.h
 
 RALINK RT2X00 WIRELESS LAN DRIVER
 M:	Jarod Wilson <jarod@redhat.com>
-M:	Stanislaw Gruszka <sgruszka@redhat.com>
 S:	Maintained
 F:	drivers/net/wireless/rt2x00/
 
@@ -1347,7 +1345,6 @@ F:	kernel/rcu/
 
 REALTEK WIRELESS LAN DRIVERS
 M:	Jarod Wilson <jarod@redhat.com>
-M:	Stanislaw Gruszka <sgruszka@redhat.com>
 M:	John Linville <linville@redhat.com>
 S:	Maintained
 F:	drivers/net/wireless/rtl818x
@@ -1636,7 +1633,6 @@ F:	drivers/net/vmxnet3/*
 
 WIRELESS DRIVERS AND STACK
 M:	Jarod Wilson <jarod@redhat.com>
-M:	Stanislaw Gruszka <sgruszka@redhat.com>
 M:	John Linville <linville@redhat.com>
 S:	Maintained
 F:	drivers/net/wireless/
