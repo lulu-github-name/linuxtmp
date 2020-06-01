@@ -643,7 +643,7 @@ F:	drivers/firewire/
 F:	include/linux/firewire*.h
 
 FTRACE
-M:	Steve Rostedt <srostedt@redhat.com>
+M:	Jerome Marchand <jmarchan@redhat.com>
 S:	Maintained
 F:	kernel/trace/ftrace.c
 F:	include/linux/ftrace*
