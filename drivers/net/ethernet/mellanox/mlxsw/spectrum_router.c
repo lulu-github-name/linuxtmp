@@ -2306,7 +2306,6 @@ __mlxsw_sp_router_neighs_update_rauhtd(struct mlxsw_sp *mlxsw_sp,
 	int i, num_rec;
 	int err;
 
-	rtnl_lock();
 	/* Ensure the RIF we read from the device does not change mid-dump. */
 	mutex_lock(&mlxsw_sp->router->lock);
 	do {
@@ -2323,7 +2322,6 @@ __mlxsw_sp_router_neighs_update_rauhtd(struct mlxsw_sp *mlxsw_sp,
 							  i);
 	} while (mlxsw_sp_router_rauhtd_is_full(rauhtd_pl));
 	mutex_unlock(&mlxsw_sp->router->lock);
-	rtnl_unlock();
 
 	return err;
 }
@@ -2354,7 +2352,6 @@ static void mlxsw_sp_router_neighs_update_nh(struct mlxsw_sp *mlxsw_sp)
 {
 	struct mlxsw_sp_neigh_entry *neigh_entry;
 
-	rtnl_lock();
 	mutex_lock(&mlxsw_sp->router->lock);
 	list_for_each_entry(neigh_entry, &mlxsw_sp->router->nexthop_neighs_list,
 			    nexthop_neighs_list_node)
@@ -2363,7 +2360,6 @@ static void mlxsw_sp_router_neighs_update_nh(struct mlxsw_sp *mlxsw_sp)
 		 */
 		neigh_event_send(neigh_entry->key.n, NULL);
 	mutex_unlock(&mlxsw_sp->router->lock);
-	rtnl_unlock();
 }
 
 static void
@@ -2404,14 +2400,12 @@ static void mlxsw_sp_router_probe_unresolved_nexthops(struct work_struct *work)
 	 * but it wouldn't get resolved ever in case traffic is flowing in HW
 	 * using different nexthop.
 	 */
-	rtnl_lock();
 	mutex_lock(&router->lock);
 	list_for_each_entry(neigh_entry, &router->nexthop_neighs_list,
 			    nexthop_neighs_list_node)
 		if (!neigh_entry->connected)
 			neigh_event_send(neigh_entry->key.n, NULL);
 	mutex_unlock(&router->lock);
-	rtnl_unlock();
 
 	mlxsw_core_schedule_dw(&router->nexthop_probe_dw,
 			       MLXSW_SP_UNRESOLVED_NH_PROBE_INTERVAL);
@@ -2549,7 +2543,6 @@ static void mlxsw_sp_router_neigh_event_work(struct work_struct *work)
 	dead = n->dead;
 	read_unlock_bh(&n->lock);
 
-	rtnl_lock();
 	mutex_lock(&mlxsw_sp->router->lock);
 	mlxsw_sp_span_respin(mlxsw_sp);
 
@@ -2573,7 +2566,6 @@ static void mlxsw_sp_router_neigh_event_work(struct work_struct *work)
 
 out:
 	mutex_unlock(&mlxsw_sp->router->lock);
-	rtnl_unlock();
 	neigh_release(n);
 	kfree(net_work);
 }
@@ -5977,7 +5969,6 @@ static void mlxsw_sp_router_fib4_event_work(struct work_struct *work)
 	struct mlxsw_sp *mlxsw_sp = fib_work->mlxsw_sp;
 	int err;
 
-	rtnl_lock();
 	mutex_lock(&mlxsw_sp->router->lock);
 	mlxsw_sp_span_respin(mlxsw_sp);
 
@@ -6001,7 +5992,6 @@ static void mlxsw_sp_router_fib4_event_work(struct work_struct *work)
 		break;
 	}
 	mutex_unlock(&mlxsw_sp->router->lock);
-	rtnl_unlock();
 	kfree(fib_work);
 }
 
@@ -6012,7 +6002,6 @@ static void mlxsw_sp_router_fib6_event_work(struct work_struct *work)
 	struct mlxsw_sp *mlxsw_sp = fib_work->mlxsw_sp;
 	int err;
 
-	rtnl_lock();
 	mutex_lock(&mlxsw_sp->router->lock);
 	mlxsw_sp_span_respin(mlxsw_sp);
 
@@ -6041,7 +6030,6 @@ static void mlxsw_sp_router_fib6_event_work(struct work_struct *work)
 		break;
 	}
 	mutex_unlock(&mlxsw_sp->router->lock);
-	rtnl_unlock();
 	kfree(fib_work);
 }
 
