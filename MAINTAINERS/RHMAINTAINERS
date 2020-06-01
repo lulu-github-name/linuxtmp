@@ -920,11 +920,6 @@ F:	Documentation/mmc/
 F:	include/linux/mmc/
 F:	drivers/mmc/
 
-Lenovo Hardware Support
-M:	Ocean He <ohe@redhat.com>
-S:	Maintained
-F:	drivers/gpu/drm/ast/
-
 LIVE PATCHING / KPATCH
 M:	Josh Poimboeuf <jpoimboe@redhat.com>
 M:	Joe Lawrence <joe.lawrence@redhat.com>
