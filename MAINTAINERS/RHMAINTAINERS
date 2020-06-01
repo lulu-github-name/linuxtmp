@@ -1054,7 +1054,6 @@ F:	include/net/netns/x_tables.h
 NETWORKING [GENERAL]
 I:	net
 M:	Jiri Benc <jbenc@redhat.com>
-M:	Rashid Khan <rkhan@redhat.com>
 M:	Neil Horman <nhorman@redhat.com>
 R:	Davide Caratti <dcaratti@redhat.com>
 R:	Eric Garver <egarver@redhat.com>
