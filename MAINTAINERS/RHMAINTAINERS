@@ -466,7 +466,7 @@ F:	Documentation/filesystems/ceph.txt
 F:	fs/ceph/
 
 CIFS FILESYSTEM
-M:	Red Hat NFS Team <nfs-team@redhat.com>
+L:	Red Hat NFS Team <nfs-team@redhat.com>
 S:	Maintained
 F:	fs/cifs/
 
@@ -1174,17 +1174,17 @@ S:	Maintained
 F:	drivers/net/ethernet/qlogic/netxen/
 
 NETWORK LOCK MANAGER (lockd)
-M:	Red Hat NFS Team <nfs-team@redhat.com>
+L:	Red Hat NFS Team <nfs-team@redhat.com>
 S:	Maintained
 F:	fs/lockd/
 
 NFS FILE SYSTEM (nfs)
-M:	Red Hat NFS Team <nfs-team@redhat.com>
+L:	Red Hat NFS Team <nfs-team@redhat.com>
 S:	Maintained
 F:	fs/nfs/
 
 NFS SERVER (nfsd)
-M:	Red Hat NFS Team <nfs-team@redhat.com>
+L:	Red Hat NFS Team <nfs-team@redhat.com>
 S:	Maintained
 F:	fs/nfsd/
 
@@ -1452,7 +1452,7 @@ S:	Maintained
 F:	drivers/md/
 
 SUN REMOTE PROCEDURE CALL (sunrpc)
-M:	Red Hat NFS Team <nfs-team@redhat.com>
+L:	Red Hat NFS Team <nfs-team@redhat.com>
 S:	Maintained
 F:	net/sunrpc/
 
