@@ -184,7 +184,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 7.3 Kernel Maintainer
-M:	Augusto Caringi <acaringi@redhat.com>
+M:	Patrick Talbert <ptalbert@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-7.3.z.git
 S:	Maintained
 F:	redhat/
@@ -208,7 +208,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 6.5 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
+M:	Patrick Talbert <ptalbert@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.5.z.git
 S:	Maintained
 F:	redhat/
