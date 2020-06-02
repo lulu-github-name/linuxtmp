@@ -181,8 +181,13 @@ API for implementing a new FPGA Manager driver
 .. kernel-doc:: drivers/fpga/fpga-mgr.c
    :functions: fpga_mgr_unregister
 
-API for programming a FPGA
---------------------------
+API for programming an FPGA
+---------------------------
+
+FPGA Manager flags
+
+.. kernel-doc:: include/linux/fpga/fpga-mgr.h
+   :doc: FPGA Manager flags
 
 .. kernel-doc:: include/linux/fpga/fpga-mgr.h
    :functions: fpga_image_info
