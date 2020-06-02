@@ -218,8 +218,18 @@ struct mmu_notifier_ops {
 	void (*invalidate_range)(struct mmu_notifier *mn, struct mm_struct *mm,
 				 unsigned long start, unsigned long end);
 
-	RH_KABI_RESERVE(1)
-	RH_KABI_RESERVE(2)
+       /*
+	* These callbacks are used with the get/put interface to manage the
+	* lifetime of the mmu_notifier memory. alloc_notifier() returns a new
+	* notifier for use with the mm.
+	*
+	* free_notifier() is only called after the mmu_notifier has been
+	* fully put, calls to any ops callback are prevented and no ops
+	* callbacks are currently running. It is called from a SRCU callback
+	* and cannot sleep.
+	*/
+	RH_KABI_USE(1, struct mmu_notifier *(*alloc_notifier)(struct mm_struct *mm))
+	RH_KABI_USE(2, void (*free_notifier)(struct mmu_notifier *mn))
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 };
@@ -235,17 +245,38 @@ struct mmu_notifier_ops {
  * 2. One of the reverse map locks is held (i_mmap_rwsem or anon_vma->rwsem).
  * 3. No other concurrent thread can access the list (release)
  */
+struct mmu_notifier_rh {
+	struct mm_struct *mm;
+	struct rcu_head rcu;
+	unsigned int users;
+	struct mmu_notifier *back_ptr;
+};
+
 struct mmu_notifier {
 	struct hlist_node hlist;
 	const struct mmu_notifier_ops *ops;
-	RH_KABI_RESERVE(1)
-	RH_KABI_RESERVE(2)
+	RH_KABI_USE_AUX_PTR(1, 2, mmu_notifier)
 };
 
 static inline int mm_has_notifiers(struct mm_struct *mm)
 {
 	return unlikely(mm->mmu_notifier_mm);
 }
+
+struct mmu_notifier *mmu_notifier_get_locked(const struct mmu_notifier_ops *ops,
+					     struct mm_struct *mm);
+static inline struct mmu_notifier *
+mmu_notifier_get(const struct mmu_notifier_ops *ops, struct mm_struct *mm)
+{
+	struct mmu_notifier *ret;
+
+	down_write(&mm->mmap_sem);
+	ret = mmu_notifier_get_locked(ops, mm);
+	up_write(&mm->mmap_sem);
+	return ret;
+}
+void mmu_notifier_put(struct mmu_notifier *mn);
+void mmu_notifier_synchronize(void);
 
 extern int mmu_notifier_register(struct mmu_notifier *mn,
 				 struct mm_struct *mm);
@@ -534,6 +565,10 @@ static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
 #define pmdp_huge_clear_flush_notify pmdp_huge_clear_flush
 #define pudp_huge_clear_flush_notify pudp_huge_clear_flush
 #define set_pte_at_notify set_pte_at
+
+static inline void mmu_notifier_synchronize(void)
+{
+}
 
 #endif /* CONFIG_MMU_NOTIFIER */
 
