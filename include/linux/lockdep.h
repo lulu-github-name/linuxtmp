@@ -390,7 +390,7 @@ extern void lock_unpin_lock(struct lockdep_map *lock, struct pin_cookie);
 		WARN_ON(debug_locks && !lockdep_is_held(l));	\
 	} while (0)
 
-#define lockdep_assert_held_exclusive(l)	do {			\
+#define lockdep_assert_held_write(l)	do {			\
 		WARN_ON(debug_locks && !lockdep_is_held_type(l, 0));	\
 	} while (0)
 
@@ -475,7 +475,7 @@ struct lockdep_map { };
 #define lockdep_is_held_type(l, r)		(1)
 
 #define lockdep_assert_held(l)			do { (void)(l); } while (0)
-#define lockdep_assert_held_exclusive(l)	do { (void)(l); } while (0)
+#define lockdep_assert_held_write(l)	do { (void)(l); } while (0)
 #define lockdep_assert_held_read(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_once(l)		do { (void)(l); } while (0)
 
@@ -490,6 +490,8 @@ struct pin_cookie { };
 #define lockdep_unpin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 
 #endif /* !LOCKDEP */
+
+#define lockdep_assert_held_exclusive lockdep_assert_held_write
 
 enum xhlock_context_t {
 	XHLOCK_HARD,
