@@ -582,6 +582,8 @@ static int altera_cvp_probe(struct pci_dev *pdev,
 	u16 cmd, val;
 	u32 regval;
 
+	mark_tech_preview("Altera CvP FPGA Manager", THIS_MODULE);
+
 	/* Discover the Vendor Specific Offset for this device */
 	offset = pci_find_next_ext_capability(pdev, 0, PCI_EXT_CAP_ID_VNDR);
 	if (!offset) {

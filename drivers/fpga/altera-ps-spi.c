@@ -259,6 +259,8 @@ static int altera_ps_probe(struct spi_device *spi)
 	const struct of_device_id *of_id;
 	struct fpga_manager *mgr;
 
+	mark_tech_preview("Altera FPGA firmware over SPI", THIS_MODULE);
+
 	conf = devm_kzalloc(&spi->dev, sizeof(*conf), GFP_KERNEL);
 	if (!conf)
 		return -ENOMEM;
