@@ -20,13 +20,6 @@
 #ifdef RH_DRM_BACKPORT
 #ifdef CONFIG_MMU_NOTIFIER
 
-struct mmu_notifier_range {
-	struct mm_struct *mm;
-	unsigned long start;
-	unsigned long end;
-	bool blockable;
-};
-
 struct __rh_drm_mmu_notifier;
 struct __rh_drm_mmu_notifier_ops {
 	/*

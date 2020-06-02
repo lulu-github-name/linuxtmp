@@ -22,7 +22,7 @@ fill_range(struct mm_struct *mm, unsigned long start, unsigned long end)
 		.mm = mm,
 		.start = start,
 		.end = end,
-		.blockable = true,
+	        .flags = MMU_NOTIFIER_RANGE_BLOCKABLE,
 	};
 }
 
