@@ -22,6 +22,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/dma-debug.h>
 #include <linux/export.h>
+#include <linux/pagewalk.h>
 
 #include <asm/cpuinfo.h>
 #include <asm/spr_defs.h>
