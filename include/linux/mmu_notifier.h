@@ -45,8 +45,6 @@ enum mmu_notifier_event {
 	MMU_NOTIFY_SOFT_DIRTY,
 };
 
-#ifdef CONFIG_MMU_NOTIFIER
-
 #ifdef CONFIG_LOCKDEP
 extern struct lockdep_map __mmu_notifier_invalidate_range_start_map;
 #endif
@@ -57,12 +55,19 @@ extern struct lockdep_map __mmu_notifier_invalidate_range_start_map;
  * critical section and it's released only when mm_count reaches zero
  * in mmdrop().
  */
+#ifdef __GENKSYMS__
 struct mmu_notifier_mm {
-	/* all mmu notifiers registerd in this mm are queued in this list */
+	/* all mmu notifiers registered in this mm are queued in this list */
 	struct hlist_head list;
-	/* to serialize the list modifications and hlist_unhashed */
 	spinlock_t lock;
 };
+#else
+struct mmu_notifier_mm;
+#endif
+struct mmu_notifier;
+
+/* mmu_notifier_ops flags */
+#define MMU_INVALIDATE_DOES_NOT_BLOCK	(0x01)
 
 struct mmu_notifier_ops {
 	/*
@@ -262,6 +267,7 @@ struct mmu_notifier {
 	RH_KABI_USE_AUX_PTR(1, 2, mmu_notifier)
 };
 
+#ifdef CONFIG_MMU_NOTIFIER
 static inline int mm_has_notifiers(struct mm_struct *mm)
 {
 	return unlikely(mm->mmu_notifier_mm);
