@@ -23,6 +23,12 @@
 /* global SRCU for all MMs */
 DEFINE_STATIC_SRCU(srcu);
 
+#ifdef CONFIG_LOCKDEP
+struct lockdep_map __mmu_notifier_invalidate_range_start_map = {
+	.name = "mmu_notifier_invalidate_range_start"
+};
+#endif
+
 /*
  * This function allows mmu_notifier::release callback to delay a call to
  * a function that will free appropriate resources. The function must be
@@ -190,6 +196,7 @@ void __mmu_notifier_invalidate_range_end(struct mm_struct *mm,
 	struct mmu_notifier *mn;
 	int id;
 
+	lock_map_acquire(&__mmu_notifier_invalidate_range_start_map);
 	id = srcu_read_lock(&srcu);
 	hlist_for_each_entry_rcu(mn, &mm->mmu_notifier_mm->list, hlist) {
 		/*
@@ -211,6 +218,7 @@ void __mmu_notifier_invalidate_range_end(struct mm_struct *mm,
 			mn->ops->invalidate_range_end(mn, mm, start, end);
 	}
 	srcu_read_unlock(&srcu, id);
+	lock_map_release(&__mmu_notifier_invalidate_range_start_map);
 }
 EXPORT_SYMBOL_GPL(__mmu_notifier_invalidate_range_end);
 
