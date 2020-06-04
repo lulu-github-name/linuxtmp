@@ -711,6 +711,9 @@ static const struct io_op_def io_op_defs[] = {
 		.needs_file		= 1,
 		.unbound_nonreg_file	= 1,
 	},
+	[IORING_OP_OPENAT2] = {
+		.not_supported		= 1,
+	},
 };
 
 static void io_wq_submit_work(struct io_wq_work **workptr);
