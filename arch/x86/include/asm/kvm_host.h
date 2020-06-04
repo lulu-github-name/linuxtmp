@@ -690,6 +690,7 @@ struct kvm_vcpu_arch {
 	struct kvm_cpuid_entry2 cpuid_entries[KVM_MAX_CPUID_ENTRIES];
 
 	int maxphyaddr;
+	int tdp_level;
 
 	/* emulate context */
 
