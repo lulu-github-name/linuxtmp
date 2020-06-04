@@ -6244,12 +6244,6 @@ SYSCALL_DEFINE6(io_uring_enter, unsigned int, fd, u32, to_submit,
 	} else if (to_submit) {
 		struct mm_struct *cur_mm;
 
-		if (current->mm != ctx->sqo_mm ||
-		    current_cred() != ctx->creds) {
-			ret = -EPERM;
-			goto out;
-		}
-
 		mutex_lock(&ctx->uring_lock);
 		/* already have mm, so io_submit_sqes() won't try to grab it */
 		cur_mm = ctx->sqo_mm;
