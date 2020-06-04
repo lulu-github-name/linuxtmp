@@ -1528,7 +1528,7 @@ static int io_import_fixed(struct io_ring_ctx *ctx, int rw,
 
 	/* don't drop a reference to these pages */
 	iter->type |= ITER_BVEC_FLAG_NO_REF;
-	return 0;
+	return len;
 }
 
 static ssize_t io_import_iovec(struct io_ring_ctx *ctx, int rw,
