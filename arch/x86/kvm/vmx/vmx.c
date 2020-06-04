@@ -8084,8 +8084,7 @@ static __init int hardware_setup(void)
 		pt_mode = PT_MODE_SYSTEM;
 
 	if (nested) {
-		r = nested_vmx_hardware_setup(&vmx_x86_ops,
-					      kvm_vmx_exit_handlers);
+		r = nested_vmx_hardware_setup(kvm_vmx_exit_handlers);
 		if (r)
 			return r;
 	}
