@@ -181,6 +181,9 @@ struct net {
 	RH_KABI_EXTEND(struct nf_gre_net	nf_ct_gre)
 #endif
 	RH_KABI_EXTEND(DEFINE_SNMP_STAT(struct linux_tls_mib, mib_tls_statistics))
+#ifdef CONFIG_MPTCP
+	RH_KABI_EXTEND(struct netns_mptcp_mib  mptcp_mib)
+#endif
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
