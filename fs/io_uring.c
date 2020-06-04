@@ -3025,7 +3025,7 @@ static int io_sendmsg(struct io_kiocb *req, struct io_kiocb **nxt,
 			if (req->io)
 				return -EAGAIN;
 			if (io_alloc_async_ctx(req)) {
-				if (kmsg && kmsg->iov != kmsg->fast_iov)
+				if (kmsg->iov != kmsg->fast_iov)
 					kfree(kmsg->iov);
 				return -ENOMEM;
 			}
@@ -3179,7 +3179,7 @@ static int io_recvmsg(struct io_kiocb *req, struct io_kiocb **nxt,
 			if (req->io)
 				return -EAGAIN;
 			if (io_alloc_async_ctx(req)) {
-				if (kmsg && kmsg->iov != kmsg->fast_iov)
+				if (kmsg->iov != kmsg->fast_iov)
 					kfree(kmsg->iov);
 				return -ENOMEM;
 			}
