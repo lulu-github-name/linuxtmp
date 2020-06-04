@@ -993,7 +993,6 @@ destroy_tises:
 static void mlx5e_cleanup_uplink_rep_tx(struct mlx5e_rep_priv *rpriv)
 {
 	mlx5e_rep_tc_netdevice_event_unregister(rpriv);
-	mlx5e_rep_indr_clean_block_privs(rpriv);
 
 	mlx5e_rep_tc_cleanup(rpriv);
 }
