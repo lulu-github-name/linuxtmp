@@ -548,24 +548,6 @@ err:
 	return ret;
 }
 
-static int vdpasim_dma_map(struct vdpa_device *vdpa, u64 iova, u64 size,
-			   u64 pa, u32 perm)
-{
-	struct vdpasim *vdpasim = vdpa_to_sim(vdpa);
-
-	return vhost_iotlb_add_range(vdpasim->iommu, iova,
-				     iova + size - 1, pa, perm);
-}
-
-static int vdpasim_dma_unmap(struct vdpa_device *vdpa, u64 iova, u64 size)
-{
-	struct vdpasim *vdpasim = vdpa_to_sim(vdpa);
-
-	vhost_iotlb_del_range(vdpasim->iommu, iova, iova + size - 1);
-
-	return 0;
-}
-
 static void vdpasim_free(struct vdpa_device *vdpa)
 {
 	struct vdpasim *vdpasim = vdpa_to_sim(vdpa);
@@ -598,8 +580,6 @@ static const struct vdpa_config_ops vdpasim_net_config_ops = {
 	.set_config             = vdpasim_set_config,
 	.get_generation         = vdpasim_get_generation,
 	.set_map                = vdpasim_set_map,
-	.dma_map                = vdpasim_dma_map,
-	.dma_unmap              = vdpasim_dma_unmap,
 	.free                   = vdpasim_free,
 };
 

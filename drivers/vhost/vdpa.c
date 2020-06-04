@@ -486,7 +486,6 @@ static int vhost_vdpa_map(struct vhost_vdpa *v,
 
 static void vhost_vdpa_unmap(struct vhost_vdpa *v, u64 iova, u64 size)
 {
-	struct vhost_dev *dev = &v->vdev;
 	struct vdpa_device *vdpa = v->vdpa;
 	const struct vdpa_config_ops *ops = vdpa->config;
 
