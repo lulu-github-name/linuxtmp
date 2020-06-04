@@ -2762,7 +2762,7 @@ out:
 
 	if (link)
 		io_queue_link_head(ctx, link, &link->submit, shadow_req,
-					block_for_last);
+					!block_for_last);
 	if (statep)
 		io_submit_state_end(statep);
 
