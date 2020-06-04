@@ -412,6 +412,7 @@ struct io_open {
 	struct filename			*filename;
 	struct statx __user		*buffer;
 	int				flags;
+	unsigned long			nofile;
 };
 
 struct io_files_update {
@@ -2914,6 +2915,7 @@ static int io_openat_prep(struct io_kiocb *req, const struct io_uring_sqe *sqe)
 		return ret;
 	}
 
+	req->open.nofile = rlimit(RLIMIT_NOFILE);
 	req->flags |= REQ_F_NEED_CLEANUP;
 	return 0;
 }
@@ -2931,7 +2933,7 @@ static int io_openat(struct io_kiocb *req, bool force_nonblock)
 	if (ret)
 		goto err;
 
-	ret = get_unused_fd_flags(op.open_flag);
+	ret = __get_unused_fd_flags(op.open_flag, req->open.nofile);
 	if (ret < 0)
 		goto err;
 
@@ -3253,6 +3255,7 @@ static int io_statx_prep(struct io_kiocb *req, const struct io_uring_sqe *sqe)
 		return ret;
 	}
 
+	req->open.nofile = rlimit(RLIMIT_NOFILE);
 	req->flags |= REQ_F_NEED_CLEANUP;
 	return 0;
 }
