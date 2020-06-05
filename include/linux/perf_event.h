@@ -856,6 +856,15 @@ struct perf_cpu_context {
 	int				sched_cb_usage;
 
 	int				online;
+	/*
+	 * Per-CPU storage for iterators used in visit_groups_merge. The default
+	 * storage is of size 2 to hold the CPU and any CPU event iterators.
+	 */
+	RH_KABI_BROKEN_INSERT_BLOCK(
+	int				heap_size;
+	struct perf_event		**heap;
+	struct perf_event		*heap_default[2];
+	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 };
 
 struct perf_output_handle {
