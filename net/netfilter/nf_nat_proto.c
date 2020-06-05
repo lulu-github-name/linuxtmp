@@ -40,9 +40,13 @@ static const struct nf_nat_l3proto nf_nat_l3proto_ipv4;
 static const struct nf_nat_l3proto nf_nat_l3proto_ipv6;
 #endif
 
+static void nf_csum_update(struct sk_buff *skb,
+			   unsigned int iphdroff, __sum16 *check,
+			   const struct nf_conntrack_tuple *t,
+			   enum nf_nat_manip_type maniptype);
+
 static void
 __udp_manip_pkt(struct sk_buff *skb,
-	        const struct nf_nat_l3proto *l3proto,
 	        unsigned int iphdroff, struct udphdr *hdr,
 	        const struct nf_conntrack_tuple *tuple,
 	        enum nf_nat_manip_type maniptype, bool do_csum)
@@ -59,8 +63,7 @@ __udp_manip_pkt(struct sk_buff *skb,
 		portptr = &hdr->dest;
 	}
 	if (do_csum) {
-		l3proto->csum_update(skb, iphdroff, &hdr->check,
-				     tuple, maniptype);
+		nf_csum_update(skb, iphdroff, &hdr->check, tuple, maniptype);
 		inet_proto_csum_replace2(&hdr->check, skb, *portptr, newport,
 					 false);
 		if (!hdr->check)
@@ -70,7 +73,6 @@ __udp_manip_pkt(struct sk_buff *skb,
 }
 
 static bool udp_manip_pkt(struct sk_buff *skb,
-			  const struct nf_nat_l3proto *l3proto,
 			  unsigned int iphdroff, unsigned int hdroff,
 			  const struct nf_conntrack_tuple *tuple,
 			  enum nf_nat_manip_type maniptype)
@@ -81,13 +83,12 @@ static bool udp_manip_pkt(struct sk_buff *skb,
 		return false;
 
 	hdr = (struct udphdr *)(skb->data + hdroff);
-	__udp_manip_pkt(skb, l3proto, iphdroff, hdr, tuple, maniptype, !!hdr->check);
+	__udp_manip_pkt(skb, iphdroff, hdr, tuple, maniptype, !!hdr->check);
 
 	return true;
 }
 
 static bool udplite_manip_pkt(struct sk_buff *skb,
-			      const struct nf_nat_l3proto *l3proto,
 			      unsigned int iphdroff, unsigned int hdroff,
 			      const struct nf_conntrack_tuple *tuple,
 			      enum nf_nat_manip_type maniptype)
@@ -99,14 +100,13 @@ static bool udplite_manip_pkt(struct sk_buff *skb,
 		return false;
 
 	hdr = (struct udphdr *)(skb->data + hdroff);
-	__udp_manip_pkt(skb, l3proto, iphdroff, hdr, tuple, maniptype, true);
+	__udp_manip_pkt(skb, iphdroff, hdr, tuple, maniptype, true);
 #endif
 	return true;
 }
 
 static bool
 sctp_manip_pkt(struct sk_buff *skb,
-	       const struct nf_nat_l3proto *l3proto,
 	       unsigned int iphdroff, unsigned int hdroff,
 	       const struct nf_conntrack_tuple *tuple,
 	       enum nf_nat_manip_type maniptype)
@@ -149,7 +149,6 @@ sctp_manip_pkt(struct sk_buff *skb,
 
 static bool
 tcp_manip_pkt(struct sk_buff *skb,
-	      const struct nf_nat_l3proto *l3proto,
 	      unsigned int iphdroff, unsigned int hdroff,
 	      const struct nf_conntrack_tuple *tuple,
 	      enum nf_nat_manip_type maniptype)
@@ -185,14 +184,13 @@ tcp_manip_pkt(struct sk_buff *skb,
 	if (hdrsize < sizeof(*hdr))
 		return true;
 
-	l3proto->csum_update(skb, iphdroff, &hdr->check, tuple, maniptype);
+	nf_csum_update(skb, iphdroff, &hdr->check, tuple, maniptype);
 	inet_proto_csum_replace2(&hdr->check, skb, oldport, newport, false);
 	return true;
 }
 
 static bool
 dccp_manip_pkt(struct sk_buff *skb,
-	       const struct nf_nat_l3proto *l3proto,
 	       unsigned int iphdroff, unsigned int hdroff,
 	       const struct nf_conntrack_tuple *tuple,
 	       enum nf_nat_manip_type maniptype)
@@ -224,8 +222,7 @@ dccp_manip_pkt(struct sk_buff *skb,
 	if (hdrsize < sizeof(*hdr))
 		return true;
 
-	l3proto->csum_update(skb, iphdroff, &hdr->dccph_checksum,
-			     tuple, maniptype);
+	nf_csum_update(skb, iphdroff, &hdr->dccph_checksum, tuple, maniptype);
 	inet_proto_csum_replace2(&hdr->dccph_checksum, skb, oldport, newport,
 				 false);
 #endif
@@ -234,7 +231,6 @@ dccp_manip_pkt(struct sk_buff *skb,
 
 static bool
 icmp_manip_pkt(struct sk_buff *skb,
-	       const struct nf_nat_l3proto *l3proto,
 	       unsigned int iphdroff, unsigned int hdroff,
 	       const struct nf_conntrack_tuple *tuple,
 	       enum nf_nat_manip_type maniptype)
@@ -266,7 +262,6 @@ icmp_manip_pkt(struct sk_buff *skb,
 
 static bool
 icmpv6_manip_pkt(struct sk_buff *skb,
-		 const struct nf_nat_l3proto *l3proto,
 		 unsigned int iphdroff, unsigned int hdroff,
 		 const struct nf_conntrack_tuple *tuple,
 		 enum nf_nat_manip_type maniptype)
@@ -277,8 +272,7 @@ icmpv6_manip_pkt(struct sk_buff *skb,
 		return false;
 
 	hdr = (struct icmp6hdr *)(skb->data + hdroff);
-	l3proto->csum_update(skb, iphdroff, &hdr->icmp6_cksum,
-			     tuple, maniptype);
+	nf_csum_update(skb, iphdroff, &hdr->icmp6_cksum, tuple, maniptype);
 	if (hdr->icmp6_type == ICMPV6_ECHO_REQUEST ||
 	    hdr->icmp6_type == ICMPV6_ECHO_REPLY) {
 		inet_proto_csum_replace2(&hdr->icmp6_cksum, skb,
@@ -292,7 +286,6 @@ icmpv6_manip_pkt(struct sk_buff *skb,
 /* manipulate a GRE packet according to maniptype */
 static bool
 gre_manip_pkt(struct sk_buff *skb,
-	      const struct nf_nat_l3proto *l3proto,
 	      unsigned int iphdroff, unsigned int hdroff,
 	      const struct nf_conntrack_tuple *tuple,
 	      enum nf_nat_manip_type maniptype)
@@ -332,35 +325,34 @@ gre_manip_pkt(struct sk_buff *skb,
 }
 
 static bool l4proto_manip_pkt(struct sk_buff *skb,
-			      const struct nf_nat_l3proto *l3proto,
 			      unsigned int iphdroff, unsigned int hdroff,
 			      const struct nf_conntrack_tuple *tuple,
 			      enum nf_nat_manip_type maniptype)
 {
 	switch (tuple->dst.protonum) {
 	case IPPROTO_TCP:
-		return tcp_manip_pkt(skb, l3proto, iphdroff, hdroff,
+		return tcp_manip_pkt(skb, iphdroff, hdroff,
 				     tuple, maniptype);
 	case IPPROTO_UDP:
-		return udp_manip_pkt(skb, l3proto, iphdroff, hdroff,
+		return udp_manip_pkt(skb, iphdroff, hdroff,
 				     tuple, maniptype);
 	case IPPROTO_UDPLITE:
-		return udplite_manip_pkt(skb, l3proto, iphdroff, hdroff,
+		return udplite_manip_pkt(skb, iphdroff, hdroff,
 					 tuple, maniptype);
 	case IPPROTO_SCTP:
-		return sctp_manip_pkt(skb, l3proto, iphdroff, hdroff,
+		return sctp_manip_pkt(skb, iphdroff, hdroff,
 				      tuple, maniptype);
 	case IPPROTO_ICMP:
-		return icmp_manip_pkt(skb, l3proto, iphdroff, hdroff,
+		return icmp_manip_pkt(skb, iphdroff, hdroff,
 				      tuple, maniptype);
 	case IPPROTO_ICMPV6:
-		return icmpv6_manip_pkt(skb, l3proto, iphdroff, hdroff,
+		return icmpv6_manip_pkt(skb, iphdroff, hdroff,
 					tuple, maniptype);
 	case IPPROTO_DCCP:
-		return dccp_manip_pkt(skb, l3proto, iphdroff, hdroff,
+		return dccp_manip_pkt(skb, iphdroff, hdroff,
 				      tuple, maniptype);
 	case IPPROTO_GRE:
-		return gre_manip_pkt(skb, l3proto, iphdroff, hdroff,
+		return gre_manip_pkt(skb, iphdroff, hdroff,
 				     tuple, maniptype);
 	}
 
@@ -382,8 +374,7 @@ static bool nf_nat_ipv4_manip_pkt(struct sk_buff *skb,
 	iph = (void *)skb->data + iphdroff;
 	hdroff = iphdroff + iph->ihl * 4;
 
-	if (!l4proto_manip_pkt(skb, &nf_nat_l3proto_ipv4, iphdroff,
-			       hdroff, target, maniptype))
+	if (!l4proto_manip_pkt(skb, iphdroff, hdroff, target, maniptype))
 		return false;
 	iph = (void *)skb->data + iphdroff;
 
@@ -419,8 +410,7 @@ static bool nf_nat_ipv6_manip_pkt(struct sk_buff *skb,
 		goto manip_addr;
 
 	if ((frag_off & htons(~0x7)) == 0 &&
-	    !l4proto_manip_pkt(skb, &nf_nat_l3proto_ipv6, iphdroff, hdroff,
-			       target, maniptype))
+	    !l4proto_manip_pkt(skb, iphdroff, hdroff, target, maniptype))
 		return false;
 
 	/* must reload, offset might have changed */
@@ -501,6 +491,21 @@ static void nf_nat_ipv6_csum_update(struct sk_buff *skb,
 #endif
 }
 
+static void nf_csum_update(struct sk_buff *skb,
+			   unsigned int iphdroff, __sum16 *check,
+			   const struct nf_conntrack_tuple *t,
+			   enum nf_nat_manip_type maniptype)
+{
+	switch (t->src.l3num) {
+	case NFPROTO_IPV4:
+		nf_nat_ipv4_csum_update(skb, iphdroff, check, t, maniptype);
+		return;
+	case NFPROTO_IPV6:
+		nf_nat_ipv6_csum_update(skb, iphdroff, check, t, maniptype);
+		return;
+	}
+}
+
 static void nf_nat_ipv4_csum_recalc(struct sk_buff *skb,
 				    u8 proto, void *data, __sum16 *check,
 				    int datalen, int oldlen)
@@ -543,7 +548,6 @@ static void nf_nat_ipv6_csum_recalc(struct sk_buff *skb,
 
 static const struct nf_nat_l3proto nf_nat_l3proto_ipv4 = {
 	.l3proto		= NFPROTO_IPV4,
-	.csum_update		= nf_nat_ipv4_csum_update,
 	.csum_recalc		= nf_nat_ipv4_csum_recalc,
 };
 
@@ -795,7 +799,6 @@ void nf_nat_l3proto_exit(void)
 #if IS_ENABLED(CONFIG_IPV6)
 static const struct nf_nat_l3proto nf_nat_l3proto_ipv6 = {
 	.l3proto		= NFPROTO_IPV6,
-	.csum_update		= nf_nat_ipv6_csum_update,
 	.csum_recalc		= nf_nat_ipv6_csum_recalc,
 };
 
