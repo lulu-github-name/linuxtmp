@@ -1182,6 +1182,9 @@ void switch_to_sld(unsigned long tifn)
 static const struct x86_cpu_id split_lock_cpu_ids[] __initconst = {
 	SPLIT_LOCK_CPU(INTEL_FAM6_ICELAKE_X),
 	SPLIT_LOCK_CPU(INTEL_FAM6_ICELAKE_L),
+	SPLIT_LOCK_CPU(INTEL_FAM6_ATOM_TREMONT),
+	SPLIT_LOCK_CPU(INTEL_FAM6_ATOM_TREMONT_D),
+	SPLIT_LOCK_CPU(INTEL_FAM6_ATOM_TREMONT_L),
 	{}
 };
 
