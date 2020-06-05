@@ -382,7 +382,8 @@ struct perf_event_attr {
 				ksymbol        :  1, /* include ksymbol events */
 				bpf_event      :  1, /* include bpf events */
 				aux_output     :  1, /* generate AUX records instead of events */
-				__reserved_1   : 32;
+				cgroup         :  1, /* include cgroup events */
+				__reserved_1   : 31;
 #else
 				__reserved_1   : 35;
 #endif /*  __GENKSYMS__ */
@@ -1018,6 +1019,16 @@ enum perf_event_type {
 	 * };
 	 */
 	PERF_RECORD_BPF_EVENT			= 18,
+
+	/*
+	 * struct {
+	 *	struct perf_event_header	header;
+	 *	u64				id;
+	 *	char				path[];
+	 *	struct sample_id		sample_id;
+	 * };
+	 */
+	PERF_RECORD_CGROUP			= 19,
 #endif /* __GENKSYMS__ */
 
 	PERF_RECORD_MAX,			/* non-ABI */
