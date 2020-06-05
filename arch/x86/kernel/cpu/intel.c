@@ -22,6 +22,7 @@
 #include <asm/cpu_device_id.h>
 #include <asm/cmdline.h>
 #include <asm/traps.h>
+#include <asm/kdebug.h>
 
 #ifdef CONFIG_X86_64
 #include <linux/topology.h>
@@ -45,8 +46,8 @@ enum split_lock_detect_state {
  * split_lock_setup() will switch this to sld_warn on systems that support
  * split lock detect, unless there is a command line override.
  */
-static enum split_lock_detect_state sld_state __ro_after_init = sld_off;
-static u64 msr_test_ctrl_cache __ro_after_init;
+static enum split_lock_detect_state sld_state = sld_off;
+static u64 msr_test_ctrl_cache;
 
 /*
  * Just in case our CPU detection goes bad, or you have a weird system,
@@ -1041,7 +1042,7 @@ cpu_dev_register(intel_cpu_dev);
 static const struct {
 	const char			*option;
 	enum split_lock_detect_state	state;
-} sld_options[] __initconst = {
+} sld_options[] = {
 	{ "off",	sld_off   },
 	{ "warn",	sld_warn  },
 	{ "fatal",	sld_fatal },
@@ -1072,7 +1073,7 @@ static bool split_lock_verify_msr(bool on)
 
 static void __init split_lock_setup(void)
 {
-	enum split_lock_detect_state state = sld_warn;
+	enum split_lock_detect_state state = sld_off;
 	char arg[20];
 	int i, ret;
 
@@ -1095,18 +1096,18 @@ static void __init split_lock_setup(void)
 	switch (state) {
 	case sld_off:
 		pr_info("disabled\n");
-		return;
+		break;
 	case sld_warn:
-		pr_info("warning about user-space split_locks\n");
+		pr_info("warning about split_locks\n");
 		break;
 	case sld_fatal:
-		pr_info("sending SIGBUS on user-space split_locks\n");
+		pr_info("sending SIGBUS on user-space split_locks, panic on kenrel split_locks\n");
 		break;
 	}
 
 	rdmsrl(MSR_TEST_CTRL, msr_test_ctrl_cache);
 
-	if (!split_lock_verify_msr(true)) {
+	if (!split_lock_verify_msr(sld_state == sld_off)) {
 		pr_info("MSR access failed: Disabled\n");
 		return;
 	}
@@ -1132,7 +1133,69 @@ static void sld_update_msr(bool on)
 
 static void split_lock_init(void)
 {
-	split_lock_verify_msr(sld_state != sld_off);
+	split_lock_verify_msr(sld_state == sld_off);
+}
+
+/* RHEL8 only split_lock enable/disable sysfs file */
+static ssize_t
+split_lock_detect_show(struct device *dev, struct device_attribute *attr,
+		       char *buf)
+{
+	return sprintf(buf, "%s\n", sld_options[sld_state].option);
+}
+
+static ssize_t
+split_lock_detect_store(struct device *dev, struct device_attribute *attr,
+			const char *buf, size_t count)
+{
+	if (!strncmp(buf, "off", 3)) {
+		sld_state = sld_off;
+		sld_update_msr(false);
+	}
+
+	if (!strncmp(buf, "warn", 4)) {
+		pr_info("warning about split_locks\n");
+		sld_state = sld_warn;
+		sld_update_msr(true);
+	}
+
+	if (!strncmp(buf, "fatal", 5)) {
+		pr_info("sending SIGBUS on user-space split_locks, panic on kernel split_locks\n");
+		sld_state = sld_fatal;
+		sld_update_msr(true);
+	}
+
+	return count;
+}
+
+static DEVICE_ATTR_RW(split_lock_detect);
+
+static int __init split_lock_late_init(void)
+{
+	int ret;
+
+	if (!boot_cpu_has(X86_FEATURE_SPLIT_LOCK_DETECT))
+		return -ENODEV;
+
+	ret = device_create_file(cpu_subsys.dev_root,
+				 &dev_attr_split_lock_detect);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+subsys_initcall(split_lock_late_init);
+
+void handle_kernel_split_lock(struct pt_regs *regs, long error_code)
+{
+	msr_clear_bit(MSR_TEST_CTRL,
+		      MSR_TEST_CTRL_SPLIT_LOCK_DETECT_BIT);
+
+	WARN((sld_state == sld_warn), "Split lock detected\n");
+
+	if (sld_state == sld_fatal)
+		die("Split lock detected\n", regs, error_code);
 }
 
 static void split_lock_warn(unsigned long ip)
@@ -1171,7 +1234,8 @@ bool handle_user_split_lock(struct pt_regs *regs, long error_code)
 {
 	if ((regs->flags & X86_EFLAGS_AC) || sld_state == sld_fatal)
 		return false;
-	split_lock_warn(regs->ip);
+	if (sld_state == sld_warn)
+		split_lock_warn(regs->ip);
 	return true;
 }
 

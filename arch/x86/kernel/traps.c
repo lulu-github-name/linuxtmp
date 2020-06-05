@@ -304,10 +304,12 @@ dotraplinkage void do_alignment_check(struct pt_regs *regs, long error_code)
 	if (notify_die(DIE_TRAP, str, regs, error_code, X86_TRAP_AC, SIGBUS) == NOTIFY_STOP)
 		return;
 
-	if (!user_mode(regs))
-		die("Split lock detected\n", regs, error_code);
-
 	local_irq_enable();
+
+	if (!user_mode(regs)) {
+		handle_kernel_split_lock(regs, error_code);
+		return;
+	}
 
 	if (handle_user_split_lock(regs, error_code))
 		return;

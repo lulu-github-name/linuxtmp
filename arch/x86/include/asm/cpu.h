@@ -45,6 +45,7 @@ extern void __init cpu_set_core_cap_bits(struct cpuinfo_x86 *c);
 extern void switch_to_sld(unsigned long tifn);
 extern bool handle_user_split_lock(struct pt_regs *regs, long error_code);
 extern bool handle_guest_split_lock(unsigned long ip);
+extern void handle_kernel_split_lock(struct pt_regs *regs, long error_code);
 #else
 static inline void __init cpu_set_core_cap_bits(struct cpuinfo_x86 *c) {}
 static inline void switch_to_sld(unsigned long tifn) {}
@@ -56,6 +57,11 @@ static inline bool handle_user_split_lock(struct pt_regs *regs, long error_code)
 static inline bool handle_guest_split_lock(unsigned long ip)
 {
 	return false;
+}
+static inline void handle_kernel_split_lock(struct pt_regs *regs,
+					    long error_code)
+{
+	return;
 }
 #endif
 #endif /* _ASM_X86_CPU_H */
