@@ -120,6 +120,9 @@ struct dev_pagemap_ops {
  * @type: memory type: see MEMORY_* in memory_hotplug.h
  * @flags: PGMAP_* flags to specify defailed behavior
  * @ops: method table
+ * @owner: an opaque pointer identifying the entity that manages this
+ *	instance.  Used by various helpers to make sure that no
+ *	foreign ZONE_DEVICE memory is accessed.
  */
 struct dev_pagemap {
 	RH_KABI_DEPRECATE(dev_page_fault_t, page_fault)
@@ -136,6 +139,7 @@ struct dev_pagemap {
 	RH_KABI_EXTEND(unsigned int flags)
 	RH_KABI_EXTEND(struct percpu_ref internal_ref)
 	RH_KABI_EXTEND(struct completion done)
+	RH_KABI_EXTEND(void *owner)
 };
 
 static inline struct vmem_altmap *pgmap_altmap(struct dev_pagemap *pgmap)
