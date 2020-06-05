@@ -30,7 +30,5 @@ void nf_ct_gre_keymap_flush(struct net *net);
 /* delete keymap entries */
 void nf_ct_gre_keymap_destroy(struct nf_conn *ct);
 
-void nf_nat_need_gre(void);
-
 #endif /* __KERNEL__ */
 #endif /* _CONNTRACK_PROTO_GRE_H */
