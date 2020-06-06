@@ -43,7 +43,7 @@ struct iommu_ops;
 struct iommu_group;
 struct iommu_fwspec;
 struct dev_pin_info;
-struct iommu_param;
+struct dev_iommu;
 
 struct bus_attribute {
 	struct attribute	attr;
@@ -956,7 +956,7 @@ struct device_extended_rh {
  * 		device (i.e. the bus driver that discovered the device).
  * @iommu_group: IOMMU group the device belongs to.
  * @iommu_fwspec: IOMMU-specific properties supplied by firmware.
- * @iommu_param: Per device generic IOMMU runtime data
+ * @iommu:	Per device generic IOMMU runtime data
  *
  * @offline_disabled: If set, the device is permanently online.
  * @offline:	Set after successful invocation of bus type's .offline().
@@ -1066,7 +1066,7 @@ struct device {
 	 * window instead of dynamically mapping memory.
 	 */
 	RH_KABI_USE(1, bool iommu_bypass : 1)
-	RH_KABI_USE(2, struct iommu_param *iommu_param)
+	RH_KABI_USE(2, struct dev_iommu *iommu)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
