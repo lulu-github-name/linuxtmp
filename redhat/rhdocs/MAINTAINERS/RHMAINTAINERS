@@ -184,7 +184,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 7.3 Kernel Maintainer
-M:	Augusto Caringi <acaringi@redhat.com>
+M:	Patrick Talbert <ptalbert@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-7.3.z.git
 S:	Maintained
 F:	redhat/
@@ -208,7 +208,7 @@ S:	Maintained
 F:	redhat/
 
 RHEL 6.5 Kernel Maintainer
-M:	Frantisek Hrbata <fhrbata@redhat.com>
+M:	Patrick Talbert <ptalbert@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-6.5.z.git
 S:	Maintained
 F:	redhat/
@@ -643,7 +643,7 @@ F:	drivers/firewire/
 F:	include/linux/firewire*.h
 
 FTRACE
-M:	Steve Rostedt <srostedt@redhat.com>
+M:	Jerome Marchand <jmarchan@redhat.com>
 S:	Maintained
 F:	kernel/trace/ftrace.c
 F:	include/linux/ftrace*
@@ -920,11 +920,6 @@ F:	Documentation/mmc/
 F:	include/linux/mmc/
 F:	drivers/mmc/
 
-Lenovo Hardware Support
-M:	Ocean He <ohe@redhat.com>
-S:	Maintained
-F:	drivers/gpu/drm/ast/
-
 LIVE PATCHING / KPATCH
 M:	Josh Poimboeuf <jpoimboe@redhat.com>
 M:	Joe Lawrence <joe.lawrence@redhat.com>
@@ -1003,9 +998,7 @@ F:	drivers/block/mtip32xx/mtip32xx.c
 F:	drivers/block/mtip32xx/mtip32xx.h
 
 MLX4 ETHERNET DRIVER (mlx4)
-M:	Erez Alfasi <ealfasi@redhat.com>
 M:	Alaa Hleihel <ahleihel@redhat.com>
-M:	Slava Shwartsman <sshwarts@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/mellanox/mlx4/
 
@@ -1018,9 +1011,7 @@ F:	include/linux/mlx4/
 F:	include/uapi/rdma/mlx4-abi.h
 
 MLX5 ETHERNET DRIVER (mlx5)
-M:	Erez Alfasi <ealfasi@redhat.com>
 M:	Alaa Hleihel <ahleihel@redhat.com>
-M:	Slava Shwartsman <sshwarts@redhat.com>
 S:	Maintained
 F:	drivers/net/ethernet/mellanox/mlx5/
 
@@ -1054,7 +1045,6 @@ F:	include/net/netns/x_tables.h
 NETWORKING [GENERAL]
 I:	net
 M:	Jiri Benc <jbenc@redhat.com>
-M:	Rashid Khan <rkhan@redhat.com>
 M:	Neil Horman <nhorman@redhat.com>
 R:	Davide Caratti <dcaratti@redhat.com>
 R:	Eric Garver <egarver@redhat.com>
@@ -1221,7 +1211,7 @@ F:	include/linux/nvme.h
 F:	include/uapi/linux/nvme.h
 
 OMNI-PATH ARCHITECTURE (opa)
-M:	Alexander Estrin <aestrin@redhat.com>
+M:	Kamal Heib <kheib@redhat.com>
 S:	Maintained
 F:	drivers/infiniband/hw/hfi*
 F:	include/rdma/opa*
@@ -1439,7 +1429,6 @@ F:	drivers/net/ethernet/sfc/
 
 SGI SPECIFIC
 M:	Frank Ramsay <framsay@redhat.com>
-M:	Russ Anderson <randerso@redhat.com>
 S:	Maintained
 F:	drivers/char/uv_mmtimer.c
 F:	drivers/misc/sgi-gru/
@@ -1512,11 +1501,6 @@ M:	David Arcari <darcari@redhat.com>
 M:	Prarit Bhargava <prarit@redhat.com>
 S:	Maintained
 F:	arch/x86/
-
-UNISYS SPAR FIRMWARE SUPPORT
-M:	Erik Arfvidson <earfvids@redhat.com>
-S:	Maintained
-F:	drivers/staging/unisys
 
 UNIVERSAL EXTENSIBLE FIRMWARE INTERFACE (UEFI/EFI)
 M:	Al Stone <ahs3@redhat.com>
