@@ -1251,8 +1251,6 @@ void switch_to_sld(unsigned long tifn)
 	sld_update_msr(!(tifn & _TIF_SLD));
 }
 
-#define SPLIT_LOCK_CPU(model) {X86_VENDOR_INTEL, 6, model, X86_FEATURE_ANY}
-
 /*
  * Bits in the IA32_CORE_CAPABILITIES are not architectural, so they should
  * only be trusted if it is confirmed that a CPU model implements a
@@ -1267,11 +1265,11 @@ void switch_to_sld(unsigned long tifn)
  *      bit 5 to enumerate the per-core split-lock detection feature.
  */
 static const struct x86_cpu_id split_lock_cpu_ids[] __initconst = {
-	SPLIT_LOCK_CPU(INTEL_FAM6_ICELAKE_X),
-	SPLIT_LOCK_CPU(INTEL_FAM6_ICELAKE_L),
-	SPLIT_LOCK_CPU(INTEL_FAM6_ATOM_TREMONT),
-	SPLIT_LOCK_CPU(INTEL_FAM6_ATOM_TREMONT_D),
-	SPLIT_LOCK_CPU(INTEL_FAM6_ATOM_TREMONT_L),
+	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_X,		0),
+	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_L,		0),
+	X86_MATCH_INTEL_FAM6_MODEL(ATOM_TREMONT,	1),
+	X86_MATCH_INTEL_FAM6_MODEL(ATOM_TREMONT_D,	1),
+	X86_MATCH_INTEL_FAM6_MODEL(ATOM_TREMONT_L,	1),
 	{}
 };
 
