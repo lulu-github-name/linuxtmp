@@ -348,7 +348,7 @@ static void veth_get_stats64(struct net_device *dev,
 	rcu_read_lock();
 	peer = rcu_dereference(priv->peer);
 	if (peer) {
-		tot->rx_dropped += veth_stats_tx(&tx, peer);
+		veth_stats_tx(&tx, peer);
 		tot->rx_bytes += tx.bytes;
 		tot->rx_packets += tx.packets;
 
