@@ -137,7 +137,7 @@ struct bpf_map {
 	RH_KABI_BROKEN_INSERT(atomic64_t refcnt ____cacheline_aligned)
 	RH_KABI_BROKEN_REPLACE(atomic_t usercnt, atomic64_t usercnt)
 	struct work_struct work;
-        RH_KABI_BROKEN_REMOVE(char name[BPF_OBJ_NAME_LEN])
+	RH_KABI_BROKEN_REMOVE(char name[BPF_OBJ_NAME_LEN])
 	RH_KABI_BROKEN_INSERT(struct mutex freeze_mutex)
 	RH_KABI_BROKEN_INSERT(u64 writecnt) /* writable mmap cnt; protected by freeze_mutex */
 };
