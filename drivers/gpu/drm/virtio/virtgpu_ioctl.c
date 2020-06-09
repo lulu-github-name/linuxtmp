@@ -25,10 +25,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <drm/drmP.h>
-#include <drm/virtgpu_drm.h>
-#include <drm/ttm/ttm_execbuf_util.h>
+#include <linux/file.h>
 #include <linux/sync_file.h>
+
+#include <drm/drm_file.h>
+#include <drm/ttm/ttm_execbuf_util.h>
+#include <drm/virtgpu_drm.h>
 
 #include "virtgpu_drv.h"
 
@@ -394,7 +396,7 @@ static int virtio_gpu_transfer_from_host_ioctl(struct drm_device *dev,
 		(vgdev, qobj->hw_res_handle,
 		 vfpriv->ctx_id, offset, args->level,
 		 &box, fence);
-	reservation_object_add_excl_fence(qobj->tbo.resv,
+	dma_resv_add_excl_fence(qobj->tbo.base.resv,
 					  &fence->f);
 
 	dma_fence_put(&fence->f);
@@ -448,7 +450,7 @@ static int virtio_gpu_transfer_to_host_ioctl(struct drm_device *dev, void *data,
 			(vgdev, qobj,
 			 vfpriv ? vfpriv->ctx_id : 0, offset,
 			 args->level, &box, fence);
-		reservation_object_add_excl_fence(qobj->tbo.resv,
+		dma_resv_add_excl_fence(qobj->tbo.base.resv,
 						  &fence->f);
 		dma_fence_put(&fence->f);
 	}
@@ -461,29 +463,25 @@ out:
 }
 
 static int virtio_gpu_wait_ioctl(struct drm_device *dev, void *data,
-				 struct drm_file *file)
+			    struct drm_file *file)
 {
 	struct drm_virtgpu_3d_wait *args = data;
-	struct drm_gem_object *obj;
-	long timeout = 15 * HZ;
+	struct drm_gem_object *gobj = NULL;
+	struct virtio_gpu_object *qobj = NULL;
 	int ret;
+	bool nowait = false;
 
-	obj = drm_gem_object_lookup(file, args->handle);
-	if (obj == NULL)
+	gobj = drm_gem_object_lookup(file, args->handle);
+	if (gobj == NULL)
 		return -ENOENT;
 
-	if (args->flags & VIRTGPU_WAIT_NOWAIT) {
-		ret = reservation_object_test_signaled_rcu(obj->resv, true);
-	} else {
-		ret = reservation_object_wait_timeout_rcu(obj->resv, true,
-							  true, timeout);
-	}
-	if (ret == 0)
-		ret = -EBUSY;
-	else if (ret > 0)
-		ret = 0;
+	qobj = gem_to_virtio_gpu_obj(gobj);
 
-	drm_gem_object_put_unlocked(obj);
+	if (args->flags & VIRTGPU_WAIT_NOWAIT)
+		nowait = true;
+	ret = virtio_gpu_object_wait(qobj, nowait);
+
+	drm_gem_object_put_unlocked(gobj);
 	return ret;
 }
 
@@ -557,34 +555,34 @@ copy_exit:
 
 struct drm_ioctl_desc virtio_gpu_ioctls[DRM_VIRTIO_NUM_IOCTLS] = {
 	DRM_IOCTL_DEF_DRV(VIRTGPU_MAP, virtio_gpu_map_ioctl,
-			  DRM_AUTH | DRM_RENDER_ALLOW),
+			  DRM_RENDER_ALLOW),
 
 	DRM_IOCTL_DEF_DRV(VIRTGPU_EXECBUFFER, virtio_gpu_execbuffer_ioctl,
-			  DRM_AUTH | DRM_RENDER_ALLOW),
+			  DRM_RENDER_ALLOW),
 
 	DRM_IOCTL_DEF_DRV(VIRTGPU_GETPARAM, virtio_gpu_getparam_ioctl,
-			  DRM_AUTH | DRM_RENDER_ALLOW),
+			  DRM_RENDER_ALLOW),
 
 	DRM_IOCTL_DEF_DRV(VIRTGPU_RESOURCE_CREATE,
 			  virtio_gpu_resource_create_ioctl,
-			  DRM_AUTH | DRM_RENDER_ALLOW),
+			  DRM_RENDER_ALLOW),
 
 	DRM_IOCTL_DEF_DRV(VIRTGPU_RESOURCE_INFO, virtio_gpu_resource_info_ioctl,
-			  DRM_AUTH | DRM_RENDER_ALLOW),
+			  DRM_RENDER_ALLOW),
 
 	/* make transfer async to the main ring? - no sure, can we
 	 * thread these in the underlying GL
 	 */
 	DRM_IOCTL_DEF_DRV(VIRTGPU_TRANSFER_FROM_HOST,
 			  virtio_gpu_transfer_from_host_ioctl,
-			  DRM_AUTH | DRM_RENDER_ALLOW),
+			  DRM_RENDER_ALLOW),
 	DRM_IOCTL_DEF_DRV(VIRTGPU_TRANSFER_TO_HOST,
 			  virtio_gpu_transfer_to_host_ioctl,
-			  DRM_AUTH | DRM_RENDER_ALLOW),
+			  DRM_RENDER_ALLOW),
 
 	DRM_IOCTL_DEF_DRV(VIRTGPU_WAIT, virtio_gpu_wait_ioctl,
-			  DRM_AUTH | DRM_RENDER_ALLOW),
+			  DRM_RENDER_ALLOW),
 
 	DRM_IOCTL_DEF_DRV(VIRTGPU_GET_CAPS, virtio_gpu_get_caps_ioctl,
-			  DRM_AUTH | DRM_RENDER_ALLOW),
+			  DRM_RENDER_ALLOW),
 };

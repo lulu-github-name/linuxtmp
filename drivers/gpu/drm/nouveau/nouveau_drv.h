@@ -46,7 +46,10 @@
 #include <nvif/mmu.h>
 #include <nvif/vmm.h>
 
-#include <drm/drmP.h>
+#include <drm/drm_connector.h>
+#include <drm/drm_device.h>
+#include <drm/drm_drv.h>
+#include <drm/drm_file.h>
 
 #include <drm/ttm/ttm_bo_api.h>
 #include <drm/ttm/ttm_bo_driver.h>
@@ -54,8 +57,6 @@
 #include <drm/ttm/ttm_memory.h>
 #include <drm/ttm/ttm_module.h>
 #include <drm/ttm/ttm_page_alloc.h>
-
-#include <drm/drm_audio_component.h>
 
 #include "uapi/drm/nouveau_drm.h"
 
@@ -129,7 +130,6 @@ nouveau_cli(struct drm_file *fpriv)
 }
 
 #include <nvif/object.h>
-#include <nvif/device.h>
 
 struct nouveau_drm {
 	struct nouveau_cli master;
@@ -206,19 +206,11 @@ struct nouveau_drm {
 	/* led management */
 	struct nouveau_led *led;
 
-	/* display power reference */
-	bool have_disp_power_ref;
-
 	struct dev_pm_domain vga_pm_domain;
 
 	struct nouveau_svm *svm;
 
 	struct nouveau_dmem *dmem;
-
-	struct {
-		struct drm_audio_component *component;
-		bool component_registered;
-	} audio;
 };
 
 static inline struct nouveau_drm *

@@ -77,7 +77,6 @@ struct amdgpu_gmc_fault {
 struct amdgpu_vmhub {
 	uint32_t	ctx0_ptb_addr_lo32;
 	uint32_t	ctx0_ptb_addr_hi32;
-	uint32_t	vm_inv_eng0_sem;
 	uint32_t	vm_inv_eng0_req;
 	uint32_t	vm_inv_eng0_ack;
 	uint32_t	vm_context0_cntl;
@@ -178,7 +177,8 @@ struct amdgpu_gmc {
 
 	struct amdgpu_xgmi xgmi;
 	struct amdgpu_irq_src	ecc_irq;
-	struct ras_common_if    *ras_if;
+	struct ras_common_if    *umc_ras_if;
+	struct ras_common_if    *mmhub_ras_if;
 };
 
 #define amdgpu_gmc_flush_gpu_tlb(adev, vmid, vmhub, type) ((adev)->gmc.gmc_funcs->flush_gpu_tlb((adev), (vmid), (vmhub), (type)))

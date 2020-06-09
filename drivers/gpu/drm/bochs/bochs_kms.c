@@ -2,12 +2,14 @@
 /*
  */
 
-#include "bochs.h"
+#include <linux/moduleparam.h>
+
 #include <drm/drm_atomic_helper.h>
-#include <drm/drm_plane_helper.h>
-#include <drm/drm_atomic_uapi.h>
 #include <drm/drm_gem_framebuffer_helper.h>
 #include <drm/drm_probe_helper.h>
+#include <drm/drm_vblank.h>
+
+#include "bochs.h"
 
 static int defx = 1024;
 static int defy = 768;
@@ -212,9 +214,6 @@ int bochs_kms_init(struct bochs_device *bochs)
 
 void bochs_kms_fini(struct bochs_device *bochs)
 {
-	if (!bochs->dev->mode_config.num_connector)
-		return;
-
 	drm_atomic_helper_shutdown(bochs->dev);
 	drm_mode_config_cleanup(bochs->dev);
 }
