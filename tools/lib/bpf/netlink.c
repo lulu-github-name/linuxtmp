@@ -251,8 +251,8 @@ static int get_xdp_info(void *cookie, void *msg, struct nlattr **tb)
 	return 0;
 }
 
-int bpf_get_link_xdp_info(int ifindex, struct xdp_link_info *info,
-			  size_t info_size, __u32 flags)
+int bpf_get_link_xdp_info_v0_0_4(int ifindex, struct xdp_link_info *info,
+				 size_t info_size, __u32 flags)
 {
 	struct xdp_id_md xdp_id = {};
 	int sock, ret;
@@ -452,3 +452,13 @@ int libbpf_nl_get_filter(int sock, unsigned int nl_pid, int ifindex, int handle,
 	return bpf_netlink_recv(sock, nl_pid, seq, __dump_filter_nlmsg,
 				dump_filter_nlmsg, cookie);
 }
+
+/* RHEL-only, libbpf version workaround */
+extern int bpf_get_link_xdp_info_v0_0_6(int ifindex, struct xdp_link_info *info,
+					size_t info_size, __u32 flags)
+	__attribute__((alias("bpf_get_link_xdp_info_v0_0_4")));
+
+COMPAT_VERSION(bpf_get_link_xdp_info_v0_0_4,
+	       bpf_get_link_xdp_info, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_get_link_xdp_info_v0_0_6,
+	        bpf_get_link_xdp_info, LIBBPF_0.0.6)

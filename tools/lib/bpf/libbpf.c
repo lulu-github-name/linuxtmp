@@ -5684,7 +5684,7 @@ int bpf_map__unpin(struct bpf_map *map, const char *path)
 	return 0;
 }
 
-int bpf_map__set_pin_path(struct bpf_map *map, const char *path)
+int bpf_map__set_pin_path_v0_0_4(struct bpf_map *map, const char *path)
 {
 	char *new = NULL;
 
@@ -5699,12 +5699,12 @@ int bpf_map__set_pin_path(struct bpf_map *map, const char *path)
 	return 0;
 }
 
-const char *bpf_map__get_pin_path(const struct bpf_map *map)
+const char *bpf_map__get_pin_path_v0_0_4(const struct bpf_map *map)
 {
 	return map->pin_path;
 }
 
-bool bpf_map__is_pinned(const struct bpf_map *map)
+bool bpf_map__is_pinned_v0_0_4(const struct bpf_map *map)
 {
 	return map->pinned;
 }
@@ -6099,7 +6099,7 @@ int bpf_program__fd(const struct bpf_program *prog)
 	return bpf_program__nth_fd(prog, 0);
 }
 
-size_t bpf_program__size(const struct bpf_program *prog)
+size_t bpf_program__size_v0_0_4(const struct bpf_program *prog)
 {
 	return prog->insns_cnt * sizeof(struct bpf_insn);
 }
@@ -8408,6 +8408,16 @@ void bpf_object__destroy_skeleton(struct bpf_object_skeleton *s)
 }
 
 /* RHEL-only, libbpf version workaround */
+
+extern const char *bpf_map__get_pin_path_v0_0_6(const struct bpf_map *map)
+	__attribute__((alias("bpf_map__get_pin_path_v0_0_4")));
+
+extern bool bpf_map__is_pinned_v0_0_6(const struct bpf_map *map)
+	__attribute__((alias("bpf_map__is_pinned_v0_0_4")));
+
+extern int bpf_map__set_pin_path_v0_0_6(struct bpf_map *map, const char *path)
+	__attribute__((alias("bpf_map__set_pin_path_v0_0_4")));
+
 extern struct bpf_object *
 bpf_object__open_file_v0_0_6(const char *path,
 			     const struct bpf_object_open_opts *opts)
@@ -8423,6 +8433,24 @@ bpf_program__get_expected_attach_type_v0_0_6(struct bpf_program *prog)
 extern enum bpf_prog_type
 bpf_program__get_type_v0_0_6(struct bpf_program *prog)
 	__attribute__((alias("bpf_program__get_type_v0_0_4")));
+
+extern size_t bpf_program__size_v0_0_6(const struct bpf_program *prog)
+	__attribute__((alias("bpf_program__size_v0_0_4")));
+
+COMPAT_VERSION(bpf_map__get_pin_path_v0_0_4,
+	       bpf_map__get_pin_path, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_map__get_pin_path_v0_0_6,
+	       bpf_map__get_pin_path, LIBBPF_0.0.6)
+
+COMPAT_VERSION(bpf_map__is_pinned_v0_0_4,
+	       bpf_map__is_pinned, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_map__is_pinned_v0_0_6,
+	       bpf_map__is_pinned, LIBBPF_0.0.6)
+
+COMPAT_VERSION(bpf_map__set_pin_path_v0_0_4,
+	       bpf_map__set_pin_path, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_map__set_pin_path_v0_0_6,
+	       bpf_map__set_pin_path, LIBBPF_0.0.6)
 
 COMPAT_VERSION(bpf_object__open_file_v0_0_4,
 	       bpf_object__open_file, LIBBPF_0.0.4)
@@ -8443,3 +8471,8 @@ COMPAT_VERSION(bpf_program__get_type_v0_0_4,
 	       bpf_program__get_type, LIBBPF_0.0.4)
 DEFAULT_VERSION(bpf_program__get_type_v0_0_6,
 	       bpf_program__get_type, LIBBPF_0.0.6)
+
+COMPAT_VERSION(bpf_program__size_v0_0_4,
+	       bpf_program__size, LIBBPF_0.0.4)
+DEFAULT_VERSION(bpf_program__size_v0_0_6,
+	       bpf_program__size, LIBBPF_0.0.6)
