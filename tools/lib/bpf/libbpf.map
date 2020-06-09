@@ -226,3 +226,6 @@ LIBBPF_0.0.6 {
 		bpf_program__get_type_v0_0_4;
 		bpf_program__get_type_v0_0_6;
 } LIBBPF_0.0.5;
+
+LIBBPF_0.0.7 {
+} LIBBPF_0.0.6;
