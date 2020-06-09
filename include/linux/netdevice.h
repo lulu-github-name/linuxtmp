@@ -899,6 +899,7 @@ enum bpf_netdev_command {
 struct bpf_prog_offload_ops;
 struct netlink_ext_ack;
 struct xdp_umem;
+struct xdp_dev_bulk_queue;
 
 struct netdev_bpf {
 	enum bpf_netdev_command command;
@@ -2231,7 +2232,7 @@ struct net_device {
 
 	RH_KABI_USE(1, struct mpls_dev __rcu   *mpls_ptr)
 	RH_KABI_USE(2, 3, struct list_head	net_notifier_list)
-	RH_KABI_RESERVE(4)
+	RH_KABI_USE(4, struct xdp_dev_bulk_queue __percpu *xdp_bulkq)
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
 	RH_KABI_RESERVE(7)
