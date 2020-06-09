@@ -838,6 +838,7 @@ enum {
 	Opt_last_int,
 	/* int args above */
 	Opt_pool_ns,
+	Opt_compression_hint,
 	Opt_last_string,
 	/* string args above */
 	Opt_read_only,
@@ -854,6 +855,7 @@ static match_table_t rbd_opts_tokens = {
 	{Opt_lock_timeout, "lock_timeout=%d"},
 	/* int args above */
 	{Opt_pool_ns, "_pool_ns=%s"},
+	{Opt_compression_hint, "compression_hint=%s"},
 	/* string args above */
 	{Opt_read_only, "read_only"},
 	{Opt_read_only, "ro"},		/* Alternate spelling */
@@ -873,6 +875,8 @@ struct rbd_options {
 	bool	lock_on_read;
 	bool	exclusive;
 	bool	trim;
+
+	u32 alloc_hint_flags;  /* CEPH_OSD_OP_ALLOC_HINT_FLAG_* */
 };
 
 #define RBD_QUEUE_DEPTH_DEFAULT	BLKDEV_MAX_RQ
@@ -940,6 +944,25 @@ static int parse_rbd_opts_token(char *c, void *private)
 		pctx->spec->pool_ns = match_strdup(argstr);
 		if (!pctx->spec->pool_ns)
 			return -ENOMEM;
+		break;
+	case Opt_compression_hint:
+		if (!strcmp(argstr[0].from, "none")) {
+			pctx->opts->alloc_hint_flags &=
+			    ~(CEPH_OSD_ALLOC_HINT_FLAG_COMPRESSIBLE |
+			      CEPH_OSD_ALLOC_HINT_FLAG_INCOMPRESSIBLE);
+		} else if (!strcmp(argstr[0].from, "compressible")) {
+			pctx->opts->alloc_hint_flags |=
+			    CEPH_OSD_ALLOC_HINT_FLAG_COMPRESSIBLE;
+			pctx->opts->alloc_hint_flags &=
+			    ~CEPH_OSD_ALLOC_HINT_FLAG_INCOMPRESSIBLE;
+		} else if (!strcmp(argstr[0].from, "incompressible")) {
+			pctx->opts->alloc_hint_flags |=
+			    CEPH_OSD_ALLOC_HINT_FLAG_INCOMPRESSIBLE;
+			pctx->opts->alloc_hint_flags &=
+			    ~CEPH_OSD_ALLOC_HINT_FLAG_COMPRESSIBLE;
+		} else {
+			return -EINVAL;
+		}
 		break;
 	case Opt_read_only:
 		pctx->opts->read_only = true;
@@ -2335,7 +2358,7 @@ static void __rbd_osd_setup_write_ops(struct ceph_osd_request *osd_req,
 		osd_req_op_alloc_hint_init(osd_req, which++,
 					   rbd_dev->layout.object_size,
 					   rbd_dev->layout.object_size,
-					   0);
+					   rbd_dev->opts->alloc_hint_flags);
 	}
 
 	if (rbd_obj_is_entire(obj_req))
