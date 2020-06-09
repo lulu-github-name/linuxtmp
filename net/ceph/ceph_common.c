@@ -265,6 +265,7 @@ enum {
 	Opt_key,
 	Opt_ip,
 	Opt_crush_location,
+	Opt_read_from_replica,
 	Opt_last_string,
 	/* string args above */
 	Opt_share,
@@ -293,6 +294,7 @@ static match_table_t opt_tokens = {
 	{Opt_key, "key=%s"},
 	{Opt_ip, "ip=%s"},
 	{Opt_crush_location, "crush_location=%s"},
+	{Opt_read_from_replica, "read_from_replica=%s"},
 	/* string args above */
 	{Opt_share, "share"},
 	{Opt_noshare, "noshare"},
@@ -497,6 +499,26 @@ ceph_parse_options(char *options, const char *dev_name,
 				goto out;
 			}
 			break;
+		case Opt_read_from_replica:
+			if (!strcmp(argstr[0].from, "no")) {
+				opt->osd_req_flags &=
+				    ~(CEPH_OSD_FLAG_BALANCE_READS |
+				      CEPH_OSD_FLAG_LOCALIZE_READS);
+			} else if (!strcmp(argstr[0].from, "balance")) {
+				opt->osd_req_flags |=
+				    CEPH_OSD_FLAG_BALANCE_READS;
+				opt->osd_req_flags &=
+				    ~CEPH_OSD_FLAG_LOCALIZE_READS;
+			} else if (!strcmp(argstr[0].from, "localize")) {
+				opt->osd_req_flags |=
+				    CEPH_OSD_FLAG_LOCALIZE_READS;
+				opt->osd_req_flags &=
+				    ~CEPH_OSD_FLAG_BALANCE_READS;
+			} else {
+				err = -EINVAL;
+				goto out;
+			}
+			break;
 
 			/* misc */
 		case Opt_osdtimeout:
@@ -622,6 +644,11 @@ int ceph_print_client_options(struct seq_file *m, struct ceph_client *client,
 			seq_putc(m, '|');
 		}
 		seq_putc(m, ',');
+	}
+	if (opt->osd_req_flags & CEPH_OSD_FLAG_BALANCE_READS) {
+		seq_puts(m, "read_from_replica=balance,");
+	} else if (opt->osd_req_flags & CEPH_OSD_FLAG_LOCALIZE_READS) {
+		seq_puts(m, "read_from_replica=localize,");
 	}
 
 	if (opt->flags & CEPH_OPT_FSID)
