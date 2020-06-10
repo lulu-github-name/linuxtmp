@@ -492,6 +492,7 @@ struct bpf_ksym {
 	unsigned long		 end;
 	char			 name[KSYM_NAME_LEN];
 	struct list_head	 lnode;
+	struct latch_tree_node	 tnode;
 };
 
 enum bpf_tramp_prog_type {
@@ -675,7 +676,7 @@ struct bpf_prog_aux {
 	void *jit_data; /* JIT specific data. arch dependent */
 	RH_KABI_BROKEN_INSERT(struct bpf_jit_poke_descriptor *poke_tab)
 	RH_KABI_BROKEN_INSERT(u32 size_poke_tab)
-	struct latch_tree_node ksym_tnode;
+	RH_KABI_BROKEN_REMOVE(struct latch_tree_node ksym_tnode)
 	RH_KABI_BROKEN_REMOVE(struct list_head ksym_lnode)
 	RH_KABI_BROKEN_INSERT(struct bpf_ksym ksym)
 	const struct bpf_prog_ops *ops;
