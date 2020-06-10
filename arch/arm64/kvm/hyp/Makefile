@@ -5,12 +5,9 @@
 
 ccflags-y += -fno-stack-protector -DDISABLE_BRANCH_PROFILING
 
-KVM=../../../../virt/kvm
-
-obj-$(CONFIG_KVM_ARM_HOST) += $(KVM)/arm/hyp/vgic-v3-sr.o
-obj-$(CONFIG_KVM_ARM_HOST) += $(KVM)/arm/hyp/timer-sr.o
-obj-$(CONFIG_KVM_ARM_HOST) += $(KVM)/arm/hyp/aarch32.o
-
+obj-$(CONFIG_KVM_ARM_HOST) += vgic-v3-sr.o
+obj-$(CONFIG_KVM_ARM_HOST) += timer-sr.o
+obj-$(CONFIG_KVM_ARM_HOST) += aarch32.o
 obj-$(CONFIG_KVM_ARM_HOST) += vgic-v2-cpuif-proxy.o
 obj-$(CONFIG_KVM_ARM_HOST) += sysreg-sr.o
 obj-$(CONFIG_KVM_ARM_HOST) += debug-sr.o
