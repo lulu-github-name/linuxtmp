@@ -215,6 +215,7 @@ enum bpf_attach_type {
 	BPF_TRACE_RAW_TP,
 	BPF_TRACE_FENTRY,
 	BPF_TRACE_FEXIT,
+	BPF_MODIFY_RETURN,
 #endif /* __GENKSYMS__ */
 	__MAX_BPF_ATTACH_TYPE
 };
