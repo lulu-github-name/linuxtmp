@@ -184,6 +184,7 @@ enum bpf_prog_type {
 	BPF_PROG_TYPE_TRACING,
 	BPF_PROG_TYPE_STRUCT_OPS,
 	BPF_PROG_TYPE_EXT,
+	BPF_PROG_TYPE_LSM,
 #endif /* __GENKSYMS__ */
 };
 
@@ -216,6 +217,7 @@ enum bpf_attach_type {
 	BPF_TRACE_FENTRY,
 	BPF_TRACE_FEXIT,
 	BPF_MODIFY_RETURN,
+	BPF_LSM_MAC,
 #endif /* __GENKSYMS__ */
 	__MAX_BPF_ATTACH_TYPE
 };
