@@ -66,6 +66,7 @@ struct scsi_pointer {
 
 /* for scmd->state */
 #define SCMD_STATE_COMPLETE	0
+#define SCMD_STATE_INFLIGHT	1
 
 struct scsi_cmnd {
 	struct scsi_request req;
