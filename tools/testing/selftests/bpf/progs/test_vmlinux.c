@@ -18,7 +18,7 @@ bool fentry_called = false;
 SEC("tp/syscalls/sys_enter_nanosleep")
 int handle__tp(struct trace_event_raw_sys_enter *args)
 {
-	struct __kernel_timespec *ts;
+	struct timespec *ts;
 
 	if (args->id != __NR_nanosleep)
 		return 0;
@@ -34,7 +34,7 @@ int handle__tp(struct trace_event_raw_sys_enter *args)
 SEC("raw_tp/sys_enter")
 int BPF_PROG(handle__raw_tp, struct pt_regs *regs, long id)
 {
-	struct __kernel_timespec *ts;
+	struct timespec *ts;
 
 	if (id != __NR_nanosleep)
 		return 0;
@@ -50,7 +50,7 @@ int BPF_PROG(handle__raw_tp, struct pt_regs *regs, long id)
 SEC("tp_btf/sys_enter")
 int BPF_PROG(handle__tp_btf, struct pt_regs *regs, long id)
 {
-	struct __kernel_timespec *ts;
+	struct timespec *ts;
 
 	if (id != __NR_nanosleep)
 		return 0;
