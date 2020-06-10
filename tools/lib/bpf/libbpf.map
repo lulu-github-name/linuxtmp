@@ -275,5 +275,6 @@ LIBBPF_0.0.8 {
 		bpf_link__pin;
 		bpf_link__pin_path;
 		bpf_link__unpin;
+		bpf_map__set_initial_value;
 		bpf_program__set_attach_target;
 } LIBBPF_0.0.7;
