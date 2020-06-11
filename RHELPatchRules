@@ -347,7 +347,7 @@ or explain why the patch is unique to RHEL.
     If a complete URL for the source git tree is not provided, then
 'git.kernel.org/pub/scm' is assumed to be the location of the git tree being
 referenced.  Since there are many trees with the same name on sites like
-kernel.org and github.org, care should be taken to reference a particular tree.
+kernel.org and github.com, care should be taken to reference a particular tree.
 
     Patch tracking is useful for Engineering teams monitoring current,
 future, and update releases, therefore patches that are not in an upstream tree
