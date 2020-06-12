@@ -185,7 +185,6 @@ struct rpc_task_setup {
 struct rpc_timer {
 	struct timer_list timer;
 	struct list_head list;
-	unsigned long expires;
 };
 
 /*
