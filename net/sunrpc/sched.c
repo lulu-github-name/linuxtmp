@@ -53,6 +53,20 @@ static void __rpc_queue_timer_fn(struct timer_list *t);
  */
 static struct rpc_wait_queue delay_queue;
 
+unsigned long
+rpc_task_timeout(const struct rpc_task *task)
+{
+	unsigned long timeout = READ_ONCE(task->tk_timeout);
+
+	if (timeout != 0) {
+		unsigned long now = jiffies;
+		if (time_before(now, timeout))
+			return timeout - now;
+	}
+	return 0;
+}
+EXPORT_SYMBOL_GPL(rpc_task_timeout);
+
 /*
  * rpciod-related stuff
  */
