@@ -1017,9 +1017,9 @@ static void rpcrdma_update_cwnd(struct rpcrdma_xprt *r_xprt, u32 grant)
 {
 	struct rpc_xprt *xprt = &r_xprt->rx_xprt;
 
-	spin_lock_bh(&xprt->transport_lock);
+	spin_lock(&xprt->transport_lock);
 	__rpcrdma_update_cwnd_locked(xprt, &r_xprt->rx_buf, grant);
-	spin_unlock_bh(&xprt->transport_lock);
+	spin_unlock(&xprt->transport_lock);
 }
 
 /**
