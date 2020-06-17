@@ -3,6 +3,7 @@ a3d.ko
 act200l-sir.ko
 actisys-sir.ko
 act_mpls.ko
+act_ct.ko
 adi.ko
 aer_inject.ko
 af_802154.ko

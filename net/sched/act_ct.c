@@ -16,6 +16,7 @@
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <linux/rhashtable.h>
+#include <linux/rh_features.h>
 #include <net/netlink.h>
 #include <net/pkt_sched.h>
 #include <net/pkt_cls.h>
@@ -1525,6 +1526,8 @@ static int __init ct_init_module(void)
 	err = tcf_register_action(&act_ct_ops, &ct_net_ops);
 	if (err)
 		goto err_register;
+
+	rh_mark_used_feature("act_ct");
 
 	return 0;
 
