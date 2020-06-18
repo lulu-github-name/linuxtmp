@@ -66,6 +66,12 @@ uuid_le mdev_uuid(struct mdev_device *mdev)
 }
 EXPORT_SYMBOL(mdev_uuid);
 
+const uuid_le *mdev_uuid_p(struct mdev_device *mdev)
+{
+	return &mdev->uuid;
+}
+EXPORT_SYMBOL(mdev_uuid_p);
+
 /* Should be called holding parent_list_lock */
 static struct mdev_parent *__find_parent_device(struct device *dev)
 {
