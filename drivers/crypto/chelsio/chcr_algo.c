@@ -1111,6 +1111,7 @@ static int chcr_handle_cipher_resp(struct ablkcipher_request *req,
 				   unsigned char *input, int err)
 {
 	struct crypto_ablkcipher *tfm = crypto_ablkcipher_reqtfm(req);
+	struct chcr_context *ctx = c_ctx(tfm);
 	struct uld_ctx *u_ctx = ULD_CTX(c_ctx(tfm));
 	struct ablk_ctx *ablkctx = ABLK_CTX(c_ctx(tfm));
 	struct sk_buff *skb;
@@ -1175,10 +1176,20 @@ static int chcr_handle_cipher_resp(struct ablkcipher_request *req,
 	chcr_send_wr(skb);
 	reqctx->last_req_len = bytes;
 	reqctx->processed += bytes;
+	if (get_cryptoalg_subtype(crypto_ablkcipher_tfm(tfm)) ==
+		CRYPTO_ALG_SUB_TYPE_CBC && req->base.flags ==
+			CRYPTO_TFM_REQ_MAY_SLEEP ) {
+		complete(&ctx->cbc_aes_aio_done);
+	}
 	return 0;
 unmap:
 	chcr_cipher_dma_unmap(&ULD_CTX(c_ctx(tfm))->lldi.pdev->dev, req);
 complete:
+	if (get_cryptoalg_subtype(crypto_ablkcipher_tfm(tfm)) ==
+		CRYPTO_ALG_SUB_TYPE_CBC && req->base.flags ==
+			CRYPTO_TFM_REQ_MAY_SLEEP ) {
+		complete(&ctx->cbc_aes_aio_done);
+	}
 	chcr_dec_wrcount(dev);
 	req->base.complete(&req->base, err);
 	return err;
@@ -1298,6 +1309,7 @@ error:
 static int chcr_aes_encrypt(struct ablkcipher_request *req)
 {
 	struct crypto_ablkcipher *tfm = crypto_ablkcipher_reqtfm(req);
+	struct chcr_context *ctx;
 	struct chcr_dev *dev = c_ctx(tfm)->dev;
 	struct sk_buff *skb = NULL;
 	int err, isfull = 0;
@@ -1322,6 +1334,12 @@ static int chcr_aes_encrypt(struct ablkcipher_request *req)
 	skb->dev = u_ctx->lldi.ports[0];
 	set_wr_txq(skb, CPL_PRIORITY_DATA, c_ctx(tfm)->tx_qidx);
 	chcr_send_wr(skb);
+	if (get_cryptoalg_subtype(crypto_ablkcipher_tfm(tfm)) ==
+		CRYPTO_ALG_SUB_TYPE_CBC && req->base.flags ==
+			CRYPTO_TFM_REQ_MAY_SLEEP ) {
+			ctx=c_ctx(tfm);
+			wait_for_completion(&ctx->cbc_aes_aio_done);
+	}
 	return isfull ? -EBUSY : -EINPROGRESS;
 error:
 	chcr_dec_wrcount(dev);
@@ -1421,6 +1439,7 @@ static int chcr_cra_init(struct crypto_tfm *tfm)
 	} else
 		ablkctx->aes_generic = NULL;
 
+	init_completion(&ctx->cbc_aes_aio_done);
 	tfm->crt_ablkcipher.reqsize =  sizeof(struct chcr_blkcipher_req_ctx);
 	return chcr_device_init(crypto_tfm_ctx(tfm));
 }
