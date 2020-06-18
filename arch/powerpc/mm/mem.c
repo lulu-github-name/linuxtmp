@@ -298,7 +298,8 @@ void __init paging_init(void)
 	       (long int)((top_of_ram - total_ram) >> 20));
 
 #if defined(CONFIG_ZONE_DMA) && defined(CONFIG_PPC_BOOK3E_64)
-	max_zone_pfns[ZONE_DMA]	= min(max_low_pfn, 0x7fffffffUL >> PAGE_SHIFT);
+	max_zone_pfns[ZONE_DMA]	= min(max_low_pfn,
+			((1UL << ARCH_ZONE_DMA_BITS) - 1) >> PAGE_SHIFT);
 #endif
 #if defined(CONFIG_ZONE_DMA) && !defined(CONFIG_PPC_BOOK3E_64)
 	/*
