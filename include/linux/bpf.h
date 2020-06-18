@@ -906,7 +906,7 @@ struct bpf_prog_array_item {
 struct bpf_prog_array {
 	struct rcu_head rcu;
 	RH_KABI_BROKEN_REMOVE(struct bpf_prog *progs[0])
-	RH_KABI_BROKEN_INSERT(struct bpf_prog_array_item items[0])
+	RH_KABI_BROKEN_INSERT(struct bpf_prog_array_item items[])
 };
 
 struct bpf_prog_array *bpf_prog_array_alloc(u32 prog_cnt, gfp_t flags);
