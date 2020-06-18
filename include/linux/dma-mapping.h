@@ -115,7 +115,7 @@ struct dma_map_ops {
 			   size_t size, enum dma_data_direction dir,
 			   unsigned long attrs);
 	RH_KABI_USE(1, size_t (*max_mapping_size)(struct device *dev))
-	RH_KABI_RESERVE(2)
+	RH_KABI_USE(2, unsigned long (*get_merge_boundary)(struct device *dev))
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
@@ -472,6 +472,7 @@ int dma_set_mask(struct device *dev, u64 mask);
 int dma_set_coherent_mask(struct device *dev, u64 mask);
 u64 dma_get_required_mask(struct device *dev);
 size_t dma_max_mapping_size(struct device *dev);
+unsigned long dma_get_merge_boundary(struct device *dev);
 #else /* CONFIG_HAS_DMA */
 static inline dma_addr_t dma_map_page_attrs(struct device *dev,
 		struct page *page, size_t offset, size_t size,
@@ -574,6 +575,10 @@ static inline u64 dma_get_required_mask(struct device *dev)
 	return 0;
 }
 static inline size_t dma_max_mapping_size(struct device *dev)
+{
+	return 0;
+}
+static inline unsigned long dma_get_merge_boundary(struct device *dev)
 {
 	return 0;
 }
