@@ -1095,8 +1095,12 @@ static int chcr_final_cipher_iv(struct ablkcipher_request *req,
 	if (subtype == CRYPTO_ALG_SUB_TYPE_CTR)
 		ctr_add_iv(iv, req->info, DIV_ROUND_UP(reqctx->processed,
 						       AES_BLOCK_SIZE));
-	else if (subtype == CRYPTO_ALG_SUB_TYPE_XTS)
-		ret = chcr_update_tweak(req, iv, 1);
+	else if (subtype == CRYPTO_ALG_SUB_TYPE_XTS) {
+		if (!reqctx->partial_req)
+			memcpy(iv, reqctx->iv, AES_BLOCK_SIZE);
+		else
+			ret = chcr_update_tweak(req, iv, 1);
+	}
 	else if (subtype == CRYPTO_ALG_SUB_TYPE_CBC) {
 		/*Already updated for Decrypt*/
 		if (!reqctx->op)
@@ -1208,6 +1212,7 @@ static int process_cipher(struct ablkcipher_request *req,
 	int bytes, err = -EINVAL;
 
 	reqctx->processed = 0;
+	reqctx->partial_req = 0;
 	if (!req->info)
 		goto error;
 	if ((ablkctx->enckey_len == 0) || (ivsize > AES_BLOCK_SIZE) ||
@@ -1298,6 +1303,7 @@ static int process_cipher(struct ablkcipher_request *req,
 	}
 	reqctx->processed = bytes;
 	reqctx->last_req_len = bytes;
+	reqctx->partial_req = !!(req->nbytes - reqctx->processed);
 
 	return 0;
 unmap:
@@ -1309,6 +1315,7 @@ error:
 static int chcr_aes_encrypt(struct ablkcipher_request *req)
 {
 	struct crypto_ablkcipher *tfm = crypto_ablkcipher_reqtfm(req);
+	struct chcr_blkcipher_req_ctx *reqctx = ablkcipher_request_ctx(req);
 	struct chcr_context *ctx;
 	struct chcr_dev *dev = c_ctx(tfm)->dev;
 	struct sk_buff *skb = NULL;
@@ -1338,6 +1345,7 @@ static int chcr_aes_encrypt(struct ablkcipher_request *req)
 		CRYPTO_ALG_SUB_TYPE_CBC && req->base.flags ==
 			CRYPTO_TFM_REQ_MAY_SLEEP ) {
 			ctx=c_ctx(tfm);
+			reqctx->partial_req = 1;
 			wait_for_completion(&ctx->cbc_aes_aio_done);
 	}
 	return isfull ? -EBUSY : -EINPROGRESS;
