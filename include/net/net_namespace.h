@@ -184,6 +184,7 @@ struct net {
 #ifdef CONFIG_MPTCP
 	RH_KABI_EXTEND(struct netns_mptcp_mib  mptcp_mib)
 #endif
+	RH_KABI_EXTEND(atomic64_t		net_cookie) /* written once */
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
@@ -264,6 +265,8 @@ static inline int check_net(const struct net *net)
 
 void net_drop_ns(void *);
 
+u64 net_gen_cookie(struct net *net);
+
 #else
 
 static inline struct net *get_net(struct net *net)
@@ -289,6 +292,11 @@ int net_eq(const struct net *net1, const struct net *net2)
 static inline int check_net(const struct net *net)
 {
 	return 1;
+}
+
+static inline u64 net_gen_cookie(struct net *net)
+{
+	return 0;
 }
 
 #define net_drop_ns NULL
