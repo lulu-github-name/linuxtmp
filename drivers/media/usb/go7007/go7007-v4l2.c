@@ -279,6 +279,15 @@ static int vidioc_querycap(struct file *file, void  *priv,
 	strscpy(cap->driver, "go7007", sizeof(cap->driver));
 	strscpy(cap->card, go->name, sizeof(cap->card));
 	strscpy(cap->bus_info, go->bus_info, sizeof(cap->bus_info));
+
+	cap->device_caps = V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_READWRITE |
+				V4L2_CAP_STREAMING;
+
+	if (go->board_info->num_aud_inputs)
+		cap->device_caps |= V4L2_CAP_AUDIO;
+	if (go->board_info->flags & GO7007_BOARD_HAS_TUNER)
+		cap->device_caps |= V4L2_CAP_TUNER;
+	cap->capabilities = cap->device_caps | V4L2_CAP_DEVICE_CAPS;
 	return 0;
 }
 
