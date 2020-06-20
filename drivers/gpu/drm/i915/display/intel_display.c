@@ -17517,11 +17517,9 @@ static void intel_mode_config_init(struct drm_i915_private *i915)
 	}
 }
 
-int intel_modeset_init(struct drm_i915_private *i915)
+/* part #1: call before irq install */
+int intel_modeset_init_noirq(struct drm_i915_private *i915)
 {
-	struct drm_device *dev = &i915->drm;
-	enum pipe pipe;
-	struct intel_crtc *crtc;
 	int ret;
 
 	i915->modeset_wq = alloc_ordered_workqueue("i915_modeset", 0);
@@ -17541,6 +17539,17 @@ int intel_modeset_init(struct drm_i915_private *i915)
 	intel_init_quirks(i915);
 
 	intel_fbc_init(i915);
+
+	return 0;
+}
+
+/* part #2: call after irq install */
+int intel_modeset_init(struct drm_i915_private *i915)
+{
+	struct drm_device *dev = &i915->drm;
+	enum pipe pipe;
+	struct intel_crtc *crtc;
+	int ret;
 
 	intel_init_pm(i915);
 
