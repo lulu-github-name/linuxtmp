@@ -3845,7 +3845,7 @@ void intel_sagv_post_plane_update(struct intel_atomic_state *state)
 		intel_enable_sagv(dev_priv);
 }
 
-static bool intel_crtc_can_enable_sagv(const struct intel_crtc_state *crtc_state)
+static bool skl_crtc_can_enable_sagv(const struct intel_crtc_state *crtc_state)
 {
 	struct intel_crtc *crtc = to_intel_crtc(crtc_state->uapi.crtc);
 	struct drm_i915_private *dev_priv = to_i915(crtc->base.dev);
@@ -3894,6 +3894,11 @@ static bool intel_crtc_can_enable_sagv(const struct intel_crtc_state *crtc_state
 	return true;
 }
 
+static bool intel_crtc_can_enable_sagv(const struct intel_crtc_state *crtc_state)
+{
+	return skl_crtc_can_enable_sagv(crtc_state);
+}
+
 bool intel_can_enable_sagv(const struct intel_bw_state *bw_state)
 {
 	if (bw_state->active_pipes && !is_power_of_2(bw_state->active_pipes))
@@ -3906,7 +3911,7 @@ static int intel_compute_sagv_mask(struct intel_atomic_state *state)
 {
 	int ret;
 	struct intel_crtc *crtc;
-	struct intel_crtc_state *new_crtc_state;
+	const struct intel_crtc_state *new_crtc_state;
 	struct intel_bw_state *new_bw_state = NULL;
 	const struct intel_bw_state *old_bw_state = NULL;
 	int i;
@@ -3930,6 +3935,7 @@ static int intel_compute_sagv_mask(struct intel_atomic_state *state)
 
 	new_bw_state->active_pipes =
 		intel_calc_active_pipes(state, old_bw_state->active_pipes);
+
 	if (new_bw_state->active_pipes != old_bw_state->active_pipes) {
 		ret = intel_atomic_lock_global_state(state);
 		if (ret)
