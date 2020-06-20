@@ -17,8 +17,8 @@
 #include <drm/drm_device.h>
 #include <drm/drm_framebuffer.h>
 #include <drm/drm_gem.h>
+#include <drm/drm_simple_kms_helper.h>
 
-struct drm_encoder;
 struct drm_mode_create_dumb;
 
 #define DRIVER_NAME		"udl"
@@ -51,40 +51,25 @@ struct udl_device {
 	struct drm_device drm;
 	struct device *dev;
 	struct usb_device *udev;
-	struct drm_crtc *crtc;
+
+	struct drm_simple_display_pipe display_pipe;
 
 	struct mutex gem_lock;
 
 	int sku_pixel_limit;
 
 	struct urb_list urbs;
-	atomic_t lost_pixels; /* 1 = a render op failed. Need screen refresh */
 
 	char mode_buf[1024];
 	uint32_t mode_buf_len;
-	atomic_t bytes_rendered; /* raw pixel-bytes driver asked to render */
-	atomic_t bytes_identical; /* saved effort with backbuffer comparison */
-	atomic_t bytes_sent; /* to usb, after compression including overhead */
-	atomic_t cpu_kcycles_used; /* transpired during pixel processing */
 };
 
 #define to_udl(x) container_of(x, struct udl_device, drm)
 
-struct udl_framebuffer {
-	struct drm_framebuffer base;
-	struct drm_gem_shmem_object *shmem;
-	bool active_16; /* active on the 16-bit channel */
-};
-
-#define to_udl_fb(x) container_of(x, struct udl_framebuffer, base)
-
 /* modeset */
 int udl_modeset_init(struct drm_device *dev);
-void udl_modeset_restore(struct drm_device *dev);
 void udl_modeset_cleanup(struct drm_device *dev);
-int udl_connector_init(struct drm_device *dev, struct drm_encoder *encoder);
-
-struct drm_encoder *udl_encoder_init(struct drm_device *dev);
+struct drm_connector *udl_connector_init(struct drm_device *dev);
 
 struct urb *udl_get_urb(struct drm_device *dev);
 
@@ -94,21 +79,12 @@ void udl_urb_completion(struct urb *urb);
 int udl_init(struct udl_device *udl);
 void udl_fini(struct drm_device *dev);
 
-struct drm_framebuffer *
-udl_fb_user_fb_create(struct drm_device *dev,
-		      struct drm_file *file,
-		      const struct drm_mode_fb_cmd2 *mode_cmd);
-
 int udl_render_hline(struct drm_device *dev, int log_bpp, struct urb **urb_ptr,
 		     const char *front, char **urb_buf_ptr,
-		     u32 byte_offset, u32 device_byte_offset, u32 byte_width,
-		     int *ident_ptr, int *sent_ptr);
+		     u32 byte_offset, u32 device_byte_offset, u32 byte_width);
 
 struct drm_gem_object *udl_driver_gem_create_object(struct drm_device *dev,
 						    size_t size);
-
-int udl_handle_damage(struct udl_framebuffer *fb, int x, int y,
-		      int width, int height);
 
 int udl_drop_usb(struct drm_device *dev);
 
@@ -121,5 +97,14 @@ int udl_drop_usb(struct drm_device *dev);
 #define CMD_WRITE_RL16   "\xAF\x69" /**< 16 bit run length command. */
 #define CMD_WRITE_COPY16 "\xAF\x6A" /**< 16 bit copy command. */
 #define CMD_WRITE_RLX16  "\xAF\x6B" /**< 16 bit extended run length command. */
+
+/* On/Off for driving the DisplayLink framebuffer to the display */
+#define UDL_REG_BLANK_MODE		0x1f
+
+#define UDL_BLANK_MODE_ON		0x00 /* hsync and vsync on, visible */
+#define UDL_BLANK_MODE_BLANKED		0x01 /* hsync and vsync on, blanked */
+#define UDL_BLANK_MODE_VSYNC_OFF	0x03 /* vsync off, blanked */
+#define UDL_BLANK_MODE_HSYNC_OFF	0x05 /* hsync off, blanked */
+#define UDL_BLANK_MODE_POWERDOWN	0x07 /* powered off; requires modeset */
 
 #endif

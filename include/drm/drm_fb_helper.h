@@ -231,8 +231,6 @@ void drm_fb_helper_fill_info(struct fb_info *info,
 			     struct drm_fb_helper *fb_helper,
 			     struct drm_fb_helper_surface_size *sizes);
 
-void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper);
-
 void drm_fb_helper_deferred_io(struct fb_info *info,
 			       struct list_head *pagelist);
 
@@ -272,8 +270,6 @@ int drm_fb_helper_debug_leave(struct fb_info *info);
 void drm_fb_helper_lastclose(struct drm_device *dev);
 void drm_fb_helper_output_poll_changed(struct drm_device *dev);
 
-int drm_fb_helper_generic_probe(struct drm_fb_helper *fb_helper,
-				struct drm_fb_helper_surface_size *sizes);
 int drm_fbdev_generic_setup(struct drm_device *dev, unsigned int preferred_bpp);
 #else
 static inline void drm_fb_helper_prepare(struct drm_device *dev,
@@ -354,10 +350,6 @@ static inline int drm_fb_helper_ioctl(struct fb_info *info, unsigned int cmd,
 				      unsigned long arg)
 {
 	return 0;
-}
-
-static inline void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper)
-{
 }
 
 static inline void drm_fb_helper_deferred_io(struct fb_info *info,
@@ -451,13 +443,6 @@ static inline void drm_fb_helper_lastclose(struct drm_device *dev)
 
 static inline void drm_fb_helper_output_poll_changed(struct drm_device *dev)
 {
-}
-
-static inline int
-drm_fb_helper_generic_probe(struct drm_fb_helper *fb_helper,
-			    struct drm_fb_helper_surface_size *sizes)
-{
-	return 0;
 }
 
 static inline int

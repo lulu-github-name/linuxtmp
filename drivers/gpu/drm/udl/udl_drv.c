@@ -21,17 +21,14 @@ static int udl_usb_suspend(struct usb_interface *interface,
 {
 	struct drm_device *dev = usb_get_intfdata(interface);
 
-	drm_kms_helper_poll_disable(dev);
-	return 0;
+	return drm_mode_config_helper_suspend(dev);
 }
 
 static int udl_usb_resume(struct usb_interface *interface)
 {
 	struct drm_device *dev = usb_get_intfdata(interface);
 
-	drm_kms_helper_poll_enable(dev);
-	udl_modeset_restore(dev);
-	return 0;
+	return drm_mode_config_helper_resume(dev);
 }
 
 DEFINE_DRM_GEM_FOPS(udl_driver_fops);
@@ -45,7 +42,7 @@ static void udl_driver_release(struct drm_device *dev)
 }
 
 static struct drm_driver driver = {
-	.driver_features = DRIVER_MODESET | DRIVER_GEM,
+	.driver_features = DRIVER_ATOMIC | DRIVER_GEM | DRIVER_MODESET,
 	.release = udl_driver_release,
 
 	/* gem hooks */
@@ -108,7 +105,7 @@ static int udl_usb_probe(struct usb_interface *interface,
 
 	DRM_INFO("Initialized udl on minor %d\n", udl->drm.primary->index);
 
-	r = drm_fbdev_generic_setup(&udl->drm, 16);
+	r = drm_fbdev_generic_setup(&udl->drm, 0);
 	if (r)
 		goto err_drm_dev_unregister;
 
