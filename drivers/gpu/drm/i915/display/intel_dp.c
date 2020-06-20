@@ -5001,58 +5001,56 @@ update_status:
 static int
 intel_dp_check_mst_status(struct intel_dp *intel_dp)
 {
-	bool bret;
+	struct drm_i915_private *i915 = dp_to_i915(intel_dp);
 
-	if (intel_dp->is_mst) {
-		u8 esi[DP_DPRX_ESI_LEN] = { 0 };
-		int ret = 0;
+	if (!intel_dp->is_mst)
+		return -EINVAL;
+
+	WARN_ON_ONCE(intel_dp->active_mst_links < 0);
+
+	for (;;) {
+		u8 esi[DP_DPRX_ESI_LEN] = {};
+		bool bret, handled;
 		int retry;
-		bool handled;
 
-		WARN_ON_ONCE(intel_dp->active_mst_links < 0);
 		bret = intel_dp_get_sink_irq_esi(intel_dp, esi);
-go_again:
-		if (bret == true) {
+		if (!bret) {
+			drm_dbg_kms(&i915->drm,
+				    "failed to get ESI - device may have failed\n");
+			return -EINVAL;
+		}
 
-			/* check link status - esi[10] = 0x200c */
-			if (intel_dp->active_mst_links > 0 &&
-			    !drm_dp_channel_eq_ok(&esi[10], intel_dp->lane_count)) {
-				DRM_DEBUG_KMS("channel EQ not ok, retraining\n");
-				intel_dp_start_link_train(intel_dp);
-				intel_dp_stop_link_train(intel_dp);
-			}
+		/* check link status - esi[10] = 0x200c */
+		/*
+		 * FIXME kill this and use the SST retraining approach
+		 * for MST as well.
+		 */
+		if (intel_dp->active_mst_links > 0 &&
+		    !drm_dp_channel_eq_ok(&esi[10], intel_dp->lane_count)) {
+			drm_dbg_kms(&i915->drm,
+				    "channel EQ not ok, retraining\n");
+			intel_dp_start_link_train(intel_dp);
+			intel_dp_stop_link_train(intel_dp);
+		}
 
-			DRM_DEBUG_KMS("got esi %3ph\n", esi);
-			ret = drm_dp_mst_hpd_irq(&intel_dp->mst_mgr, esi, &handled);
+		drm_dbg_kms(&i915->drm, "got esi %3ph\n", esi);
 
-			if (handled) {
-				for (retry = 0; retry < 3; retry++) {
-					int wret;
-					wret = drm_dp_dpcd_write(&intel_dp->aux,
-								 DP_SINK_COUNT_ESI+1,
-								 &esi[1], 3);
-					if (wret == 3) {
-						break;
-					}
-				}
+		drm_dp_mst_hpd_irq(&intel_dp->mst_mgr, esi, &handled);
+		if (!handled)
+			break;
 
-				bret = intel_dp_get_sink_irq_esi(intel_dp, esi);
-				if (bret == true) {
-					DRM_DEBUG_KMS("got esi2 %3ph\n", esi);
-					goto go_again;
-				}
-			} else
-				ret = 0;
+		for (retry = 0; retry < 3; retry++) {
+			int wret;
 
-			return ret;
-		} else {
-			DRM_DEBUG_KMS("failed to get ESI - device may have failed\n");
-			intel_dp->is_mst = false;
-			drm_dp_mst_topology_mgr_set_mst(&intel_dp->mst_mgr,
-							intel_dp->is_mst);
+			wret = drm_dp_dpcd_write(&intel_dp->aux,
+						 DP_SINK_COUNT_ESI+1,
+						 &esi[1], 3);
+			if (wret == 3)
+				break;
 		}
 	}
-	return -EINVAL;
+
+	return 0;
 }
 
 static bool
