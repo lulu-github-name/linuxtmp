@@ -285,20 +285,20 @@ static int i915_driver_modeset_probe_noirq(struct drm_i915_private *i915)
 		ret = drm_vblank_init(&i915->drm,
 				      INTEL_NUM_PIPES(i915));
 		if (ret)
-			goto out;
+			return ret;
 	}
 
 	intel_bios_init(i915);
 
 	ret = intel_vga_register(i915);
 	if (ret)
-		goto out;
+		goto cleanup_bios;
 
 	intel_register_dsm_handler();
 
 	ret = i915_switcheroo_register(i915);
 	if (ret)
-		goto out;
+		goto cleanup_vga_client;
 
 	intel_power_domains_init_hw(i915, false);
 
@@ -306,13 +306,18 @@ static int i915_driver_modeset_probe_noirq(struct drm_i915_private *i915)
 
 	ret = intel_modeset_init_noirq(i915);
 	if (ret)
-		goto cleanup_vga_client;
+		goto cleanup_vga_client_pw_domain_csr;
 
 	return 0;
 
+cleanup_vga_client_pw_domain_csr:
+	intel_csr_ucode_fini(i915);
+	intel_power_domains_driver_remove(i915);
+	i915_switcheroo_unregister(i915);
 cleanup_vga_client:
 	intel_vga_unregister(i915);
-out:
+cleanup_bios:
+	intel_bios_driver_remove(i915);
 	return ret;
 }
 
@@ -371,15 +376,15 @@ static void i915_driver_modeset_remove(struct drm_i915_private *i915)
 /* part #2: call after irq uninstall */
 static void i915_driver_modeset_remove_noirq(struct drm_i915_private *i915)
 {
-	intel_modeset_driver_remove_noirq(i915);
+	intel_csr_ucode_fini(i915);
 
-	intel_bios_driver_remove(i915);
+	intel_power_domains_driver_remove(i915);
 
 	i915_switcheroo_unregister(i915);
 
 	intel_vga_unregister(i915);
 
-	intel_csr_ucode_fini(i915);
+	intel_bios_driver_remove(i915);
 }
 
 static void intel_init_dpio(struct drm_i915_private *dev_priv)
@@ -1563,7 +1568,7 @@ int i915_driver_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 out_cleanup_irq:
 	intel_irq_uninstall(dev_priv);
 out_cleanup_modeset:
-	/* FIXME */
+	i915_driver_modeset_remove_noirq(dev_priv);
 out_cleanup_hw:
 	i915_driver_hw_remove(dev_priv);
 	intel_memory_regions_driver_release(dev_priv);
@@ -1607,12 +1612,12 @@ void i915_driver_remove(struct drm_i915_private *i915)
 
 	intel_irq_uninstall(i915);
 
-	i915_driver_modeset_remove_noirq(i915);
+	intel_modeset_driver_remove_noirq(i915);
 
 	i915_reset_error_state(i915);
 	i915_gem_driver_remove(i915);
 
-	intel_power_domains_driver_remove(i915);
+	i915_driver_modeset_remove_noirq(i915);
 
 	i915_driver_hw_remove(i915);
 
