@@ -273,7 +273,8 @@ intel_teardown_mchbar(struct drm_i915_private *dev_priv)
 		release_resource(&dev_priv->mch_res);
 }
 
-static int i915_driver_modeset_probe(struct drm_i915_private *i915)
+/* part #1: call before irq install */
+static int i915_driver_modeset_probe_noirq(struct drm_i915_private *i915)
 {
 	int ret;
 
@@ -297,21 +298,28 @@ static int i915_driver_modeset_probe(struct drm_i915_private *i915)
 
 	ret = i915_switcheroo_register(i915);
 	if (ret)
-		goto cleanup_vga_client;
+		goto out;
 
 	intel_power_domains_init_hw(i915, false);
 
 	intel_csr_ucode_init(i915);
 
-	ret = intel_irq_install(i915);
-	if (ret)
-		goto cleanup_csr;
+	return 0;
+
+out:
+	return ret;
+}
+
+/* part #2: call after irq install */
+static int i915_driver_modeset_probe(struct drm_i915_private *i915)
+{
+	int ret;
 
 	/* Important: The output setup functions called by modeset_init need
 	 * working irqs for e.g. gmbus and dp aux transfers. */
 	ret = intel_modeset_init(i915);
 	if (ret)
-		goto cleanup_irq;
+		goto out;
 
 	ret = i915_gem_init(i915);
 	if (ret)
@@ -340,18 +348,10 @@ cleanup_gem:
 	i915_gem_driver_remove(i915);
 	i915_gem_driver_release(i915);
 cleanup_modeset:
+	/* FIXME */
 	intel_modeset_driver_remove(i915);
 	intel_irq_uninstall(i915);
 	intel_modeset_driver_remove_noirq(i915);
-	goto cleanup_csr;
-cleanup_irq:
-	intel_irq_uninstall(i915);
-cleanup_csr:
-	intel_csr_ucode_fini(i915);
-	intel_power_domains_driver_remove(i915);
-	i915_switcheroo_unregister(i915);
-cleanup_vga_client:
-	intel_vga_unregister(i915);
 out:
 	return ret;
 }
@@ -1534,9 +1534,17 @@ int i915_driver_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	if (ret < 0)
 		goto out_cleanup_mmio;
 
-	ret = i915_driver_modeset_probe(dev_priv);
+	ret = i915_driver_modeset_probe_noirq(dev_priv);
 	if (ret < 0)
 		goto out_cleanup_hw;
+
+	ret = intel_irq_install(dev_priv);
+	if (ret)
+		goto out_cleanup_modeset;
+
+	ret = i915_driver_modeset_probe(dev_priv);
+	if (ret < 0)
+		goto out_cleanup_irq;
 
 	i915_driver_register(dev_priv);
 
@@ -1546,6 +1554,10 @@ int i915_driver_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	return 0;
 
+out_cleanup_irq:
+	intel_irq_uninstall(dev_priv);
+out_cleanup_modeset:
+	/* FIXME */
 out_cleanup_hw:
 	i915_driver_hw_remove(dev_priv);
 	intel_memory_regions_driver_release(dev_priv);
