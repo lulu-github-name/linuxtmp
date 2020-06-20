@@ -17,6 +17,12 @@ struct intel_crtc_state;
 struct intel_bw_state {
 	struct drm_private_state base;
 
+	/*
+	 * Contains a bit mask, used to determine, whether correspondent
+	 * pipe allows SAGV or not.
+	 */
+	u8 pipe_sagv_reject;
+
 	unsigned int data_rate[I915_MAX_PIPES];
 	u8 num_active_planes[I915_MAX_PIPES];
 };
