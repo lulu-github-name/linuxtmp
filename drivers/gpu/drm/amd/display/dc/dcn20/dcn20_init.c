@@ -51,6 +51,7 @@ static const struct hw_sequencer_funcs dcn20_funcs = {
 	.disable_plane = dcn20_disable_plane,
 	.pipe_control_lock = dcn20_pipe_control_lock,
 	.pipe_control_lock_global = dcn20_pipe_control_lock_global,
+	.cursor_lock = dcn10_cursor_lock,
 	.prepare_bandwidth = dcn20_prepare_bandwidth,
 	.optimize_bandwidth = dcn20_optimize_bandwidth,
 	.update_bandwidth = dcn20_update_bandwidth,

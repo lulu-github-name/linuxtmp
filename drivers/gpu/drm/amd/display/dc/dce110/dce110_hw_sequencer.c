@@ -2736,6 +2736,7 @@ static const struct hw_sequencer_funcs dce110_funcs = {
 	.disable_audio_stream = dce110_disable_audio_stream,
 	.disable_plane = dce110_power_down_fe,
 	.pipe_control_lock = dce_pipe_control_lock,
+	.cursor_lock = dce_pipe_control_lock,
 	.prepare_bandwidth = dce110_prepare_bandwidth,
 	.optimize_bandwidth = dce110_optimize_bandwidth,
 	.set_drr = set_drr,
