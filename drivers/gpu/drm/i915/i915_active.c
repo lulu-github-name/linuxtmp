@@ -450,7 +450,7 @@ static void enable_signaling(struct i915_active_fence *active)
 	dma_fence_put(fence);
 }
 
-int i915_active_wait(struct i915_active *ref)
+int __i915_active_wait(struct i915_active *ref, int state)
 {
 	struct active_node *it, *n;
 	int err = 0;
@@ -474,7 +474,9 @@ int i915_active_wait(struct i915_active *ref)
 	if (err)
 		return err;
 
-	if (wait_var_event_interruptible(ref, i915_active_is_idle(ref)))
+	if (!i915_active_is_idle(ref) &&
+	    ___wait_var_event(ref, i915_active_is_idle(ref),
+			      state, 0, 0, schedule()))
 		return -EINTR;
 
 	flush_work(&ref->work);
