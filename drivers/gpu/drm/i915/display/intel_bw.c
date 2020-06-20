@@ -370,7 +370,31 @@ static unsigned int intel_bw_data_rate(struct drm_i915_private *dev_priv,
 	return data_rate;
 }
 
-static struct intel_bw_state *
+struct intel_bw_state *
+intel_atomic_get_old_bw_state(struct intel_atomic_state *state)
+{
+	struct drm_i915_private *dev_priv = to_i915(state->base.dev);
+	struct drm_private_state *bw_state;
+
+	bw_state = drm_atomic_get_old_private_obj_state(&state->base,
+							&dev_priv->bw_obj);
+
+	return bw_state ? to_intel_bw_state(bw_state) : NULL;
+}
+
+struct intel_bw_state *
+intel_atomic_get_new_bw_state(struct intel_atomic_state *state)
+{
+	struct drm_i915_private *dev_priv = to_i915(state->base.dev);
+	struct drm_private_state *bw_state;
+
+	bw_state = drm_atomic_get_new_private_obj_state(&state->base,
+							&dev_priv->bw_obj);
+
+	return bw_state ? to_intel_bw_state(bw_state) : NULL;
+}
+
+struct intel_bw_state *
 intel_atomic_get_bw_state(struct intel_atomic_state *state)
 {
 	struct drm_i915_private *dev_priv = to_i915(state->base.dev);
