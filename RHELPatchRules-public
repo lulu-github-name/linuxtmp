@@ -194,9 +194,9 @@ a) Bugzilla:
 immediately flagged by the engineers.  The bugzilla number gives additional
 reviewers more details about the reported problem the patch is addressing.
 
-    Patches can list multiple bugzilla numbers if the patch fixes or is part
-of the fix for multiple bugs.  For changelog clarity, it is preferred that
-bugs are listed only in the patches relevant to the bug.
+    Patches can list multiple bugzilla numbers, one per line, if the patch
+fixes or is part of the fix for multiple bugs.  For changelog clarity, it
+is preferred that bugs are listed only in the patches relevant to the bug.
 
 Good examples for bugzilla numbers:
 
@@ -206,8 +206,12 @@ Good examples for bugzilla numbers:
 	Fixes BZ 789023
 	Resolves BZ 783023
 	Resolves: bz783023
-	Fixes bug #783023 and bug #911911
 	https://bugzilla.redhat.com/show_bug.cgi?id=783023
+
+When referring to multiple bugzilla numbers:
+
+	Bugzilla: 783023
+	Bugzilla: 911119
 
 b) Upstream Status:
 [Required] A mention of where the patch(es) came from.
