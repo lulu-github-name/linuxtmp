@@ -686,9 +686,6 @@ config ARCH_HAS_HMM
 	depends on MEMORY_HOTREMOVE
 	depends on SPARSEMEM_VMEMMAP
 
-config MIGRATE_VMA_HELPER
-	bool
-
 config DEV_PAGEMAP_OPS
 	bool
 
