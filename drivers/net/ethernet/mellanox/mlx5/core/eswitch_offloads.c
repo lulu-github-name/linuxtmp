@@ -2434,13 +2434,14 @@ int esw_offloads_enable(struct mlx5_eswitch *esw)
 
 	mutex_init(&esw->offloads.termtbl_mutex);
 	mlx5_rdma_enable_roce(esw->dev);
-	err = esw_offloads_steering_init(esw);
-	if (err)
-		goto err_steering_init;
 
 	err = esw_set_passing_vport_metadata(esw, true);
 	if (err)
 		goto err_vport_metadata;
+
+	err = esw_offloads_steering_init(esw);
+	if (err)
+		goto err_steering_init;
 
 	/* Representor will control the vport link state */
 	mlx5_esw_for_each_vf_vport(esw, i, vport, esw->esw_funcs.num_vfs)
@@ -2462,9 +2463,9 @@ err_reps:
 	mlx5_eswitch_disable_pf_vf_vports(esw);
 err_vports:
 	esw_set_passing_vport_metadata(esw, false);
-err_vport_metadata:
-	esw_offloads_steering_cleanup(esw);
 err_steering_init:
+	esw_offloads_steering_cleanup(esw);
+err_vport_metadata:
 	mlx5_rdma_disable_roce(esw->dev);
 	mutex_destroy(&esw->offloads.termtbl_mutex);
 	return err;
