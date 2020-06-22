@@ -109,8 +109,6 @@ struct rpc_procinfo {
 	const char *		p_name;		/* name of procedure */
 };
 
-#ifdef __KERNEL__
-
 struct rpc_create_args {
 	struct net		*net;
 	int			protocol;
@@ -243,5 +241,4 @@ static inline void rpc_task_close_connection(struct rpc_task *task)
 	if (task->tk_xprt)
 		xprt_force_disconnect(task->tk_xprt);
 }
-#endif /* __KERNEL__ */
 #endif /* _LINUX_SUNRPC_CLNT_H */
