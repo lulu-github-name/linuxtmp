@@ -2462,9 +2462,9 @@ int esw_offloads_enable(struct mlx5_eswitch *esw)
 err_reps:
 	mlx5_eswitch_disable_pf_vf_vports(esw);
 err_vports:
-	esw_set_passing_vport_metadata(esw, false);
-err_steering_init:
 	esw_offloads_steering_cleanup(esw);
+err_steering_init:
+	esw_set_passing_vport_metadata(esw, false);
 err_vport_metadata:
 	mlx5_rdma_disable_roce(esw->dev);
 	mutex_destroy(&esw->offloads.termtbl_mutex);
