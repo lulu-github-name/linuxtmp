@@ -158,7 +158,8 @@ int main(int argc, char *argv[])
 
 	free(hv_cpuid_entries);
 
-	if (!kvm_check_cap(KVM_CAP_HYPERV_ENLIGHTENED_VMCS)) {
+	if (!nested_vmx_supported() ||
+	    !kvm_check_cap(KVM_CAP_HYPERV_ENLIGHTENED_VMCS)) {
 		print_skip("Enlightened VMCS is unsupported");
 		goto vm_free;
 	}
