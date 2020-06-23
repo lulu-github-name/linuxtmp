@@ -400,6 +400,7 @@ ceph_parse_options(char *options, const char *dev_name,
 	opt->mount_timeout = CEPH_MOUNT_TIMEOUT_DEFAULT;
 	opt->osd_idle_ttl = CEPH_OSD_IDLE_TTL_DEFAULT;
 	opt->osd_request_timeout = CEPH_OSD_REQUEST_TIMEOUT_DEFAULT;
+	opt->read_from_replica = CEPH_READ_FROM_REPLICA_DEFAULT;
 
 	/* get mon ip(s) */
 	/* ip1[:port1][,ip2[:port2]...] */
@@ -501,19 +502,11 @@ ceph_parse_options(char *options, const char *dev_name,
 			break;
 		case Opt_read_from_replica:
 			if (!strcmp(argstr[0].from, "no")) {
-				opt->osd_req_flags &=
-				    ~(CEPH_OSD_FLAG_BALANCE_READS |
-				      CEPH_OSD_FLAG_LOCALIZE_READS);
+				opt->read_from_replica = 0;
 			} else if (!strcmp(argstr[0].from, "balance")) {
-				opt->osd_req_flags |=
-				    CEPH_OSD_FLAG_BALANCE_READS;
-				opt->osd_req_flags &=
-				    ~CEPH_OSD_FLAG_LOCALIZE_READS;
+				opt->read_from_replica = CEPH_OSD_FLAG_BALANCE_READS;
 			} else if (!strcmp(argstr[0].from, "localize")) {
-				opt->osd_req_flags |=
-				    CEPH_OSD_FLAG_LOCALIZE_READS;
-				opt->osd_req_flags &=
-				    ~CEPH_OSD_FLAG_BALANCE_READS;
+				opt->read_from_replica = CEPH_OSD_FLAG_LOCALIZE_READS;
 			} else {
 				err = -EINVAL;
 				goto out;
@@ -645,9 +638,9 @@ int ceph_print_client_options(struct seq_file *m, struct ceph_client *client,
 		}
 		seq_putc(m, ',');
 	}
-	if (opt->osd_req_flags & CEPH_OSD_FLAG_BALANCE_READS) {
+	if (opt->read_from_replica == CEPH_OSD_FLAG_BALANCE_READS) {
 		seq_puts(m, "read_from_replica=balance,");
-	} else if (opt->osd_req_flags & CEPH_OSD_FLAG_LOCALIZE_READS) {
+	} else if (opt->read_from_replica == CEPH_OSD_FLAG_LOCALIZE_READS) {
 		seq_puts(m, "read_from_replica=localize,");
 	}
 
