@@ -650,10 +650,24 @@ struct x86_cpu_id {
 	kernel_ulong_t driver_data;
 };
 
+/*
+ * This is a RHEL-specific version of 'x86_cpu_id', with the 'steppings' field
+ * added.  It's duplicated to avoid breaking module kABI.
+ */
+struct x86_cpu_id_v2 {
+	__u16 vendor;
+	__u16 family;
+	__u16 model;
+	__u16 steppings;
+	__u16 feature;	/* bit index */
+	kernel_ulong_t driver_data;
+};
+
 /* Wild cards for x86_cpu_id::vendor, family, model and feature */
 #define X86_VENDOR_ANY 0xffff
 #define X86_FAMILY_ANY 0
 #define X86_MODEL_ANY  0
+#define X86_STEPPING_ANY 0
 #define X86_FEATURE_ANY 0	/* Same as FPU, you can't test for that */
 
 /*
