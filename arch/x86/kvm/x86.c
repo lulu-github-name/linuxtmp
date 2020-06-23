@@ -8206,7 +8206,7 @@ static void vcpu_load_eoi_exitmap(struct kvm_vcpu *vcpu)
 }
 
 void kvm_arch_mmu_notifier_invalidate_range(struct kvm *kvm,
-		unsigned long start, unsigned long end)
+					    unsigned long start, unsigned long end)
 {
 	unsigned long apic_address;
 
