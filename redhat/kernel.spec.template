@@ -49,6 +49,10 @@
 
 %define pkg_release %{specrelease}%{?buildid}
 
+# libexec dir is not used by the linker, so the shared object there
+# should not be exported to RPM provides
+%global __provides_exclude_from ^%{_libexecdir}/kselftests
+
 # What parts do we want to build?  We must build at least one kernel.
 # These are the kernels that are built IF the architecture allows it.
 # All should default to 1 (enabled) and be flipped to 0 (disabled)
