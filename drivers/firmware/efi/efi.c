@@ -78,6 +78,8 @@ static unsigned long *efi_tables[] = {
 #ifdef CONFIG_EFI_RCI2_TABLE
 	&rci2_table_phys,
 #endif
+	&efi.tpm_log,
+	&efi.tpm_final_log,
 };
 
 struct mm_struct efi_mm = {
