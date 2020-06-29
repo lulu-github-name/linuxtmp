@@ -737,7 +737,6 @@ int isst_send_mbox_command(unsigned int cpu, unsigned char command,
 	int fd;
 	struct isst_if_mbox_cmds mbox_cmds = { 0 };
 
-	usleep(100);
 	debug_printf(
 		"mbox_send: cpu:%d command:%x sub_command:%x parameter:%x req_data:%x\n",
 		cpu, command, sub_command, parameter, req_data);
