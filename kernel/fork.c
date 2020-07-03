@@ -855,6 +855,13 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	if (!tsk)
 		return NULL;
 
+	/*
+	 * RHEL: before proceeding, we need to make tsk->task_struct_rh = NULL,
+	 * otherwise the error paths below, if taken, might end up causing
+	 * a double-free for RHEL-only task_struct_rh extention object.
+	 */
+	WRITE_ONCE(tsk->task_struct_rh, NULL);
+
 	stack = alloc_thread_stack_node(tsk, node);
 	if (!stack)
 		goto free_tsk;
