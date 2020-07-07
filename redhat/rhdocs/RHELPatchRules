@@ -292,11 +292,11 @@ problem the patch is addressing.
 documents that will not be released to the public.  In those cases use INTERNAL
 as the BZ number.
 
-    Patches can list multiple bugzilla numbers in the body if the patch fixes
-or is part of the fix for multiple bugs.  All bugzillas must must have
-appropriate flags before the patch can be committed.  In patchsets, it is
-preferred that bugs are listed only in the patches relevant to the bug, for
-both changelog clarity and for the benefit of Engineering teams work on
+    Patches can list multiple bugzilla numbers in the body, one per line, if
+the patch fixes or is part of the fix for multiple bugs.  All bugzillas must
+must have appropriate flags before the patch can be committed.  In patchsets,
+it is preferred that bugs are listed only in the patches relevant to the bug,
+for both changelog clarity and for the benefit of Engineering teams work on
 z-stream kernels.
 
 Good examples for bugzilla numbers in the body:
@@ -307,9 +307,13 @@ Good examples for bugzilla numbers in the body:
 	Fixes BZ 789023
 	Resolves BZ 783023
 	Resolves: bz783023
-	Fixes bug #783023 and bug #911911
 	https://bugzilla.redhat.com/show_bug.cgi?id=783023
 	Bugzilla: INTERNAL
+
+When referring to multiple bugzilla numbers:
+
+	Bugzilla: 783023
+	Bugzilla: 911119
 
 b) Upstream Status:
 [Required] A mention of where the patch(es) came from.
