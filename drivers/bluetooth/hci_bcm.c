@@ -68,6 +68,7 @@
  */
 struct bcm_device_data {
 	bool	no_early_set_baudrate;
+	bool	drive_rts_on_open;
 };
 
 /**
@@ -137,6 +138,7 @@ struct bcm_device {
 	bool			is_suspended;
 #endif
 	bool			no_early_set_baudrate;
+	bool			drive_rts_on_open;
 	u8			pcm_int_params[5];
 };
 
@@ -471,7 +473,9 @@ static int bcm_open(struct hci_uart *hu)
 
 out:
 	if (bcm->dev) {
-		hci_uart_set_flow_control(hu, true);
+		if (bcm->dev->drive_rts_on_open)
+			hci_uart_set_flow_control(hu, true);
+
 		hu->init_speed = bcm->dev->init_speed;
 
 		/* If oper_speed is set, ldisc/serdev will set the baudrate
@@ -481,7 +485,10 @@ out:
 			hu->oper_speed = bcm->dev->oper_speed;
 
 		err = bcm_gpio_set_power(bcm->dev, true);
-		hci_uart_set_flow_control(hu, false);
+
+		if (bcm->dev->drive_rts_on_open)
+			hci_uart_set_flow_control(hu, false);
+
 		if (err)
 			goto err_unset_hu;
 	}
@@ -1462,8 +1469,10 @@ static int bcm_serdev_probe(struct serdev_device *serdev)
 		dev_err(&serdev->dev, "Failed to power down\n");
 
 	data = device_get_match_data(bcmdev->dev);
-	if (data)
+	if (data) {
 		bcmdev->no_early_set_baudrate = data->no_early_set_baudrate;
+		bcmdev->drive_rts_on_open = data->drive_rts_on_open;
+	}
 
 	return hci_uart_register_device(&bcmdev->serdev_hu, &bcm_proto);
 }
@@ -1479,7 +1488,7 @@ static void bcm_serdev_remove(struct serdev_device *serdev)
 static const struct of_device_id bcm_bluetooth_of_match[] = {
 	{ .compatible = "brcm,bcm4345c5" },
 	{ .compatible = "brcm,bcm4330-bt" },
-	{ .compatible = "brcm,bcm43438-bt" },
+	{ .compatible = "brcm,bcm43438-bt", .data = &bcm43438_device_data },
 	{ .compatible = "brcm,bcm43540-bt", .data = &bcm4354_device_data },
 	{ .compatible = "brcm,bcm4335a0" },
 	{ },
