@@ -65,19 +65,21 @@ int BPF_PROG(handle__tp_btf, struct pt_regs *regs, long id)
 
 SEC("kprobe/hrtimer_nanosleep")
 int BPF_KPROBE(handle__kprobe,
-	       ktime_t rqtp, enum hrtimer_mode mode, clockid_t clockid)
+	       const struct timespec64 *rqtp, enum hrtimer_mode mode, clockid_t clockid)
 {
-	if (rqtp == MY_TV_NSEC)
+	if (BPF_CORE_READ(rqtp, tv_nsec) == MY_TV_NSEC)
 		kprobe_called = true;
+
 	return 0;
 }
 
 SEC("fentry/hrtimer_nanosleep")
 int BPF_PROG(handle__fentry,
-	     ktime_t rqtp, enum hrtimer_mode mode, clockid_t clockid)
+	     const struct timespec64 *rqtp, enum hrtimer_mode mode, clockid_t clockid)
 {
-	if (rqtp == MY_TV_NSEC)
+	if (BPF_CORE_READ(rqtp, tv_nsec) == MY_TV_NSEC)
 		fentry_called = true;
+
 	return 0;
 }
 
