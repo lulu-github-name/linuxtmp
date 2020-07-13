@@ -5079,6 +5079,10 @@ static int mlx5e_init_nic_rx(struct mlx5e_priv *priv)
 	if (err)
 		goto err_destroy_flow_steering;
 
+#ifdef CONFIG_MLX5_EN_ARFS
+	priv->netdev->rx_cpu_rmap =  mlx5_eq_table_get_rmap(priv->mdev);
+#endif
+
 	return 0;
 
 err_destroy_flow_steering:
@@ -5249,10 +5253,6 @@ int mlx5e_netdev_init(struct net_device *netdev,
 
 	/* netdev init */
 	netif_carrier_off(netdev);
-
-#ifdef CONFIG_MLX5_EN_ARFS
-	netdev->rx_cpu_rmap =  mlx5_eq_table_get_rmap(mdev);
-#endif
 
 	return 0;
 
