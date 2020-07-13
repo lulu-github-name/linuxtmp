@@ -26,7 +26,7 @@ enum sk_pacing {
 
 struct sock {
 	struct sock_common	__sk_common;
-	unsigned long		sk_pacing_rate;
+	__u32			sk_pacing_rate;
 	__u32			sk_pacing_status; /* see enum sk_pacing */
 } __attribute__((preserve_access_index));
 
