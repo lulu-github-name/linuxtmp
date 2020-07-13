@@ -146,12 +146,6 @@ struct mlx5e_tc_update_priv {
 	struct net_device *tun_dev;
 };
 
-struct mlx5e_tc_mod_hdr_acts {
-	int num_actions;
-	int max_actions;
-	void *actions;
-};
-
 int mlx5e_tc_match_to_reg_set(struct mlx5_core_dev *mdev,
 			      struct mlx5e_tc_mod_hdr_acts *mod_hdr_acts,
 			      enum mlx5e_tc_attr_to_reg type,
