@@ -194,7 +194,12 @@ kimage_validate_signature(struct kimage *image)
 			return ret;
 		}
 
-		if (kernel_is_locked_down("kexec of unsigned images"))
+		/* If IMA is guaranteed to appraise a signature on the kexec
+		 * image, permit it even if the kernel is otherwise locked
+		 * down.
+		 */
+		if (!ima_appraise_signature(READING_KEXEC_IMAGE) &&
+		    kernel_is_locked_down("kexec of unsigned images"))
 			return -EPERM;
 
 		pr_debug("kernel signature verification failed (%d).\n", ret);
