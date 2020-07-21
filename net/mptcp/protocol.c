@@ -1337,7 +1337,6 @@ static void mptcp_close(struct sock *sk, long timeout)
 
 	lock_sock(sk);
 
-	mptcp_token_destroy(msk->token);
 	inet_sk_state_store(sk, TCP_CLOSE);
 
 	/* be sure to always acquire the join list lock, to sync vs
@@ -1535,6 +1534,7 @@ static void mptcp_destroy(struct sock *sk)
 {
 	struct mptcp_sock *msk = mptcp_sk(sk);
 
+	mptcp_token_destroy(msk->token);
 	if (msk->cached_ext)
 		__skb_ext_put(msk->cached_ext);
 
