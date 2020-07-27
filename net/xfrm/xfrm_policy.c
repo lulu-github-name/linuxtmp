@@ -34,7 +34,7 @@
 #ifdef CONFIG_XFRM_STATISTICS
 #include <net/snmp.h>
 #endif
-#ifdef CONFIG_INET_ESPINTCP
+#ifdef CONFIG_XFRM_ESPINTCP
 #include <net/espintcp.h>
 #endif
 
@@ -3954,7 +3954,7 @@ void __init xfrm_init(void)
 	seqcount_init(&xfrm_policy_hash_generation);
 	xfrm_input_init();
 
-#ifdef CONFIG_INET_ESPINTCP
+#ifdef CONFIG_XFRM_ESPINTCP
 	espintcp_init();
 #endif
 
