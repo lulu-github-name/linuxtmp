@@ -1596,6 +1596,10 @@ config SYSVIPC_COMPAT
 
 endmenu
 
+config ARCH_ENABLE_HUGEPAGE_MIGRATION
+	def_bool y
+	depends on HUGETLB_PAGE && MIGRATION
+
 menu "Power management options"
 
 source "kernel/power/Kconfig"
