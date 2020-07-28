@@ -8,6 +8,11 @@ ksft_skip=4
 ret=0
 test_inet_nat=true
 
+cleanup()
+{
+	for i in 0 1 2; do ip netns del ns$i;done
+}
+
 nft --version > /dev/null 2>&1
 if [ $? -ne 0 ];then
 	echo "SKIP: Could not run test without nft tool"
@@ -21,6 +26,13 @@ if [ $? -ne 0 ];then
 fi
 
 ip netns add ns0
+if [ $? -ne 0 ];then
+	echo "SKIP: Could not create net namespace"
+	exit $ksft_skip
+fi
+
+trap cleanup EXIT
+
 ip netns add ns1
 ip netns add ns2
 
@@ -403,7 +415,6 @@ EOF
 	# ns1 should have seen packets from ns0, due to masquerade
 	expect="packets 1 bytes 104"
 	for dir in "in6" "out6" ; do
-
 		cnt=$(ip netns exec ns1 nft list counter inet filter ns0${dir} | grep -q "$expect")
 		if [ $? -ne 0 ]; then
 			bad_counter ns1 ns0$dir "$expect"
@@ -834,7 +845,5 @@ test_redirect6 ip6
 reset_counters
 $test_inet_nat && test_redirect inet
 $test_inet_nat && test_redirect6 inet
-
-for i in 0 1 2; do ip netns del ns$i;done
 
 exit $ret
