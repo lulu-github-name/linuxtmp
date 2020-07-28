@@ -33,8 +33,9 @@
 #include "meter.h"
 #include "vport-internal_dev.h"
 
-#define DP_MAX_PORTS           USHRT_MAX
-#define DP_VPORT_HASH_BUCKETS  1024
+#define DP_MAX_PORTS                USHRT_MAX
+#define DP_VPORT_HASH_BUCKETS       1024
+#define DP_MASKS_REBALANCE_INTERVAL 4000
 
 /**
  * struct dp_stats_percpu - per-cpu packet processing statistics for a given
@@ -96,6 +97,9 @@ struct datapath {
 
 	/* Switch meters. */
 	struct hlist_head *meters;
+
+	/* re-balance flow masks timer */
+	struct delayed_work masks_rebalance;
 };
 
 /**
