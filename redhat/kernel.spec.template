@@ -559,7 +559,7 @@ Provides: kernel-drm-nouveau = 16\
 Provides: %{name}-uname-r = %{KVERREL}%{?variant}%{?1:+%{1}}\
 Requires(pre): %{kernel_prereq}\
 Requires(pre): %{initrd_prereq}\
-Requires(pre): linux-firmware >= 20200512-98.gitb2cad6a2\
+Requires(pre): linux-firmware >= 20200619-99.git3890db36\
 Requires(preun): systemd >= 200\
 Conflicts: xfsprogs < 4.3.0-1\
 Conflicts: xorg-x11-drv-vmmouse < 13.0.99\
