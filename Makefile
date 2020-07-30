@@ -10,7 +10,7 @@ NAME = Merciless Moray
 #
 RHEL_DRM_VERSION = 5
 RHEL_DRM_PATCHLEVEL = 6
-RHEL_DRM_SUBLEVEL = 14
+RHEL_DRM_SUBLEVEL = 19
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
