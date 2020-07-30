@@ -125,6 +125,7 @@ struct vhost_virtqueue {
 	bool user_be;
 #endif
 	u32 busyloop_timeout;
+	u16 asid;
 };
 
 struct vhost_msg_node {
@@ -136,6 +137,8 @@ struct vhost_msg_node {
   struct list_head node;
 };
 
+#define VHOST_NUM_ASIDS 4
+
 struct vhost_dev {
 	struct mm_struct *mm;
 	struct mutex mutex;
@@ -145,7 +148,7 @@ struct vhost_dev {
 	struct llist_head work_list;
 	struct task_struct *worker;
 	struct vhost_iotlb *umem;
-	struct vhost_iotlb *iotlb;
+	struct vhost_iotlb *iotlb[VHOST_NUM_ASIDS];
 	spinlock_t iotlb_lock;
 	struct list_head read_list;
 	struct list_head pending_list;
@@ -154,14 +157,14 @@ struct vhost_dev {
 	int weight;
 	int byte_weight;
 	u64 kcov_handle;
-	int (*msg_handler)(struct vhost_dev *dev,
+	int (*msg_handler)(struct vhost_dev *dev, u16 asid,
 			   struct vhost_iotlb_msg *msg);
 };
 
 bool vhost_exceeds_weight(struct vhost_virtqueue *vq, int pkts, int total_len);
 void vhost_dev_init(struct vhost_dev *, struct vhost_virtqueue **vqs,
 		    int nvqs, int iov_limit, int weight, int byte_weight,
-		    int (*msg_handler)(struct vhost_dev *dev,
+		    int (*msg_handler)(struct vhost_dev *dev, u16 asid,
 				       struct vhost_iotlb_msg *msg));
 long vhost_dev_set_owner(struct vhost_dev *dev);
 bool vhost_dev_has_owner(struct vhost_dev *dev);

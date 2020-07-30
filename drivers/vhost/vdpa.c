@@ -433,11 +433,12 @@ static void vhost_vdpa_iotlb_unmap(struct vhost_vdpa *v,
 static void vhost_vdpa_iotlb_free(struct vhost_vdpa *v)
 {
 	struct vhost_dev *dev = &v->vdev;
-	struct vhost_iotlb *iotlb = dev->iotlb;
+	struct vhost_iotlb *iotlb = dev->iotlb[0];
+
 
 	vhost_vdpa_iotlb_unmap(v, iotlb, 0ULL, 0ULL - 1);
 	kfree(dev->iotlb);
-	dev->iotlb = NULL;
+	dev->iotlb[0] = NULL;
 }
 
 static int perm_to_iommu_flags(u32 perm)
@@ -593,12 +594,14 @@ static int vhost_vdpa_process_iotlb_msg(struct vhost_dev *dev,
 	struct vhost_vdpa *v = container_of(dev, struct vhost_vdpa, vdev);
 	struct vdpa_device *vdpa = v->vdpa;
 	const struct vdpa_config_ops *ops = vdpa->config;
-	struct vhost_iotlb *iotlb = dev->iotlb;
+	struct vhost_iotlb *iotlb = dev->iotlb[asid];
 	int r = 0;
 
 	r = vhost_dev_check_owner(dev);
 	if (r)
 		return r;
+       if (asid != 0)
+               return -EINVAL;
 
 	switch (msg->type) {
 	case VHOST_IOTLB_UPDATE:
@@ -711,8 +714,8 @@ static int vhost_vdpa_open(struct inode *inode, struct file *filep)
 	vhost_dev_init(dev, vqs, nvqs, 0, 0, 0,
 		       vhost_vdpa_process_iotlb_msg);
 
-	dev->iotlb = vhost_iotlb_alloc(0, 0);
-	if (!dev->iotlb) {
+	dev->iotlb[0] = vhost_iotlb_alloc(0, 0);
+	if (!dev->iotlb[0]) {
 		r = -ENOMEM;
 		goto err_init_iotlb;
 	}
