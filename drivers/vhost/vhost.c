@@ -2017,7 +2017,7 @@ static int translate_desc(struct vhost_virtqueue *vq, u64 addr, u32 len,
 {
 	const struct vhost_iotlb_map *map;
 	struct vhost_dev *dev = vq->dev;
-	struct vhost_iotlb *umem = dev->iotlb ? dev->iotlb : dev->umem;
+	struct vhost_iotlb *umem = vq->iotlb ? vq->iotlb : dev->umem;
 	struct iovec *_iov;
 	u64 s = 0;
 	int ret = 0;
@@ -2031,7 +2031,7 @@ static int translate_desc(struct vhost_virtqueue *vq, u64 addr, u32 len,
 
 		map = vhost_iotlb_itree_first(umem, addr, addr + len - 1);
 		if (map == NULL || map->start > addr) {
-			if (umem != dev->iotlb) {
+			if (umem != vq->iotlb) {
 				ret = -EFAULT;
 				break;
 			}
