@@ -935,7 +935,6 @@ static const struct {
 		{"link_settings", &dp_link_settings_debugfs_fops},
 		{"phy_settings", &dp_phy_settings_debugfs_fop},
 		{"test_pattern", &dp_phy_test_pattern_fops},
-		{"output_bpc", &output_bpc_fops},
 		{"vrr_range", &vrr_range_fops},
 		{"sdp_message", &sdp_message_fops},
 		{"aux_dpcd_address", &dp_dpcd_address_debugfs_fops},
@@ -1008,6 +1007,8 @@ void connector_debugfs_init(struct amdgpu_dm_connector *connector)
 	debugfs_create_file_unsafe("force_yuv420_output", 0644, dir, connector,
 				   &force_yuv420_output_fops);
 
+	debugfs_create_file("output_bpc", 0644, dir, connector,
+			    &output_bpc_fops);
 }
 
 /*
