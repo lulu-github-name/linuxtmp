@@ -166,7 +166,11 @@ rh-clean-kabi-dw:
 	make -C $(KABIDW)/kabi-dw clean
 	rm -rf $(KABIDW)/base/$(CURARCH)
 
-rh-clean: rh-clean-sources rh-clean-configs rh-clean-rpmdirs rh-clean-kabi-dw
+rh-clean-mock:
+	mock -r mock.cfg --scrub=all
+	rm -f mock.cfg
+
+rh-clean: rh-clean-sources rh-clean-configs rh-clean-rpmdirs rh-clean-kabi-dw rh-clean-mock
 
 rh-stub-key:
 	@echo "Copying pre-generated keys";
@@ -327,6 +331,16 @@ ifeq ("$(RHDISTGIT_BRANCH)", "")
 endif
 	$(REDHAT)/scripts/rh-dist-git.sh "$(RHDISTGIT_BRANCH)" "$(RHDISTGIT_CACHE)" "$(RHDISTGIT_TMP)" "$(RHDISTGIT)" "$(TARBALL)" "$(KABI_TARBALL)" "$(KABIDW_TARBALL)" "$(__ZSTREAM)" "$(PACKAGE_NAME)" "$(RHEL_MAJOR)" "$(RHPKG_BIN)"
 
+.PHONY: $(MOCK_TARGETS)
+
+mock.cfg: mockconf.sh
+	RHEL_MAJOR=$(RHEL_MAJOR) RHEL_MINOR=$(RHEL_MINOR) CURARCH=$(CURARCH) ./mockconf.sh
+	cmp -s mock.cfg.tmp mock.cfg || cp mock.cfg{.tmp,} && mock -r mock.cfg --clean
+	rm mock.cfg.tmp
+
+rh-mock: | mock.cfg
+	mock -r mock.cfg --unpriv --chroot -- $(MAKE) -C/builddir $(MFLAGS) $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
+
 rh-rtg: rh-release
 	@$(MAKE) rh-release-tag
 	@$(MAKE) rh-dist-git
@@ -363,6 +377,7 @@ rh-full-help:
 	@echo  '  rh-clean-sources    - Clean the redhat/rpm/SOURCES/ directory.'
 	@echo  '  rh-clean-configs    - Clean the redhat/configs/ directory.'
 	@echo  '  rh-clean-rpmdirs    - Clean the redhat/rpm/{BUILD,SRPMS,RPMS,SPECS}/ directories.'
+	@echo  '  rh-clean-mock       - Clean the mock chroot and mock.cfg.'
 	@echo  ''
 	@echo  'Building targets:'
 	@echo  ' All RPM/SRPM files will be put under the redhat/rpm/ directory.'
@@ -412,6 +427,7 @@ rh-full-help:
 	@echo  '  rh-cross-<arch>-rpms  - [x86_64 only] execute rpm builds for specified'
 	@echo  '                          <arch> using RHEL cross compiler.'
 	@echo  '                          See rh-cross-<arch>-build for the supported archs.'
+	@echo  '  rh-mock <target>	- Build <target> within a mock chroot.'
 
 	@echo  ''
 	@echo  'kABI targets:'

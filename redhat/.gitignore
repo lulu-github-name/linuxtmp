@@ -6,3 +6,4 @@ kabi/Module.kabi_*
 kabi/kabi-current
 kabi/kabi-rhel8?
 kabi/kabi-rhel8?/*
+mock.cfg
