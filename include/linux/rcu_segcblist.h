@@ -35,6 +35,7 @@ struct rcu_cblist {
 	struct rcu_head *head;
 	struct rcu_head **tail;
 	long len;
+	RH_KABI_DEPRECATE(long, len_lazy)
 };
 
 #define RCU_CBLIST_INITIALIZER(n) { .head = NULL, .tail = &n.head }
@@ -81,12 +82,13 @@ struct rcu_segcblist {
 	struct rcu_head **tails[RCU_CBLIST_NSEGS];
 	unsigned long gp_seq[RCU_CBLIST_NSEGS];
 #ifdef CONFIG_RCU_NOCB_CPU
-	atomic_long_t len;
+	RH_KABI_REPLACE(long len, atomic_long_t len)
 #else
 	long len;
 #endif
-	u8 enabled;
-	u8 offloaded;
+	RH_KABI_REPLACE_SPLIT(long len_lazy,
+			      u8 enabled,
+			      u8 offloaded)
 };
 
 #define RCU_SEGCBLIST_INITIALIZER(n) \
