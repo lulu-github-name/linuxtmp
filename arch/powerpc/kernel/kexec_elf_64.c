@@ -528,6 +528,13 @@ static int elf_exec_load(struct kimage *image, struct elfhdr *ehdr,
 	struct kexec_buf kbuf = { .image = image, .buf_max = ppc64_rma_size,
 				  .top_down = false };
 
+	if (image->type == KEXEC_TYPE_CRASH) {
+		/* min & max buffer values for kdump case */
+		kbuf.buf_min = crashk_res.start;
+		kbuf.buf_max = ((crashk_res.end < ppc64_rma_size) ?
+				crashk_res.end : (ppc64_rma_size - 1));
+	}
+
 	/* Read in the PT_LOAD segments. */
 	for (i = 0; i < ehdr->e_phnum; i++) {
 		unsigned long load_addr;
@@ -594,6 +601,14 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
 		goto out;
 
 	pr_debug("Loaded the kernel at 0x%lx\n", kernel_load_addr);
+
+	if (image->type == KEXEC_TYPE_CRASH) {
+		/* min & max buffer values for kdump case */
+		kbuf.buf_min = pbuf.buf_min = crashk_res.start;
+		kbuf.buf_max = pbuf.buf_max =
+				((crashk_res.end < ppc64_rma_size) ?
+				 crashk_res.end : (ppc64_rma_size - 1));
+	}
 
 	ret = kexec_load_purgatory(image, &pbuf);
 	if (ret) {
