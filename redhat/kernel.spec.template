@@ -756,6 +756,11 @@ This package provides debug information for the bpftool package.
 Summary: Kernel samples and selftests
 License: GPLv2
 Requires: binutils, bpftool, iproute-tc, nmap-ncat
+%if %{with_realtime}
+Conflicts: kernel-selftests-internal
+%else
+Conflicts: kernel-rt-selftests-internal
+%endif
 %description selftests-internal
 Kernel sample programs and selftests.
 
