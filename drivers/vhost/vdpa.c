@@ -476,7 +476,7 @@ static int vhost_vdpa_map(struct vhost_vdpa *v, struct vhost_iotlb *iotlb,
 		return r;
 
 	if (ops->dma_map)
-		r = ops->dma_map(vdpa, iova, size, pa, perm);
+		r = ops->dma_map(vdpa, iotlb,iova, size, pa, perm);
 	else if (ops->set_map) {
 r = ops->set_map(vdpa, iotlb);
 	} else
@@ -486,26 +486,27 @@ r = ops->set_map(vdpa, iotlb);
 	return r;
 }
 
-static void vhost_vdpa_unmap(struct vhost_vdpa *v, u64 iova, u64 size)
+static void vhost_vdpa_unmap(struct vhost_vdpa *v,struct vhost_iotlb *iotlb,
+	        	u64 iova, u64 size)
 {
 	struct vdpa_device *vdpa = v->vdpa;
 	const struct vdpa_config_ops *ops = vdpa->config;
- struct vhost_dev *dev = &v->vdev;
-	vhost_vdpa_iotlb_unmap(v, iova, iova + size - 1);
+// struct vhost_dev *dev = &v->vdev;
+
+	vhost_vdpa_iotlb_unmap(v,iotlb, iova, iova + size - 1);
 
 	if (ops->dma_map)
-		ops->dma_unmap(vdpa, iova, size);
+		ops->dma_unmap(vdpa,iotlb, iova, size);
 	else if (ops->set_map) {
 		 ops->set_map(vdpa, iotlb);
 	} else
 		iommu_unmap(v->domain, iova, size);
 }
 
-static int vhost_vdpa_process_iotlb_update(struct vhost_vdpa *v,
+static int vhost_vdpa_process_iotlb_update(struct vhost_vdpa *v, struct vhost_iotlb *iotlb,
 					   struct vhost_iotlb_msg *msg)
 {
 	struct vhost_dev *dev = &v->vdev;
-	struct vhost_iotlb *iotlb = dev->iotlb;
 	struct page **page_list;
 	unsigned long list_size = PAGE_SIZE / sizeof(struct page *);
 	unsigned int gup_flags = FOLL_LONGTERM;
@@ -588,7 +589,7 @@ out:
 	return ret;
 }
 
-static int vhost_vdpa_process_iotlb_msg(struct vhost_dev *dev,
+static int vhost_vdpa_process_iotlb_msg(struct vhost_dev *dev, u16 asid,
 					struct vhost_iotlb_msg *msg)
 {
 	struct vhost_vdpa *v = container_of(dev, struct vhost_vdpa, vdev);
@@ -615,7 +616,7 @@ static int vhost_vdpa_process_iotlb_msg(struct vhost_dev *dev,
 		break;
 	case VHOST_IOTLB_BATCH_END:
 		if (v->in_batch && ops->set_map) {
-			ops->set_map(vdpa, dev->iotlb);
+			ops->set_map(vdpa, iotlb);
 		}
 		v->in_batch = false;
 		break;
