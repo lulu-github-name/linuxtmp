@@ -158,3 +158,10 @@ void *spin_lock_thread(void *arg);
 #else
 #define SYS_NANOSLEEP_KPROBE_NAME "sys_nanosleep"
 #endif
+
+#if defined(__powerpc64__) && !defined(SO_RCVTIMEO_NEW)
+#undef SO_RCVTIMEO
+#undef SO_SNDTIMEO
+#define SO_RCVTIMEO	18
+#define SO_SNDTIMEO	19
+#endif
