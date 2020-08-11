@@ -1903,13 +1903,11 @@ struct net_device_extended_rh {
  *	@phydev:	Physical device may attach itself
  *			for hardware timestamping
  *	@sfp_bus:	attached &struct sfp_bus structure.
- *	@qdisc_tx_busylock_key: lockdep class annotating Qdisc->busylock
- *				spinlock
- *	@qdisc_running_key:	lockdep class annotating Qdisc->running seqcount
- *	@qdisc_xmit_lock_key:	lockdep class annotating
- *				netdev_queue->_xmit_lock spinlock
+ *
  *	@addr_list_lock_key:	lockdep class annotating
  *				net_device->addr_list_lock spinlock
+ *	@qdisc_tx_busylock: lockdep class annotating Qdisc->busylock spinlock
+ *	@qdisc_running_key: lockdep class annotating Qdisc->running seqcount
  *
  *	@proto_down:	protocol port state information can be sent to the
  *			switch driver and used to set the phys state of the
@@ -2212,17 +2210,14 @@ struct net_device {
 #endif
 	struct phy_device	*phydev;
 	struct sfp_bus		*sfp_bus;
-	RH_KABI_DEPRECATE(struct lock_class_key	*, qdisc_tx_busylock)
-	RH_KABI_DEPRECATE(struct lock_class_key	*, qdisc_running_key)
+	struct lock_class_key	*qdisc_tx_busylock;
+	struct lock_class_key	*qdisc_running_key;
 	/* RHEL: The KABI breakage here is not real. We are inserting
-	 * 4 fields of type struct lock_class_key but the size of this
+	 * a field of type struct lock_class_key but the size of this
 	 * structure is zero for non-debug kernel configs because
 	 * LOCKDEP is not enabled for them and for debug flavours
 	 * KABI is not preserved.
 	 */
-	RH_KABI_BROKEN_INSERT(struct lock_class_key qdisc_tx_busylock_key)
-	RH_KABI_BROKEN_INSERT(struct lock_class_key qdisc_running_key)
-	RH_KABI_BROKEN_INSERT(struct lock_class_key qdisc_xmit_lock_key)
 	RH_KABI_BROKEN_INSERT(struct lock_class_key addr_list_lock_key)
 	bool			proto_down;
 	RH_KABI_FILL_HOLE(unsigned	wol_enabled:1)
@@ -2337,6 +2332,20 @@ static inline void netdev_for_each_tx_queue(struct net_device *dev,
 
 	for (i = 0; i < dev->num_tx_queues; i++)
 		f(dev, &dev->_tx[i], arg);
+}
+
+#define netdev_lockdep_set_classes(dev)				\
+{								\
+	static struct lock_class_key qdisc_tx_busylock_key;	\
+	static struct lock_class_key qdisc_running_key;		\
+	static struct lock_class_key qdisc_xmit_lock_key;	\
+	unsigned int i;						\
+								\
+	(dev)->qdisc_tx_busylock = &qdisc_tx_busylock_key;	\
+	(dev)->qdisc_running_key = &qdisc_running_key;		\
+	for (i = 0; i < (dev)->num_tx_queues; i++)		\
+		lockdep_set_class(&(dev)->_tx[i]._xmit_lock,	\
+				  &qdisc_xmit_lock_key);	\
 }
 
 struct netdev_queue *netdev_pick_tx(struct net_device *dev,
