@@ -773,12 +773,14 @@ static int selinux_set_mnt_opts(struct super_block *sb,
 		sbsec->flags |= SE_SBGENFS;
 
 	if (!strcmp(sb->s_type->name, "sysfs") ||
-#ifdef CONFIG_CEPH_FS_SECURITY_LABEL
-	    !strcmp(sb->s_type->name, "ceph") ||
-#endif
 	    !strcmp(sb->s_type->name, "cgroup") ||
 	    !strcmp(sb->s_type->name, "cgroup2"))
 		sbsec->flags |= SE_SBGENFS | SE_SBGENFS_XATTR;
+
+#ifdef CONFIG_CEPH_FS_SECURITY_LABEL
+	if (!strcmp(sb->s_type->name, "ceph"))
+		sbsec->flags |= SE_SBGENFS | SE_SBGENFS_XATTR | SE_SBGENFS_SYMLINKS;
+#endif
 
 	if (!sbsec->behavior) {
 		/*
@@ -1586,7 +1588,13 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
 		/* Default to the fs superblock SID. */
 		sid = sbsec->sid;
 
-		if ((sbsec->flags & SE_SBGENFS) && !S_ISLNK(inode->i_mode)) {
+		/*
+		 * RHEL8-only: Handle symlinks in special cases.
+		 * See: https://bugzilla.redhat.com/show_bug.cgi?id=1865800
+		 */
+		if ((sbsec->flags & SE_SBGENFS) &&
+		     (!S_ISLNK(inode->i_mode) ||
+		      (sbsec->flags & SE_SBGENFS_SYMLINKS))) {
 			/* We must have a dentry to determine the label on
 			 * procfs inodes */
 			if (opt_dentry) {

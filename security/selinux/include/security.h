@@ -61,6 +61,9 @@
 #define SE_SBGENFS		0x0400
 #define SE_SBGENFS_XATTR	0x0800
 
+/* RHEL8-only */
+#define SE_SBGENFS_SYMLINKS	0x8000
+
 #define CONTEXT_STR	"context="
 #define FSCONTEXT_STR	"fscontext="
 #define ROOTCONTEXT_STR	"rootcontext="
