@@ -943,7 +943,7 @@ static void fm10k_tx_map(struct fm10k_ring *tx_ring,
 	struct sk_buff *skb = first->skb;
 	struct fm10k_tx_buffer *tx_buffer;
 	struct fm10k_tx_desc *tx_desc;
-	struct skb_frag_struct *frag;
+	skb_frag_t *frag;
 	unsigned char *data;
 	dma_addr_t dma;
 	unsigned int data_len, size;
