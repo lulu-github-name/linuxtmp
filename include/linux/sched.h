@@ -50,6 +50,7 @@ struct pid_namespace;
 struct pipe_inode_info;
 struct rcu_node;
 struct reclaim_state;
+struct capture_control;
 struct robust_list_head;
 struct root_domain;
 struct rq;
@@ -581,6 +582,9 @@ struct task_struct_rh {
 	unsigned int vtime_cpu;
 	u64				parent_exec_id;
 	u64				self_exec_id;
+#ifdef CONFIG_COMPACTION
+	struct capture_control          *capture_control;
+#endif
 };
 
 struct task_struct {
