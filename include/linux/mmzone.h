@@ -582,8 +582,13 @@ struct zone {
 
 	ZONE_PADDING(_pad3_)
 
+#if defined CONFIG_COMPACTION || defined CONFIG_CMA
+	RH_KABI_USE(1, unsigned long compact_init_migrate_pfn)
+	RH_KABI_USE(2, unsigned long compact_init_free_pfn)
+#else
 	RH_KABI_RESERVE(1)
 	RH_KABI_RESERVE(2)
+#endif
 
 	/* Zone statistics */
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
