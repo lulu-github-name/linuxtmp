@@ -278,7 +278,8 @@ struct swap_info_struct {
 	struct work_struct discard_work; /* discard worker */
 	struct swap_cluster_list discard_clusters; /* discard clusters list */
 
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, unsigned int __percpu *cluster_next_cpu)  /*percpu 
+						index for next allocation */
 	RH_KABI_RESERVE(2)
 };
 
