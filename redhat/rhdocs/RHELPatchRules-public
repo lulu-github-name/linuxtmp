@@ -52,8 +52,10 @@ lists the sections below which describe in detail what is needed:
      |      Signed-off-by: John Upstream <john.upstream@someupstreamplace.com>
       \     Signed-off-by: Jane Upstream <jane@someotherplaceupstream.com>
 
+[V]--  Signed-off-by: Shadow Man <shadow.man@redhat.com>
+
       / ---
-[V]--|   drivers/upstream/upstream.c |   1 +
+[VI]-|   drivers/upstream/upstream.c |   1 +
       \  1 files changed, 1 insertions(+)
 
       / diff --git a/drivers/upstream/upstream.c b/drivers/upstream/upstream.c
@@ -62,7 +64,7 @@ lists the sections below which describe in detail what is needed:
      |  +++ b/drivers/upstream/upstream.c
      |  @@ -48,6 +48,7 @@
    __|   #include <linux/init.h>
-[VI] |   #include <linux/jiffies.h>
+[VII |   #include <linux/jiffies.h>
      |   #include <linux/uaccess.h>
      |  +#include <linux/kernel.h>
      |
@@ -294,8 +296,33 @@ has an explicit dependency on another patch, please include that dependency in
 the changelog so the engineers can coordinate their integration properly.
 Make sure all dependent patches are posted _before_ posting a patch.
 
-V.  DIFFSTAT
-------------
+V.  Patch Sign-off and acknowledging the Developer's Certificate of Origin
+---------------------------------------------------------------------------
+
+[Required] A "Signed-off-by:" tag for each patch using your redhat.com email address.
+
+     The Linux Kernel Community has required an acknowledgement of the
+Developer's Certificate of Origin (DCO), https://www.developercerticate.org,
+for many years.  The DCO is a way of handling contributions to an open source
+project in which each contribution is associated with a certification
+signifying that the contributor has the right to submit the contribution under
+the applicable open source license of the project.
+
+     Contributions made to the Red Hat kernel must acknowledge the DCO with the
+use of a "Signed-off-by:" tag from your redhat.com email address.  The tag
+must start at the beginning of a new line.  For example,
+
+	Signed-off-by: Shadow Man <shadow.man@redhat.com>
+
+is NOT acceptable.  The proper tag usage, starting at the beginning of a new
+line is
+
+Signed-off-by: Shadow Man <shadow.man@redhat.com>
+
+     The Signed-off-by: tag must be applied to each patch in the patch series.
+
+VI.  DIFFSTAT
+-------------
 
 [Suggested] A diffstat can be included.
 
@@ -303,8 +330,8 @@ V.  DIFFSTAT
 reviewer in quickly understanding what code has changed.  The git command,
 git-format-patch, automatically includes diffstats.
 
-VI.  THE PATCH
---------------
+VII.  THE PATCH
+---------------
 [Required] The patch(es) must apply cleanly via 'patch -p1'
 
     There are several ways to generate a patch, all of which are acceptable.
