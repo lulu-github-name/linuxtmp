@@ -243,6 +243,16 @@ esw_check_ingress_prio_tag_enabled(const struct mlx5_eswitch *esw,
 }
 
 static void
+mlx5_eswitch_set_rule_flow_source(struct mlx5_eswitch *esw,
+				  struct mlx5_flow_spec *spec,
+				  struct mlx5_esw_flow_attr *attr)
+{
+	if (MLX5_CAP_ESW_FLOWTABLE(esw->dev, flow_source) &&
+	    attr && attr->in_rep && attr->in_rep->vport == MLX5_VPORT_UPLINK)
+		spec->flow_context.flow_source = MLX5_FLOW_CONTEXT_FLOW_SOURCE_UPLINK;
+}
+
+static void
 mlx5_eswitch_set_rule_source_port(struct mlx5_eswitch *esw,
 				  struct mlx5_flow_spec *spec,
 				  struct mlx5_esw_flow_attr *attr)
@@ -281,10 +291,6 @@ mlx5_eswitch_set_rule_source_port(struct mlx5_eswitch *esw,
 
 		spec->match_criteria_enable |= MLX5_MATCH_MISC_PARAMETERS;
 	}
-
-	if (MLX5_CAP_ESW_FLOWTABLE(esw->dev, flow_source) &&
-	    attr->in_rep->vport == MLX5_VPORT_UPLINK)
-		spec->flow_context.flow_source = MLX5_FLOW_CONTEXT_FLOW_SOURCE_UPLINK;
 }
 
 struct mlx5_flow_handle *
@@ -378,9 +384,6 @@ mlx5_eswitch_add_offloaded_rule(struct mlx5_eswitch *esw,
 		flow_act.modify_hdr = attr->modify_hdr;
 
 	if (split) {
-		if (MLX5_CAP_ESW_FLOWTABLE(esw->dev, flow_source) &&
-		    attr->in_rep->vport == MLX5_VPORT_UPLINK)
-			spec->flow_context.flow_source = MLX5_FLOW_CONTEXT_FLOW_SOURCE_UPLINK;
 		fdb = esw_vport_tbl_get(esw, attr);
 	} else {
 		if (attr->chain || attr->prio)
@@ -396,6 +399,8 @@ mlx5_eswitch_add_offloaded_rule(struct mlx5_eswitch *esw,
 		rule = ERR_CAST(fdb);
 		goto err_esw_get;
 	}
+
+	mlx5_eswitch_set_rule_flow_source(esw, spec, attr);
 
 	if (mlx5_eswitch_termtbl_required(esw, &flow_act, spec))
 		rule = mlx5_eswitch_add_termtbl_rule(esw, fdb, spec, attr,
@@ -463,6 +468,7 @@ mlx5_eswitch_add_fwd_rule(struct mlx5_eswitch *esw,
 	i++;
 
 	mlx5_eswitch_set_rule_source_port(esw, spec, attr);
+	mlx5_eswitch_set_rule_flow_source(esw, spec, attr);
 
 	if (attr->outer_match_level != MLX5_MATCH_NONE)
 		spec->match_criteria_enable |= MLX5_MATCH_OUTER_HEADERS;
