@@ -195,7 +195,6 @@ int uv_bios_set_legacy_vga_target(bool decode, int domain, int bus)
 }
 EXPORT_SYMBOL_GPL(uv_bios_set_legacy_vga_target);
 
-#ifdef CONFIG_EFI
 int uv_bios_init(void)
 {
 	uv_systab = NULL;
@@ -226,4 +225,3 @@ int uv_bios_init(void)
 	pr_info("UV: UVsystab: Revision:%x\n", uv_systab->revision);
 	return 0;
 }
-#endif
