@@ -1203,7 +1203,7 @@ int nfs_get_tree_common(struct fs_context *fc)
 	fc->s_fs_info = NULL;
 	if (IS_ERR(s)) {
 		error = PTR_ERR(s);
-		dfprintk(MOUNT, "NFS: Couldn't get superblock\n");
+		nfs_errorf(fc, "NFS: Couldn't get superblock");
 		goto out_err_nosb;
 	}
 
@@ -1232,7 +1232,7 @@ int nfs_get_tree_common(struct fs_context *fc)
 
 	error = nfs_get_root(s, fc);
 	if (error < 0) {
-		dfprintk(MOUNT, "NFS: Couldn't get root dentry\n");
+		nfs_errorf(fc, "NFS: Couldn't get root dentry");
 		goto error_splat_super;
 	}
 
