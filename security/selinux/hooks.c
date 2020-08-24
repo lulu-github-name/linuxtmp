@@ -89,6 +89,7 @@
 #include <linux/bpf.h>
 #include <linux/kernfs.h>
 #include <linux/stringhash.h>	/* for hashlen_string() */
+#include <uapi/linux/mount.h>
 
 #include "avc.h"
 #include "objsec.h"
