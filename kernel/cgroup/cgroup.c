@@ -2019,13 +2019,17 @@ out:
 	return ret;
 }
 
-int cgroup_do_mount(struct fs_context *fc, unsigned long magic,
-		    struct cgroup_namespace *ns)
+int cgroup_do_get_tree(struct fs_context *fc)
 {
 	struct cgroup_fs_context *ctx = cgroup_fc2context(fc);
 	bool new_sb = false;
+	unsigned long magic;
 	int ret = 0;
 
+	if (fc->fs_type == &cgroup2_fs_type)
+		magic = CGROUP2_SUPER_MAGIC;
+	else
+		magic = CGROUP_SUPER_MAGIC;
 	fc->root = kernfs_mount(fc->fs_type, fc->sb_flags, ctx->root->kf_root,
 				magic, &new_sb);
 	if (IS_ERR(fc->root))
@@ -2035,7 +2039,7 @@ int cgroup_do_mount(struct fs_context *fc, unsigned long magic,
 	 * In non-init cgroup namespace, instead of root cgroup's dentry,
 	 * we return the dentry corresponding to the cgroupns->root_cgrp.
 	 */
-	if (!ret && ns != &init_cgroup_ns) {
+	if (!ret && ctx->ns != &init_cgroup_ns) {
 		struct dentry *nsdentry;
 		struct super_block *sb = fc->root->d_sb;
 		struct cgroup *cgrp;
@@ -2043,7 +2047,7 @@ int cgroup_do_mount(struct fs_context *fc, unsigned long magic,
 		mutex_lock(&cgroup_mutex);
 		spin_lock_irq(&css_set_lock);
 
-		cgrp = cset_cgroup_from_root(ns->root_cset, ctx->root);
+		cgrp = cset_cgroup_from_root(ctx->ns->root_cset, ctx->root);
 
 		spin_unlock_irq(&css_set_lock);
 		mutex_unlock(&cgroup_mutex);
@@ -2072,6 +2076,7 @@ static void cgroup_fs_context_free(struct fs_context *fc)
 
 	kfree(ctx->name);
 	kfree(ctx->release_agent);
+	put_cgroup_ns(ctx->ns);
 	kfree(ctx);
 }
 
@@ -2089,7 +2094,7 @@ static int cgroup_get_tree(struct fs_context *fc)
 	cgroup_get_live(&cgrp_dfl_root.cgrp);
 	ctx->root = &cgrp_dfl_root;
 
-	ret = cgroup_do_mount(fc, CGROUP2_SUPER_MAGIC, ns);
+	ret = cgroup_do_get_tree(fc);
 	if (!ret)
 		apply_cgroup_root_flags(ctx->flags);
 	return ret;
@@ -2120,6 +2125,8 @@ static int cgroup_init_fs_context(struct fs_context *fc)
 	if (!ctx)
 		return -ENOMEM;
 
+	ctx->ns = current->nsproxy->cgroup_ns;
+	get_cgroup_ns(ctx->ns);
 	fc->fs_private = ctx;
 	if (fc->fs_type == &cgroup2_fs_type)
 		fc->ops = &cgroup_fs_context_ops;
