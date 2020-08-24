@@ -146,7 +146,7 @@ struct dentry *nfs_get_root(struct super_block *sb,
 		error = security_sb_clone_mnt_opts(mount_info->cloned->sb, sb, kflags,
 				&kflags_out);
 	} else {
-		error = security_sb_set_mnt_opts(sb, mount_info->parsed->lsm_opts,
+		error = security_sb_set_mnt_opts(sb, mount_info->ctx->lsm_opts,
 							kflags, &kflags_out);
 	}
 	if (error)
