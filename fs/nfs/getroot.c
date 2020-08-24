@@ -79,6 +79,7 @@ struct dentry *nfs_get_root(struct super_block *sb,
 	struct inode *inode;
 	void *name = kstrdup(devname, GFP_KERNEL);
 	int error;
+	unsigned long kflags = 0, kflags_out = 0;
 
 	if (!name)
 		return ERR_PTR(-ENOMEM);
@@ -134,10 +135,25 @@ struct dentry *nfs_get_root(struct super_block *sb,
 		name = NULL;
 	}
 	spin_unlock(&ret->d_lock);
-
-	error = mount_info->set_security(sb, ret, mount_info);
+	if (NFS_SB(sb)->caps & NFS_CAP_SECURITY_LABEL)
+		kflags |= SECURITY_LSM_NATIVE_LABELS;
+	if (mount_info->cloned) {
+		if (d_inode(ret)->i_fop != &nfs_dir_operations) {
+			error = -ESTALE;
+			goto error_splat_root;
+		}
+		/* clone lsm security options from the parent to the new sb */
+		error = security_sb_clone_mnt_opts(mount_info->cloned->sb, sb, kflags,
+				&kflags_out);
+	} else {
+		error = security_sb_set_mnt_opts(sb, mount_info->parsed->lsm_opts,
+							kflags, &kflags_out);
+	}
 	if (error)
 		goto error_splat_root;
+	if (NFS_SB(sb)->caps & NFS_CAP_SECURITY_LABEL &&
+		!(kflags_out & SECURITY_LSM_NATIVE_LABELS))
+		NFS_SB(sb)->caps &= ~NFS_CAP_SECURITY_LABEL;
 
 	nfs_setsecurity(inode, fsinfo.fattr, fsinfo.fattr->label);
 
