@@ -172,7 +172,6 @@ static const struct fs_parameter_spec nfs_param_specs[] = {
 };
 
 static const struct fs_parameter_description nfs_fs_parameters = {
-	.name		= "nfs",
 	.specs		= nfs_param_specs,
 };
 

@@ -3365,7 +3365,6 @@ static const struct fs_parameter_spec shmem_param_specs[] = {
 };
 
 const struct fs_parameter_description shmem_fs_parameters = {
-	.name		= "tmpfs",
 	.specs		= shmem_param_specs,
 };
 
