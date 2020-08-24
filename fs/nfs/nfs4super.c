@@ -34,12 +34,12 @@ static const struct super_operations nfs4_sops = {
 };
 
 struct nfs_subversion nfs_v4 = {
-	.owner = THIS_MODULE,
-	.nfs_fs   = &nfs4_fs_type,
-	.rpc_vers = &nfs_version4,
-	.rpc_ops  = &nfs_v4_clientops,
-	.sops     = &nfs4_sops,
-	.xattr    = nfs4_xattr_handlers,
+	.owner		= THIS_MODULE,
+	.nfs_fs		= &nfs4_fs_type,
+	.rpc_vers	= &nfs_version4,
+	.rpc_ops	= &nfs_v4_clientops,
+	.sops		= &nfs4_sops,
+	.xattr		= nfs4_xattr_handlers,
 };
 
 static int nfs4_write_inode(struct inode *inode, struct writeback_control *wbc)
@@ -167,7 +167,7 @@ static int do_nfs4_mount(struct nfs_server *server,
 
 	root_ctx = nfs_fc2context(root_fc);
 	root_ctx->internal = true;
-	root_ctx->mount_info.server = server;
+	root_ctx->server = server;
 	/* We leave export_path unset as it's not used to find the root. */
 
 	len = strlen(hostname) + 5;
@@ -220,7 +220,7 @@ int nfs4_try_get_tree(struct fs_context *fc)
 	/* We create a mount for the server's root, walk to the requested
 	 * location and then create another mount for that.
 	 */
-	err= do_nfs4_mount(nfs4_create_server(&ctx->mount_info),
+	err= do_nfs4_mount(nfs4_create_server(fc),
 			   fc, ctx->nfs_server.hostname,
 			   ctx->nfs_server.export_path);
 	if (err) {
@@ -242,7 +242,7 @@ int nfs4_get_referral_tree(struct fs_context *fc)
 	dprintk("--> nfs4_referral_mount()\n");
 
 	/* create a new volume representation */
-	err = do_nfs4_mount(nfs4_create_referral_server(&ctx->clone_data, ctx->mount_info.mntfh),
+	err = do_nfs4_mount(nfs4_create_referral_server(fc),
 			    fc, ctx->nfs_server.hostname,
 			    ctx->nfs_server.export_path);
 	if (err) {
@@ -252,7 +252,6 @@ int nfs4_get_referral_tree(struct fs_context *fc)
 	}
 	return err;
 }
-
 
 static int __init init_nfs_v4(void)
 {
