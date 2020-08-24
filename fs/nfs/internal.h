@@ -118,7 +118,7 @@ struct nfs_parsed_mount_data {
 		unsigned short		nconnect;
 	} nfs_server;
 
-	struct security_mnt_opts lsm_opts;
+	void			*lsm_opts;
 	struct net		*net;
 };
 
