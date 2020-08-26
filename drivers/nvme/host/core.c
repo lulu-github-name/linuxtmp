@@ -286,7 +286,7 @@ static inline enum nvme_disposition nvme_decide_disposition(struct request *req)
 	    nvme_req(req)->retries >= nvme_max_retries)
 		return COMPLETE;
 
-	if (req->cmd_flags & REQ_NVME_MPATH) {
+	if (req->cmd_flags & (REQ_NVME_MPATH | REQ_FAILFAST_TRANSPORT)) {
 		if (nvme_is_path_error(nvme_req(req)->status) ||
 		    blk_queue_dying(req->q))
 			return FAILOVER;
@@ -298,12 +298,32 @@ static inline enum nvme_disposition nvme_decide_disposition(struct request *req)
 	return RETRY;
 }
 
-static inline void nvme_end_req(struct request *req)
+static inline void __nvme_end_req(struct request *req, blk_status_t status)
 {
-	blk_status_t status = nvme_error_status(nvme_req(req)->status);
-
 	nvme_trace_bio_complete(req, status);
 	blk_mq_end_request(req, status);
+}
+
+static inline void nvme_end_req(struct request *req)
+{
+	__nvme_end_req(req, nvme_error_status(nvme_req(req)->status));
+}
+
+static inline void nvme_end_req_with_failover(struct request *req)
+{
+	u16 nvme_status = nvme_req(req)->status;
+	blk_status_t status = nvme_error_status(nvme_status);
+
+	if (unlikely(nvme_status & NVME_SC_DNR))
+		goto out;
+
+	if (!blk_path_error(status)) {
+		pr_debug("Request meant for failover but blk_status_t (errno=%d) was not retryable.\n",
+			 blk_status_to_errno(status));
+		status = BLK_STS_IOERR;
+	}
+out:
+	__nvme_end_req(req, status);
 }
 
 void nvme_complete_rq(struct request *req)
@@ -322,7 +342,10 @@ void nvme_complete_rq(struct request *req)
 		nvme_retry_req(req);
 		return;
 	case FAILOVER:
-		nvme_failover_req(req);
+		if (req->cmd_flags & REQ_NVME_MPATH)
+			nvme_failover_req(req);
+		else
+			nvme_end_req_with_failover(req);
 		return;
 	}
 }
