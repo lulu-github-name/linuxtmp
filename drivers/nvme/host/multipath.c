@@ -64,35 +64,6 @@ void nvme_set_disk_name(char *disk_name, struct nvme_ns *ns,
 	}
 }
 
-static bool nvme_ana_error(u16 status)
-{
-	switch (status & 0x7ff) {
-	case NVME_SC_ANA_TRANSITION:
-	case NVME_SC_ANA_INACCESSIBLE:
-	case NVME_SC_ANA_PERSISTENT_LOSS:
-		return true;
-	}
-	return false;
-}
-
-static void __nvme_update_ana(struct nvme_ns *ns)
-{
-	if (!ns->ctrl->ana_log_buf)
-		return;
-
-	set_bit(NVME_NS_ANA_PENDING, &ns->flags);
-	queue_work(nvme_wq, &ns->ctrl->ana_work);
-}
-
-void nvme_update_ana(struct request *req)
-{
-	struct nvme_ns *ns = req->q->queuedata;
-	u16 status = nvme_req(req)->status;
-
-	if (nvme_ana_error(status))
-		__nvme_update_ana(ns);
-}
-
 void nvme_failover_req(struct request *req)
 {
 	struct nvme_ns *ns = req->q->queuedata;
@@ -104,22 +75,25 @@ void nvme_failover_req(struct request *req)
 	spin_unlock_irqrestore(&ns->head->requeue_lock, flags);
 	blk_mq_end_request(req, 0);
 
-	if (nvme_ana_error(status)) {
+	switch (status & 0x7ff) {
+	case NVME_SC_ANA_TRANSITION:
+	case NVME_SC_ANA_INACCESSIBLE:
+	case NVME_SC_ANA_PERSISTENT_LOSS:
 		/*
 		 * If we got back an ANA error we know the controller is alive,
 		 * but not ready to serve this namespaces.  The spec suggests
 		 * we should update our general state here, but due to the fact
 		 * that the admin and I/O queues are not serialized that is
 		 * fundamentally racy.  So instead just clear the current path,
-		 * mark the path as pending and kick off a re-read of the ANA
+		 * mark the the path as pending and kick of a re-read of the ANA
 		 * log page ASAP.
 		 */
 		nvme_mpath_clear_current_path(ns);
-		__nvme_update_ana(ns);
-		goto kick_requeue;
-	}
-
-	switch (status & 0x7ff) {
+		if (ns->ctrl->ana_log_buf) {
+			set_bit(NVME_NS_ANA_PENDING, &ns->flags);
+			queue_work(nvme_wq, &ns->ctrl->ana_work);
+		}
+		break;
 	case NVME_SC_HOST_PATH_ERROR:
 	case NVME_SC_HOST_ABORTED_CMD:
 		/*
@@ -137,7 +111,6 @@ void nvme_failover_req(struct request *req)
 		break;
 	}
 
-kick_requeue:
 	kblockd_schedule_work(&ns->head->requeue_work);
 }
 
