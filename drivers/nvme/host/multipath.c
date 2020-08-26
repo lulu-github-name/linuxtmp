@@ -93,11 +93,16 @@ void nvme_update_ana(struct request *req)
 		__nvme_update_ana(ns);
 }
 
-bool nvme_failover_req(struct request *req)
+void nvme_failover_req(struct request *req)
 {
 	struct nvme_ns *ns = req->q->queuedata;
 	u16 status = nvme_req(req)->status;
 	unsigned long flags;
+
+	spin_lock_irqsave(&ns->head->requeue_lock, flags);
+	blk_steal_bios(&ns->head->requeue_list, req);
+	spin_unlock_irqrestore(&ns->head->requeue_lock, flags);
+	blk_mq_end_request(req, 0);
 
 	if (nvme_ana_error(status)) {
 		/*
@@ -124,18 +129,16 @@ bool nvme_failover_req(struct request *req)
 		nvme_mpath_clear_current_path(ns);
 		break;
 	default:
-		/* This was a non-ANA error so follow the normal error path. */
-		return false;
+		/*
+		 * Reset the controller for any non-ANA error as we don't know
+		 * what caused the error.
+		 */
+		nvme_reset_ctrl(ns->ctrl);
+		break;
 	}
 
 kick_requeue:
-	spin_lock_irqsave(&ns->head->requeue_lock, flags);
-	blk_steal_bios(&ns->head->requeue_list, req);
-	spin_unlock_irqrestore(&ns->head->requeue_lock, flags);
-	blk_mq_end_request(req, 0);
-
 	kblockd_schedule_work(&ns->head->requeue_work);
-	return true;
 }
 
 void nvme_kick_requeue_lists(struct nvme_ctrl *ctrl)
