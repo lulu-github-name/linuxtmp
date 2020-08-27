@@ -733,6 +733,7 @@ This package provides debug information for package %{name}-tools.
 # with_tools
 %endif
 
+%if !%{with_realtime}
 %if %{with_bpftool}
 
 %package -n bpftool
@@ -753,6 +754,7 @@ This package provides debug information for the bpftool package.
 %{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} -p '.*%%{_sbindir}/bpftool(\.debug)?|XXX' -o bpftool-debuginfo.list}
 
 # with_bpftool
+%endif
 %endif
 
 %if %{with_selftests}
@@ -2041,10 +2043,12 @@ install -m755 page_owner_sort %{buildroot}%{_bindir}/page_owner_sort
 popd
 %endif
 
+%if !%{with_realtime}
 %if %{with_bpftool}
 pushd tools/bpf/bpftool
 %{bpftool_make} prefix=%{_prefix} bash_compdir=%{_sysconfdir}/bash_completion.d/ mandir=%{_mandir} install doc-install
 popd
+%endif
 %endif
 
 %if %{with_selftests}
@@ -2409,6 +2413,7 @@ fi
 # with_tools
 %endif
 
+%if !%{with_realtime}
 %if %{with_bpftool}
 %files -n bpftool
 %{_sbindir}/bpftool
@@ -2428,6 +2433,7 @@ fi
 %if %{with_debuginfo}
 %files -f bpftool-debuginfo.list -n bpftool-debuginfo
 %defattr(-,root,root)
+%endif
 %endif
 %endif
 
