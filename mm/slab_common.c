@@ -69,6 +69,17 @@ static int __init setup_slab_nomerge(char *str)
 
 #ifdef CONFIG_SLUB
 __setup_param("slub_nomerge", slub_nomerge, setup_slab_nomerge, 0);
+
+/*
+ * RHEL-8: as SLUB merging is turned off, by default, we provide
+ * a "slub_merge" kernel parameter to enable the feature on demand.
+ */
+static int __init setup_slub_merge(char *str)
+{
+	slab_nomerge = false;
+	return 1;
+}
+__setup_param("slub_merge", slub_merge, setup_slub_merge, 0);
 #endif
 
 __setup("slab_nomerge", setup_slab_nomerge);
