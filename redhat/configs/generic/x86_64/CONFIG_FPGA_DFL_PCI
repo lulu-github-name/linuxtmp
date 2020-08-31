@@ -1,1 +1,1 @@
-CONFIG_FPGA_DFL_PCI=m
+# CONFIG_FPGA_DFL_PCI is not set

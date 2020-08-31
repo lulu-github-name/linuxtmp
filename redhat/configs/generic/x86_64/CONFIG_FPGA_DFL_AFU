@@ -1,1 +1,1 @@
-CONFIG_FPGA_DFL_AFU=m
+# CONFIG_FPGA_DFL_AFU is not set

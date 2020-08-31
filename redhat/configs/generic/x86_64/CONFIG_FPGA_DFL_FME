@@ -1,1 +1,1 @@
-CONFIG_FPGA_DFL_FME=m
+# CONFIG_FPGA_DFL_FME is not set
