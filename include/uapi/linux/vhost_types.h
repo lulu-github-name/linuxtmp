@@ -76,6 +76,7 @@ struct vhost_iotlb_msg {
 
 #define VHOST_IOTLB_MSG 0x1
 #define VHOST_IOTLB_MSG_V2 0x2
+#define VHOST_IOTLB_MSG_ASID 0x3
 
 struct vhost_msg {
 	int type;
@@ -87,7 +88,8 @@ struct vhost_msg {
 
 struct vhost_msg_v2 {
 	__u32 type;
-	__u32 reserved;
+	__u16 asid;
+	__u16 reserved;
 	union {
 		struct vhost_iotlb_msg iotlb;
 		__u8 padding[64];

@@ -463,7 +463,7 @@ void vhost_dev_init(struct vhost_dev *dev,
 		    struct vhost_virtqueue **vqs, int nvqs,
 		    int iov_limit, int weight, int byte_weight,
 		    bool use_worker,
-		    int (*msg_handler)(struct vhost_dev *dev,
+		    int (*msg_handler)(struct vhost_dev *dev, u16 asid,
 				       struct vhost_iotlb_msg *msg))
 {
 	struct vhost_virtqueue *vq;
@@ -474,7 +474,6 @@ void vhost_dev_init(struct vhost_dev *dev,
 	mutex_init(&dev->mutex);
 	dev->log_ctx = NULL;
 	dev->umem = NULL;
-	dev->iotlb = NULL;
 	dev->mm = NULL;
 	dev->worker = NULL;
 	dev->iov_limit = iov_limit;
@@ -488,6 +487,8 @@ void vhost_dev_init(struct vhost_dev *dev,
 	INIT_LIST_HEAD(&dev->pending_list);
 	spin_lock_init(&dev->iotlb_lock);
 
+	for (i = 0; i < VHOST_NUM_ASIDS; i++)
+		dev->iotlb[i] = NULL;
 
 	for (i = 0; i < dev->nvqs; ++i) {
 		vq = dev->vqs[i];
@@ -683,6 +684,17 @@ static void vhost_clear_msg(struct vhost_dev *dev)
 	spin_unlock(&dev->iotlb_lock);
 }
 
+/* FIXME: get asid supported by vhost */
+void vhost_iotlb_cleanup(struct vhost_dev *dev)
+{
+	int i;
+
+	for (i = 0; i < VHOST_NUM_ASIDS; i++) {
+		vhost_iotlb_free(dev->iotlb[i]);
+		dev->iotlb[i] = NULL;
+	}
+}
+
 void vhost_dev_cleanup(struct vhost_dev *dev)
 {
 	int i;
@@ -703,8 +715,7 @@ void vhost_dev_cleanup(struct vhost_dev *dev)
 	/* No one will access memory at this point */
 	vhost_iotlb_free(dev->umem);
 	dev->umem = NULL;
-	vhost_iotlb_free(dev->iotlb);
-	dev->iotlb = NULL;
+	vhost_iotlb_cleanup(dev);
 	vhost_clear_msg(dev);
 	wake_up_interruptible_poll(&dev->wait, EPOLLIN | EPOLLRDNORM);
 	WARN_ON(!llist_empty(&dev->work_list));
@@ -1041,7 +1052,7 @@ static inline int vhost_get_desc(struct vhost_virtqueue *vq,
 	return vhost_copy_from_user(vq, desc, vq->desc + idx, sizeof(*desc));
 }
 
-static void vhost_iotlb_notify_vq(struct vhost_dev *d,
+static void vhost_iotlb_notify_vq(struct vhost_dev *d, u16 asid,
 				  struct vhost_iotlb_msg *msg)
 {
 	struct vhost_msg_node *node, *n;
@@ -1052,7 +1063,8 @@ static void vhost_iotlb_notify_vq(struct vhost_dev *d,
 		struct vhost_iotlb_msg *vq_msg = &node->msg.iotlb;
 		if (msg->iova <= vq_msg->iova &&
 		    msg->iova + msg->size - 1 >= vq_msg->iova &&
-		    vq_msg->type == VHOST_IOTLB_MISS) {
+		    vq_msg->type == VHOST_IOTLB_MISS &&
+		    node->vq->asid == asid) {
 			vhost_poll_queue(&node->vq->poll);
 			list_del(&node->node);
 			kfree(node);
@@ -1079,16 +1091,20 @@ static bool umem_access_ok(u64 uaddr, u64 size, int access)
 	return true;
 }
 
-static int vhost_process_iotlb_msg(struct vhost_dev *dev,
+static int vhost_process_iotlb_msg(struct vhost_dev *dev, u16 asid,
 				   struct vhost_iotlb_msg *msg)
 {
+	struct vhost_iotlb *iotlb;
 	int ret = 0;
 
 	mutex_lock(&dev->mutex);
 	vhost_dev_lock_vqs(dev);
+
+	iotlb = dev->iotlb[asid];
+
 	switch (msg->type) {
 	case VHOST_IOTLB_UPDATE:
-		if (!dev->iotlb) {
+		if (!iotlb) {
 			ret = -EFAULT;
 			break;
 		}
@@ -1097,13 +1113,13 @@ static int vhost_process_iotlb_msg(struct vhost_dev *dev,
 			break;
 		}
 		vhost_vq_meta_reset(dev);
-		if (vhost_iotlb_add_range(dev->iotlb, msg->iova,
+		if (vhost_iotlb_add_range(iotlb, msg->iova,
 					  msg->iova + msg->size - 1,
 					  msg->uaddr, msg->perm)) {
 			ret = -ENOMEM;
 			break;
 		}
-		vhost_iotlb_notify_vq(dev, msg);
+		vhost_iotlb_notify_vq(dev, asid, msg);
 		break;
 	case VHOST_IOTLB_INVALIDATE:
 		if (!dev->iotlb) {
@@ -1111,7 +1127,7 @@ static int vhost_process_iotlb_msg(struct vhost_dev *dev,
 			break;
 		}
 		vhost_vq_meta_reset(dev);
-		vhost_iotlb_del_range(dev->iotlb, msg->iova,
+		vhost_iotlb_del_range(iotlb, msg->iova,
 				      msg->iova + msg->size - 1);
 		break;
 	default:
@@ -1130,6 +1146,7 @@ ssize_t vhost_chr_write_iter(struct vhost_dev *dev,
 	struct vhost_iotlb_msg msg;
 	size_t offset;
 	int type, ret;
+	u16 asid = 0;
 
 	ret = copy_from_iter(&type, sizeof(type), from);
 	if (ret != sizeof(type)) {
@@ -1147,6 +1164,14 @@ ssize_t vhost_chr_write_iter(struct vhost_dev *dev,
 	case VHOST_IOTLB_MSG_V2:
 		offset = sizeof(__u32);
 		break;
+	case VHOST_IOTLB_MSG_ASID:
+		ret = copy_from_iter(&asid, sizeof(asid), from);
+		if (ret != sizeof(asid) || asid >= VHOST_NUM_ASIDS) {
+			ret = -EINVAL;
+			goto done;
+		}
+		offset = sizeof(__u16);
+		break;
 	default:
 		ret = -EINVAL;
 		goto done;
@@ -1160,9 +1185,9 @@ ssize_t vhost_chr_write_iter(struct vhost_dev *dev,
 	}
 
 	if (dev->msg_handler)
-		ret = dev->msg_handler(dev, &msg);
+		ret = dev->msg_handler(dev, asid, &msg);
 	else
-		ret = vhost_process_iotlb_msg(dev, &msg);
+		ret = vhost_process_iotlb_msg(dev, asid, &msg);
 	if (ret) {
 		ret = -EFAULT;
 		goto done;
@@ -1270,6 +1295,7 @@ static int vhost_iotlb_miss(struct vhost_virtqueue *vq, u64 iova, int access)
 
 	if (v2) {
 		node->msg_v2.type = VHOST_IOTLB_MSG_V2;
+		node->msg_v2.asid = vq->asid;
 		msg = &node->msg_v2.iotlb;
 	} else {
 		msg = &node->msg.iotlb;
@@ -1704,12 +1730,13 @@ int vhost_init_device_iotlb(struct vhost_dev *d, bool enabled)
 	if (!niotlb)
 		return -ENOMEM;
 
-	oiotlb = d->iotlb;
-	d->iotlb = niotlb;
+	oiotlb = d->iotlb[0];
+	d->iotlb[0] = niotlb;
 
 	for (i = 0; i < d->nvqs; ++i) {
 		struct vhost_virtqueue *vq = d->vqs[i];
 
+		/* 0 is used as default ASID */
 		mutex_lock(&vq->mutex);
 		vq->iotlb = niotlb;
 		__vhost_vq_meta_reset(vq);
