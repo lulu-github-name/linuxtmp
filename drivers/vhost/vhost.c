@@ -1732,13 +1732,15 @@ int vhost_init_device_iotlb(struct vhost_dev *d, bool enabled)
 
 	oiotlb = d->iotlb[0];
 	d->iotlb[0] = niotlb;
+        printk("\r\n %s %d %d  %p",__func__,__LINE__, d->nvqs,d->iotlb[0] );
 
 	for (i = 0; i < d->nvqs; ++i) {
 		struct vhost_virtqueue *vq = d->vqs[i];
 
 		/* 0 is used as default ASID */
 		mutex_lock(&vq->mutex);
-		vq->iotlb = niotlb;
+		vq->iotlb = d->iotlb[i];
+        printk("\r\n %s %d %d  %p",__func__,__LINE__, i,vq->iotlb);
 		__vhost_vq_meta_reset(vq);
 		mutex_unlock(&vq->mutex);
 	}

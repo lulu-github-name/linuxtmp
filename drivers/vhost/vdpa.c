@@ -517,8 +517,14 @@ static void vhost_vdpa_iotlb_free(struct vhost_vdpa *v)
 
 
 	vhost_vdpa_iotlb_unmap(v, iotlb, 0ULL, 0ULL - 1);
-	kfree(dev->iotlb);
+	kfree(iotlb);
 	dev->iotlb[0] = NULL;
+    	iotlb = dev->iotlb[1];
+
+
+	vhost_vdpa_iotlb_unmap(v, iotlb, 0ULL, 0ULL - 1);
+	kfree(iotlb);
+	dev->iotlb[1] = NULL;
 }
 
 static int perm_to_iommu_flags(u32 perm)
@@ -544,7 +550,7 @@ static int perm_to_iommu_flags(u32 perm)
 }
 
 static int vhost_vdpa_map(struct vhost_vdpa *v, struct vhost_iotlb *iotlb,
-			  u64 iova, u64 size, u64 pa, u32 perm)
+			  u64 iova, u64 size, u64 pa, u32 perm, u16 asid)
 {
 	struct vdpa_device *vdpa = v->vdpa;
 	const struct vdpa_config_ops *ops = vdpa->config;
@@ -556,7 +562,7 @@ static int vhost_vdpa_map(struct vhost_vdpa *v, struct vhost_iotlb *iotlb,
 		return r;
 
 	if (ops->dma_map) {
-		r = ops->dma_map(vdpa, iova, size, pa, perm);
+		r = ops->dma_map(vdpa, iova, size, pa, perm, asid);
 	} else if (ops->set_map) {
 		if (!v->in_batch)
 			r = ops->set_map(vdpa, iotlb);
@@ -570,7 +576,7 @@ static int vhost_vdpa_map(struct vhost_vdpa *v, struct vhost_iotlb *iotlb,
 
 static void vhost_vdpa_unmap(struct vhost_vdpa *v,
                             struct vhost_iotlb *iotlb,
-                            u64 iova, u64 size)
+                            u64 iova, u64 size, u16 asid)
 {
 	struct vhost_dev *dev = &v->vdev;
 	struct vdpa_device *vdpa = v->vdpa;
@@ -579,7 +585,7 @@ static void vhost_vdpa_unmap(struct vhost_vdpa *v,
 	vhost_vdpa_iotlb_unmap(v,iotlb, iova, iova + size - 1);
 
 	if (ops->dma_map) {
-		ops->dma_unmap(vdpa, iova, size);
+		ops->dma_unmap(vdpa, iova, size,asid);
 	} else if (ops->set_map) {
 		if (!v->in_batch)
 			ops->set_map(vdpa, iotlb);
@@ -590,7 +596,7 @@ static void vhost_vdpa_unmap(struct vhost_vdpa *v,
 
 static int vhost_vdpa_process_iotlb_update(struct vhost_vdpa *v,
 		struct vhost_iotlb *iotlb,
-					   struct vhost_iotlb_msg *msg)
+					   struct vhost_iotlb_msg *msg, u16 asid)
 {
 	struct vhost_dev *dev = &v->vdev;
 	struct page **page_list;
@@ -648,7 +654,7 @@ static int vhost_vdpa_process_iotlb_update(struct vhost_vdpa *v,
 				csize = (last_pfn - map_pfn + 1) << PAGE_SHIFT;
 				if (vhost_vdpa_map(v, iotlb, iova, csize,
 						   map_pfn << PAGE_SHIFT,
-						   msg->perm))
+						   msg->perm ,asid))
 					goto out;
 				map_pfn = this_pfn;
 				iova += csize;
@@ -663,10 +669,10 @@ static int vhost_vdpa_process_iotlb_update(struct vhost_vdpa *v,
 
 	/* Pin the rest chunk */
 	ret = vhost_vdpa_map(v, iotlb,iova, (last_pfn - map_pfn + 1) << PAGE_SHIFT,
-			     map_pfn << PAGE_SHIFT, msg->perm);
+			     map_pfn << PAGE_SHIFT, msg->perm,asid);
 out:
 	if (ret) {
-		vhost_vdpa_unmap(v,iotlb, msg->iova, msg->size);
+		vhost_vdpa_unmap(v,iotlb, msg->iova, msg->size,asid);
 		atomic64_sub(npages, &dev->mm->pinned_vm);
 	}
 	mmap_read_unlock(dev->mm);
@@ -682,17 +688,17 @@ static int vhost_vdpa_process_iotlb_msg(struct vhost_dev *dev, u16 asid,
 	const struct vdpa_config_ops *ops = vdpa->config;
 	struct vhost_iotlb *iotlb = dev->iotlb[asid];
 	int r = 0;
-
+printk("\r\n %s %d %d",__func__,__LINE__,asid);
 	r = vhost_dev_check_owner(dev);
 	if (r)
 		return r;
 
 	switch (msg->type) {
 	case VHOST_IOTLB_UPDATE:
-		r = vhost_vdpa_process_iotlb_update(v,iotlb, msg);
+		r = vhost_vdpa_process_iotlb_update(v,iotlb, msg,asid);
 		break;
 	case VHOST_IOTLB_INVALIDATE:
-		vhost_vdpa_unmap(v, msg->iova, msg->size);
+		vhost_vdpa_unmap(v,iotlb, msg->iova, msg->size,asid);
 		break;
 	case VHOST_IOTLB_BATCH_BEGIN:
 		v->in_batch = true;
@@ -799,6 +805,11 @@ static int vhost_vdpa_open(struct inode *inode, struct file *filep)
 
 	dev->iotlb[0] = vhost_iotlb_alloc(0, 0);
 	if (!dev->iotlb[0]) {
+		r = -ENOMEM;
+		goto err_init_iotlb;
+	}
+	dev->iotlb[1] = vhost_iotlb_alloc(0, 0);
+	if (!dev->iotlb[1]) {
 		r = -ENOMEM;
 		goto err_init_iotlb;
 	}

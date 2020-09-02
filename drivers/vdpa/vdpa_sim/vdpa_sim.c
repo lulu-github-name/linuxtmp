@@ -368,6 +368,7 @@ static struct vdpasim *vdpasim_create(void)
 	if (!vdpasim->iommu)
 		goto err_iommu;
 
+
 	vdpasim->buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
 	if (!vdpasim->buffer)
 		goto err_iommu;
@@ -602,7 +603,7 @@ err:
 }
 
 static int vdpasim_dma_map(struct vdpa_device *vdpa, u64 iova, u64 size,
-			   u64 pa, u32 perm)
+			   u64 pa, u32 perm,u16 asid)
 {
 	struct vdpasim *vdpasim = vdpa_to_sim(vdpa);
 	int ret;
@@ -615,7 +616,7 @@ static int vdpasim_dma_map(struct vdpa_device *vdpa, u64 iova, u64 size,
 	return ret;
 }
 
-static int vdpasim_dma_unmap(struct vdpa_device *vdpa, u64 iova, u64 size)
+static int vdpasim_dma_unmap(struct vdpa_device *vdpa, u64 iova, u64 size, u16 asid)
 {
 	struct vdpasim *vdpasim = vdpa_to_sim(vdpa);
 
