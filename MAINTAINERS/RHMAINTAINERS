@@ -118,8 +118,8 @@ S:	Maintained
 F:	redhat/
 
 RHEL 7.9 Kernel Maintainer
-M:	Jan Stancek <jstancek@redhat.com>
-T:	git git://git.host.prod.eng.bos.redhat.com/rhel7.git
+M:	Augusto Caringi <acaringi@redhat.com>
+T:	git git://git.host.prod.eng.bos.redhat.com/rhel-7.9.z.git
 S:	Maintained
 F:	redhat/
 
