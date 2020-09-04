@@ -2424,7 +2424,7 @@ int ftrace_direct_func_count;
  * Search the direct_functions hash to see if the given instruction pointer
  * has a direct caller attached to it.
  */
-static unsigned long find_rec_direct(unsigned long ip)
+unsigned long ftrace_find_rec_direct(unsigned long ip)
 {
 	struct ftrace_func_entry *entry;
 
@@ -2440,7 +2440,7 @@ static void call_direct_funcs(unsigned long ip, unsigned long pip,
 {
 	unsigned long addr;
 
-	addr = find_rec_direct(ip);
+	addr = ftrace_find_rec_direct(ip);
 	if (!addr)
 		return;
 
@@ -2453,11 +2453,6 @@ struct ftrace_ops direct_ops = {
 			  | FTRACE_OPS_FL_DIRECT | FTRACE_OPS_FL_SAVE_REGS
 			  | FTRACE_OPS_FL_PERMANENT,
 };
-#else
-static inline unsigned long find_rec_direct(unsigned long ip)
-{
-	return 0;
-}
 #endif /* CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS */
 
 /**
@@ -2477,7 +2472,7 @@ unsigned long ftrace_get_addr_new(struct dyn_ftrace *rec)
 
 	if ((rec->flags & FTRACE_FL_DIRECT) &&
 	    (ftrace_rec_count(rec) == 1)) {
-		addr = find_rec_direct(rec->ip);
+		addr = ftrace_find_rec_direct(rec->ip);
 		if (addr)
 			return addr;
 		WARN_ON_ONCE(1);
@@ -2518,7 +2513,7 @@ unsigned long ftrace_get_addr_curr(struct dyn_ftrace *rec)
 
 	/* Direct calls take precedence over trampolines */
 	if (rec->flags & FTRACE_FL_DIRECT_EN) {
-		addr = find_rec_direct(rec->ip);
+		addr = ftrace_find_rec_direct(rec->ip);
 		if (addr)
 			return addr;
 		WARN_ON_ONCE(1);
@@ -3655,7 +3650,7 @@ static int t_show(struct seq_file *m, void *v)
 		if (rec->flags & FTRACE_FL_DIRECT) {
 			unsigned long direct;
 
-			direct = find_rec_direct(rec->ip);
+			direct = ftrace_find_rec_direct(rec->ip);
 			if (direct)
 				seq_printf(m, "\n\tdirect-->%pS", (void *)direct);
 		}
@@ -5003,7 +4998,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 	mutex_lock(&direct_mutex);
 
 	/* See if there's a direct function at @ip already */
-	if (find_rec_direct(ip))
+	if (ftrace_find_rec_direct(ip))
 		goto out_unlock;
 
 	ret = -ENODEV;
@@ -5022,7 +5017,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr)
 	if (ip != rec->ip) {
 		ip = rec->ip;
 		/* Need to check this ip for a direct. */
-		if (find_rec_direct(ip))
+		if (ftrace_find_rec_direct(ip))
 			goto out_unlock;
 	}
 

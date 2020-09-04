@@ -256,6 +256,7 @@ int register_ftrace_direct(unsigned long ip, unsigned long addr);
 int unregister_ftrace_direct(unsigned long ip, unsigned long addr);
 int modify_ftrace_direct(unsigned long ip, unsigned long old_addr, unsigned long new_addr);
 struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr);
+unsigned long ftrace_find_rec_direct(unsigned long ip);
 #else
 # define ftrace_direct_func_count 0
 static inline int register_ftrace_direct(unsigned long ip, unsigned long addr)
@@ -274,6 +275,10 @@ static inline int modify_ftrace_direct(unsigned long ip,
 static inline struct ftrace_direct_func *ftrace_find_direct_func(unsigned long addr)
 {
 	return NULL;
+}
+static inline unsigned long ftrace_find_rec_direct(unsigned long ip)
+{
+	return 0;
 }
 #endif /* CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS */
 
