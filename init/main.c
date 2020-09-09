@@ -654,7 +654,6 @@ asmlinkage __visible void __init start_kernel(void)
 
 	time_init();
 	sched_clock_postinit();
-	printk_safe_init();
 	perf_event_init();
 	profile_init();
 	call_function_init();
