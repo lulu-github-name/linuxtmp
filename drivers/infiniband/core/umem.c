@@ -198,6 +198,7 @@ struct ib_umem *ib_umem_get(struct ib_udata *udata, unsigned long addr,
 	unsigned long lock_limit;
 	unsigned long new_pinned;
 	unsigned long cur_base;
+	unsigned long dma_attr = 0;
 	struct mm_struct *mm;
 	unsigned long npages;
 	int ret;
@@ -287,10 +288,13 @@ struct ib_umem *ib_umem_get(struct ib_udata *udata, unsigned long addr,
 
 	sg_mark_end(sg);
 
-	umem->nmap = ib_dma_map_sg(context->device,
-				  umem->sg_head.sgl,
-				  umem->sg_nents,
-				  DMA_BIDIRECTIONAL);
+	if (access & IB_ACCESS_RELAXED_ORDERING)
+		dma_attr |= DMA_ATTR_WEAK_ORDERING;
+
+	umem->nmap =
+		ib_dma_map_sg_attrs(context->device,
+				    umem->sg_head.sgl, umem->sg_nents,
+				    DMA_BIDIRECTIONAL, dma_attr);
 
 	if (!umem->nmap) {
 		ret = -ENOMEM;
