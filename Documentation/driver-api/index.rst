@@ -34,6 +34,7 @@ available subsections can be seen below.
    spi
    i2c
    ipmb
+   ipmi
    hsi
    edac
    scsi
