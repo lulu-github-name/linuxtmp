@@ -391,7 +391,7 @@ on RHKL*, which is never a good thing :-)
     For information on cross-compiling see the mini-FAQ at the end of this
 document.
 
-d) Test:
+d) Tested:
 [Required] A comment on how you or the customer tested the patch(es).
 
     Always describe how the patch was tested.  A detailed explanation is not
