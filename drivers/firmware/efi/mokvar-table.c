@@ -122,6 +122,10 @@ void __init efi_mokvar_table_init(void)
 		pr_warn("EFI MOKvar config table is not within the EFI memory map\n");
 		return;
 	}
+	if (!(md.attribute & EFI_MEMORY_RUNTIME)) {
+		pr_err("EFI MOKvar config table is not in EFI runtime memory\n");
+		return;
+	}
 	end_pa = efi_mem_desc_end(&md);
 	if (efi.mokvar_table >= end_pa) {
 		pr_err("EFI memory descriptor containing MOKvar config table is invalid\n");
@@ -181,7 +185,6 @@ void __init efi_mokvar_table_init(void)
 		pr_err("EFI MOKvar config table is not valid\n");
 		return;
 	}
-	efi_mem_reserve(efi.mokvar_table, map_size_needed);
 	efi_mokvar_table_size = map_size_needed;
 }
 
