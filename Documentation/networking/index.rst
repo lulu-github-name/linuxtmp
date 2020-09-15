@@ -14,6 +14,7 @@ Contents:
    e100
    e1000
    device_drivers/google/gve.rst
+   ethtool-netlink
    kapi
    z8530book
    msg_zerocopy
