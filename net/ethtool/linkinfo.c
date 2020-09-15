@@ -129,9 +129,10 @@ int ethnl_set_linkinfo(struct sk_buff *skb, struct genl_info *info)
 	if (ret < 0)
 		return ret;
 	dev = req_info.dev;
+	ret = -EOPNOTSUPP;
 	if (!__rh_has_get_link_ksettings(dev) ||
 	    !__rh_has_set_link_ksettings(dev))
-		return -EOPNOTSUPP;
+		goto out_dev;
 
 	rtnl_lock();
 	ret = ethnl_ops_begin(dev);
@@ -165,6 +166,7 @@ out_ops:
 	ethnl_ops_complete(dev);
 out_rtnl:
 	rtnl_unlock();
+out_dev:
 	dev_put(dev);
 	return ret;
 }
