@@ -252,7 +252,7 @@ or explain why the patch is needed only for RHEL.
 referenced.  Since there are many trees with the same name on sites like
 kernel.org and github.com, care should be taken to reference a particular tree.
 
-d) Test:
+d) Tested:
 [Required] A comment on how you or the customer tested the patch(es).
 
     Always describe how the patch was tested.  A detailed explanation is not
