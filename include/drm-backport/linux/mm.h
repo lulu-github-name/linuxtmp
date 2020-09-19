@@ -13,7 +13,6 @@
 
 #ifdef RH_DRM_BACKPORT
 
-#define zone_managed_pages(x) ((x)->managed_pages)
 #define totalram_pages() totalram_pages
 
 #endif /* RH_DRM_BACKPORT */
