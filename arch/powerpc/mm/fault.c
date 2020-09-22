@@ -45,6 +45,7 @@
 #include <asm/tlbflush.h>
 #include <asm/siginfo.h>
 #include <asm/debug.h>
+#include <asm/inst.h>
 
 static inline bool notify_page_fault(struct pt_regs *regs)
 {
@@ -76,7 +77,7 @@ static bool store_updates_sp(unsigned int inst)
 	if (((ppc_inst_val(inst) >> 16) & 0x1f) != 1)
 		return false;
 	/* check major opcode */
-	switch (inst >> 26) {
+	switch (ppc_inst_primary_opcode(inst)) {
 	case OP_STWU:
 	case OP_STBU:
 	case OP_STHU:
