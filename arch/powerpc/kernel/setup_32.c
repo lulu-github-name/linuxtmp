@@ -97,7 +97,7 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
 notrace void __init machine_init(u64 dt_ptr)
 {
 	unsigned int *addr = (unsigned int *)patch_site_addr(&patch__memset_nocache);
-	unsigned long insn;
+	unsigned int insn;
 
 	/* Configure static keys first, now that we're relocated. */
 	setup_feature_keys();
@@ -107,7 +107,7 @@ notrace void __init machine_init(u64 dt_ptr)
 
 	patch_instruction_site(&patch__memcpy_nocache, PPC_INST_NOP);
 
-	insn = create_cond_branch(addr, branch_target(addr), 0x820000);
+	create_cond_branch(&insn, addr, branch_target(addr), 0x820000);
 	patch_instruction(addr, insn);	/* replace b by bne cr0 */
 
 	/* Do some early initialization based on the flat device tree */
