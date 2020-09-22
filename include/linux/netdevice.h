@@ -68,6 +68,8 @@ struct wpan_dev;
 struct mpls_dev;
 /* UDP Tunnel offloads */
 struct udp_tunnel_info;
+struct udp_tunnel_nic_info;
+struct udp_tunnel_nic;
 struct bpf_prog;
 struct xdp_buff;
 
@@ -1925,6 +1927,10 @@ struct net_device_extended_rh {
  *				that follow this device when it is moved
  *				to another network namespace.
  *
+ *	@udp_tunnel_nic_info:	static structure describing the UDP tunnel
+ *				offload capabilities of the device
+ *	@udp_tunnel_nic:	UDP tunnel offload state
+ *
  *	FIXME: cleanup struct net_device such that network protocol info
  *	moves out.
  */
@@ -2227,8 +2233,8 @@ struct net_device {
 	RH_KABI_USE(1, struct mpls_dev __rcu   *mpls_ptr)
 	RH_KABI_USE(2, 3, struct list_head	net_notifier_list)
 	RH_KABI_USE(4, struct xdp_dev_bulk_queue __percpu *xdp_bulkq)
-	RH_KABI_RESERVE(5)
-	RH_KABI_RESERVE(6)
+	RH_KABI_USE(5, const struct udp_tunnel_nic_info	*udp_tunnel_nic_info)
+	RH_KABI_USE(6, struct udp_tunnel_nic	*udp_tunnel_nic)
 	RH_KABI_RESERVE(7)
 	RH_KABI_RESERVE(8)
 	RH_KABI_RESERVE(9)
