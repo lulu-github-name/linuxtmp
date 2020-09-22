@@ -447,7 +447,7 @@ int kgdb_arch_set_breakpoint(struct kgdb_bkpt *bpt)
 {
 	int err;
 	unsigned int instr;
-	unsigned int *addr = (unsigned int *)bpt->bpt_addr;
+	struct ppc_inst *addr = (struct ppc_inst *)bpt->bpt_addr;
 
 	err = probe_kernel_address(addr, instr);
 	if (err)
@@ -466,7 +466,7 @@ int kgdb_arch_remove_breakpoint(struct kgdb_bkpt *bpt)
 {
 	int err;
 	unsigned int instr = *(unsigned int *)bpt->saved_instr;
-	unsigned int *addr = (unsigned int *)bpt->bpt_addr;
+	struct ppc_inst *addr = (struct ppc_inst *)bpt->bpt_addr;
 
 	err = patch_instruction(addr, ppc_inst(instr));
 	if (err)

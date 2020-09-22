@@ -96,8 +96,8 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
  */
 notrace void __init machine_init(u64 dt_ptr)
 {
-	unsigned int *addr = (unsigned int *)patch_site_addr(&patch__memset_nocache);
-	unsigned int insn;
+	struct ppc_inst *addr = (struct ppc_inst *)patch_site_addr(&patch__memset_nocache);
+	struct ppc_inst insn;
 
 	/* Configure static keys first, now that we're relocated. */
 	setup_feature_keys();
