@@ -20,6 +20,7 @@
 #include <asm/firmware.h>
 #include <linux/uaccess.h>
 #include <asm/rtas.h>
+#include <asm/inst.h>
 
 #ifdef DEBUG
 #include <asm/udbg.h>
@@ -46,7 +47,7 @@ static void __init create_trampoline(unsigned long addr)
 	 * branch to "addr" we jump to ("addr" + 32 MB). Although it requires
 	 * two instructions it doesn't require any registers.
 	 */
-	patch_instruction(p, PPC_INST_NOP);
+	patch_instruction(p, ppc_inst(PPC_INST_NOP));
 	patch_branch(++p, addr + PHYSICAL_START, 0);
 }
 

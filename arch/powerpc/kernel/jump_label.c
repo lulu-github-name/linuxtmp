@@ -10,6 +10,7 @@
 #include <linux/kernel.h>
 #include <linux/jump_label.h>
 #include <asm/code-patching.h>
+#include <asm/inst.h>
 
 #ifdef HAVE_JUMP_LABEL
 void arch_jump_label_transform(struct jump_entry *entry,
@@ -20,6 +21,6 @@ void arch_jump_label_transform(struct jump_entry *entry,
 	if (type == JUMP_LABEL_JMP)
 		patch_branch(addr, entry->target, 0);
 	else
-		patch_instruction(addr, PPC_INST_NOP);
+		patch_instruction(addr, ppc_inst(PPC_INST_NOP));
 }
 #endif
