@@ -295,6 +295,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
 		}
 	} else {
 		dev->rh_cpuidle_dev.last_residency_ns = 0;
+		dev->rh_cpuidle_dev.rh_states_usage[index].rejected++;
 	}
 
 	return entered_state;
