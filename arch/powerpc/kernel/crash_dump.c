@@ -48,7 +48,7 @@ static void __init create_trampoline(unsigned long addr)
 	 * two instructions it doesn't require any registers.
 	 */
 	patch_instruction(p, ppc_inst(PPC_INST_NOP));
-	patch_branch(++p, addr + PHYSICAL_START, 0);
+	patch_branch((void *)p + 4, addr + PHYSICAL_START, 0);
 }
 
 void __init setup_kdump_trampoline(void)
