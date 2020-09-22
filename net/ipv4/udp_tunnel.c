@@ -91,6 +91,12 @@ void udp_tunnel_push_rx_port(struct net_device *dev, struct socket *sock,
 	ti.sa_family = sk->sk_family;
 	ti.port = inet_sk(sk)->inet_sport;
 
+	/* RHEL: update ti.type_rh83 for binary drivers compiled for
+	 * RHEL 8.3 and earlier that use different values for UDP
+	 * tunnel types.
+	 */
+	ti.type_rh83 = ilog2(type);
+
 	dev->netdev_ops->ndo_udp_tunnel_add(dev, &ti);
 }
 EXPORT_SYMBOL_GPL(udp_tunnel_push_rx_port);
@@ -108,6 +114,12 @@ void udp_tunnel_drop_rx_port(struct net_device *dev, struct socket *sock,
 	ti.type = type;
 	ti.sa_family = sk->sk_family;
 	ti.port = inet_sk(sk)->inet_sport;
+
+	/* RHEL: update ti.type_rh83 for binary drivers compiled for
+	 * RHEL 8.3 and earlier that use different values for UDP
+	 * tunnel types.
+	 */
+	ti.type_rh83 = ilog2(type);
 
 	dev->netdev_ops->ndo_udp_tunnel_del(dev, &ti);
 }

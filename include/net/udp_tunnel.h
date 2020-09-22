@@ -105,15 +105,27 @@ void setup_udp_tunnel_sock(struct net *net, struct socket *sock,
  * call this function to perform Tx offloads on outgoing traffic.
  */
 enum udp_parsable_tunnel_type {
-	UDP_TUNNEL_TYPE_VXLAN,		/* RFC 7348 */
-	UDP_TUNNEL_TYPE_GENEVE,		/* draft-ietf-nvo3-geneve */
-	UDP_TUNNEL_TYPE_VXLAN_GPE,	/* draft-ietf-nvo3-vxlan-gpe */
+	UDP_TUNNEL_TYPE_VXLAN	  = BIT(0), /* RFC 7348 */
+	UDP_TUNNEL_TYPE_GENEVE	  = BIT(1), /* draft-ietf-nvo3-geneve */
+	UDP_TUNNEL_TYPE_VXLAN_GPE = BIT(2), /* draft-ietf-nvo3-vxlan-gpe */
 };
 
 struct udp_tunnel_info {
-	unsigned short type;
+	unsigned short RH_KABI_RENAME(type, type_rh83);
 	sa_family_t sa_family;
 	__be16 port;
+	/*
+	 * RHEL: In RHEL 8.3 and below NIC drivers do not allocate
+	 * instances of this structure by themselves. This is not true
+	 * anymore in RHEL 8.4 and above. So it is possible to extend this
+	 * structure by RH_KABI_EXTEND. But as we can do it only once it
+	 * is necessary to use RH_KABI_EXTEND_WITH_SIZE() and make some
+	 * reserved area for future usage.
+	 */
+	RH_KABI_EXTEND_WITH_SIZE(struct {
+				 unsigned short type;
+				 }, 2) /* 2 longs - 16 bytes */
+
 };
 
 /* Notify network devices of offloadable types */
