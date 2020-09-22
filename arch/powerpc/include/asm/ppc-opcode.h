@@ -383,6 +383,10 @@
 #define PPC_INST_STVX			0x7c0001ce
 
 /* Prefixes */
+#define PPC_INST_LFS			0xc0000000
+#define PPC_INST_STFS			0xd0000000
+#define PPC_INST_LFD			0xc8000000
+#define PPC_INST_STFD			0xd8000000
 #define PPC_PREFIX_MLS			0x06000000
 #define PPC_PREFIX_8LS			0x04000000
 
