@@ -99,6 +99,7 @@ extern int prrn_is_enabled(void);
 extern int find_and_online_cpu_nid(int cpu);
 extern int timed_topology_update(int nsecs);
 extern void __init shared_proc_topology_init(void);
+extern int cpu_to_coregroup_id(int cpu);
 #else
 static inline int start_topology_update(void)
 {
@@ -124,6 +125,15 @@ static inline int timed_topology_update(int nsecs)
 #ifdef CONFIG_SMP
 static inline void shared_proc_topology_init(void) {}
 #endif
+static inline int cpu_to_coregroup_id(int cpu)
+{
+#ifdef CONFIG_SMP
+	return cpu_to_core_id(cpu);
+#else
+	return 0;
+#endif
+}
+
 #endif /* CONFIG_NUMA && CONFIG_PPC_SPLPAR */
 
 #include <asm-generic/topology.h>
