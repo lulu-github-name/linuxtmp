@@ -488,6 +488,8 @@ static struct xdp_buff *dev_map_run_prog(struct net_device *dev,
 {
 	u32 act;
 
+	xdp_set_data_meta_invalid(xdp);
+
 	act = bpf_prog_run_xdp(xdp_prog, xdp);
 	switch (act) {
 	case XDP_PASS:
