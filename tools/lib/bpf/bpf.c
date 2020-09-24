@@ -848,3 +848,14 @@ extern int bpf_btf_get_next_id_v0_0_4(__u32 start_id, __u32 *next_id)
 
 COMPAT_VERSION(bpf_btf_get_next_id_v0_0_4,  bpf_btf_get_next_id, LIBBPF_0.0.4)
 DEFAULT_VERSION(bpf_btf_get_next_id_v0_0_5, bpf_btf_get_next_id, LIBBPF_0.0.5)
+/* end of version workaround */
+
+int bpf_enable_stats(enum bpf_stats_type type)
+{
+	union bpf_attr attr;
+
+	memset(&attr, 0, sizeof(attr));
+	attr.enable_stats.type = type;
+
+	return sys_bpf(BPF_ENABLE_STATS, &attr, sizeof(attr));
+}
