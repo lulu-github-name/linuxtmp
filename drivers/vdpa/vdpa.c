@@ -63,6 +63,7 @@ static void vdpa_release_dev(struct device *d)
  * @config: the bus operations that is supported by this device
  * @nvqs: number of virtqueues supported by this device
  * @ngroups: number of groups supported by this device
+ * @nas: number of address spaces supported by this device
  * @size: size of the parent structure that contains private data
  *
  * Driver should use vdpa_alloc_device() wrapper macro instead of
@@ -74,7 +75,7 @@ static void vdpa_release_dev(struct device *d)
 struct vdpa_device *__vdpa_alloc_device(struct device *parent,
 					const struct vdpa_config_ops *config,
 					int nvqs, unsigned int ngroups,
-					size_t size)
+					unsigned int nas, size_t size)
 {
 	struct vdpa_device *vdev;
 	int err = -EINVAL;
@@ -102,6 +103,7 @@ struct vdpa_device *__vdpa_alloc_device(struct device *parent,
 	vdev->features_valid = false;
 	vdev->nvqs = nvqs;
 	vdev->ngroups = ngroups;
+	vdev->nas = nas;
 
 	err = dev_set_name(&vdev->dev, "vdpa%u", vdev->index);
 	if (err)
