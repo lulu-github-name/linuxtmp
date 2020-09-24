@@ -475,9 +475,10 @@ static long vhost_vdpa_unlocked_ioctl(struct file *filep,
 		r = vhost_vdpa_set_config_call(v, argp);
 		break;
 	case VHOST_GET_BACKEND_FEATURES:
-		features = VHOST_VDPA_BACKEND_FEATURES;
-		r = copy_to_user(featurep, &features, sizeof(features));
-		break;
+               features = VHOST_VDPA_BACKEND_FEATURES;
+               r = copy_to_user(featurep, &features, sizeof(features));
+               break;
+
 	default:
 		r = vhost_dev_ioctl(&v->vdev, cmd, argp);
 		if (r == -ENOIOCTLCMD)
