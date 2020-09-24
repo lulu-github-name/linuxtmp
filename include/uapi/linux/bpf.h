@@ -223,6 +223,7 @@ enum bpf_attach_type {
 	BPF_TRACE_FEXIT,
 	BPF_MODIFY_RETURN,
 	BPF_LSM_MAC,
+	BPF_TRACE_ITER,
 #endif /* __GENKSYMS__ */
 	__MAX_BPF_ATTACH_TYPE
 };
