@@ -2214,6 +2214,7 @@ struct rdma_netdev {
 	void              *clnt_priv;
 	struct ib_device  *hca;
 	u8                 port_num;
+	int                mtu;
 
 	/*
 	 * cleanup function must be specified.
