@@ -8683,6 +8683,9 @@ next_group:
 
 static inline long adjust_numa_imbalance(int imbalance, int src_nr_running)
 {
+/* RHEL only: This is crippled because it causes performance losses on some 
+ * workloads. */
+#if 0
 	unsigned int imbalance_min;
 
 	/*
@@ -8692,7 +8695,7 @@ static inline long adjust_numa_imbalance(int imbalance, int src_nr_running)
 	imbalance_min = 2;
 	if (src_nr_running <= imbalance_min)
 		return 0;
-
+#endif
 	return imbalance;
 }
 
