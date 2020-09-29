@@ -610,6 +610,7 @@ struct request_queue {
 	RH_KABI_EXTEND(unsigned int	required_elevator_features)
 };
 
+/* Keep blk_queue_flag_name[] in sync with the definitions below */
 #define QUEUE_FLAG_STOPPED	1	/* queue is stopped */
 #define QUEUE_FLAG_DYING	2	/* queue being torn down */
 #define QUEUE_FLAG_NOMERGES     5	/* disable merge attempts */
