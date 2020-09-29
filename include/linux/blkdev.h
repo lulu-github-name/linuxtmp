@@ -1745,7 +1745,7 @@ struct block_device_operations {
 	struct module *owner;
 	const struct pr_ops *pr_ops;
 
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, char *(*devnode)(struct gendisk *disk, umode_t *mode))
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
