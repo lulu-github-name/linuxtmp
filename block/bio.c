@@ -1860,7 +1860,7 @@ void bio_set_pages_dirty(struct bio *bio)
 }
 EXPORT_SYMBOL_GPL(bio_set_pages_dirty);
 
-static void bio_release_pages(struct bio *bio)
+void bio_release_pages(struct bio *bio)
 {
 	struct bio_vec *bvec;
 	int i;
@@ -1868,6 +1868,7 @@ static void bio_release_pages(struct bio *bio)
 	bio_for_each_segment_all(bvec, bio, i)
 		put_page(bvec->bv_page);
 }
+EXPORT_SYMBOL_GPL(bio_release_pages);
 
 /*
  * bio_check_pages_dirty() will check that all the BIO's pages are still dirty.
