@@ -336,10 +336,6 @@ static inline struct request_aux *rq_aux(const struct request *rq)
 	return (struct request_aux *)((void *)rq - sizeof(struct request_aux));
 }
 
-void part_dec_in_flight(struct request_queue *q, struct hd_struct *part,
-			int rw);
-void part_inc_in_flight(struct request_queue *q, struct hd_struct *part,
-			int rw);
 void update_io_ticks(struct hd_struct *part, unsigned long now, bool end);
 struct hd_struct *disk_map_sector_rcu(struct gendisk *disk, sector_t sector);
 
