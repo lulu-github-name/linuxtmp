@@ -36,6 +36,7 @@
 #include <linux/t10-pi.h>
 #include <linux/debugfs.h>
 #include <linux/bpf.h>
+#include <linux/sched/sysctl.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/block.h>
@@ -1829,6 +1830,18 @@ struct request_aux *blk_rq_aux(const struct request *rq)
 	return (struct request_aux *)((void *)rq - sizeof(struct request_aux));
 }
 EXPORT_SYMBOL(blk_rq_aux);
+
+void blk_io_schedule(void)
+{
+	/* Prevent hang_check timer from firing at us during very long I/O */
+	unsigned long timeout = sysctl_hung_task_timeout_secs * HZ / 2;
+
+	if (timeout)
+		io_schedule_timeout(timeout);
+	else
+		io_schedule();
+}
+EXPORT_SYMBOL_GPL(blk_io_schedule);
 
 int __init blk_dev_init(void)
 {
