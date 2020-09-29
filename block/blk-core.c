@@ -401,12 +401,6 @@ void blk_cleanup_queue(struct request_queue *q)
 }
 EXPORT_SYMBOL(blk_cleanup_queue);
 
-struct request_queue *blk_alloc_queue(gfp_t gfp_mask)
-{
-	return blk_alloc_queue_node(gfp_mask, NUMA_NO_NODE);
-}
-EXPORT_SYMBOL(blk_alloc_queue);
-
 /**
  * blk_queue_enter() - try to increase q->q_usage_counter
  * @q: request queue pointer
@@ -479,12 +473,7 @@ static void blk_rq_timed_out_timer(struct timer_list *t)
 	kblockd_schedule_work(&q->timeout_work);
 }
 
-/**
- * blk_alloc_queue_node - allocate a request queue
- * @gfp_mask: memory allocation flags
- * @node_id: NUMA node to allocate memory from
- */
-struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
+struct request_queue *__blk_alloc_queue_gfp(gfp_t gfp_mask, int node_id)
 {
 	struct request_queue *q;
 	int ret;
@@ -550,6 +539,9 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
 	if (blkcg_init_queue(q))
 		goto fail_ref;
 
+	blk_queue_dma_alignment(q, 511);
+	blk_set_default_limits(&q->limits);
+
 	return q;
 
 fail_ref:
@@ -566,7 +558,37 @@ fail_q:
 	kmem_cache_free(blk_requestq_cachep, q);
 	return NULL;
 }
-EXPORT_SYMBOL(blk_alloc_queue_node);
+
+struct request_queue *blk_alloc_queue(gfp_t gfp_mask)
+{
+	return __blk_alloc_queue_gfp(gfp_mask, NUMA_NO_NODE);
+}
+EXPORT_SYMBOL(blk_alloc_queue);
+
+struct request_queue *__blk_alloc_queue(int node_id)
+{
+	return __blk_alloc_queue_gfp(GFP_KERNEL, node_id);
+}
+
+/*
+ * RH: this kernel API is aligned with upstream's blk_alloc_queue() which
+ * is in white list, so we can't change that.
+ */
+struct request_queue *blk_alloc_queue_rh(make_request_fn make_request, int node_id)
+{
+	struct request_queue *q;
+
+	if (WARN_ON_ONCE(!make_request))
+		return -EINVAL;
+
+	q = __blk_alloc_queue(node_id);
+	if (!q)
+		return NULL;
+	q->make_request_fn = make_request;
+	q->nr_requests = BLKDEV_MAX_RQ;
+	return q;
+}
+EXPORT_SYMBOL(blk_alloc_queue_rh);
 
 /**
  * blk_get_queue - increment the request_queue refcount
