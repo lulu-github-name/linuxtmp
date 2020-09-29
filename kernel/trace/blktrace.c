@@ -186,10 +186,10 @@ void __trace_note_message(struct blk_trace *bt, struct blkcg *blkcg,
 	if (!(blk_tracer_flags.val & TRACE_BLK_OPT_CGROUP))
 		blkcg = NULL;
 #ifdef CONFIG_BLK_CGROUP
-	trace_note(bt, 0, BLK_TN_MESSAGE, buf, n,
+	trace_note(bt, current->pid, BLK_TN_MESSAGE, buf, n,
 		blkcg ? cgroup_get_kernfs_id(blkcg->css.cgroup) : NULL);
 #else
-	trace_note(bt, 0, BLK_TN_MESSAGE, buf, n, NULL);
+	trace_note(bt, current->pid, BLK_TN_MESSAGE, buf, n, 0);
 #endif
 	local_irq_restore(flags);
 }
