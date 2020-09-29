@@ -321,8 +321,8 @@ bool disk_has_partitions(struct gendisk *disk);
  * internal use only.
  */
 #ifdef	CONFIG_SMP
-#define part_stat_lock()	({ rcu_read_lock(); get_cpu(); })
-#define part_stat_unlock()	do { put_cpu(); rcu_read_unlock(); } while (0)
+#define part_stat_lock()	preempt_disable()
+#define part_stat_unlock()	preempt_enable()
 
 #define part_stat_get_cpu(part, field, cpu)					\
 	(per_cpu_ptr((part)->dkstats, (cpu))->field)
