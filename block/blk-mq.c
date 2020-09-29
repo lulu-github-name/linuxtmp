@@ -684,7 +684,7 @@ void blk_mq_complete_request(struct request *rq)
 		return;
 	}
 
-	cpu = get_cpu();
+	cpu = raw_smp_processor_id();
 	if (!test_bit(QUEUE_FLAG_SAME_FORCE, &q->queue_flags))
 		shared = cpus_share_cache(cpu, ctx->cpu);
 
@@ -696,7 +696,6 @@ void blk_mq_complete_request(struct request *rq)
 	} else {
 		__blk_mq_complete_request(rq);
 	}
-	put_cpu();
 }
 EXPORT_SYMBOL(blk_mq_complete_request);
 
