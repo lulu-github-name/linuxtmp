@@ -510,7 +510,7 @@ struct request_queue *__blk_alloc_queue_gfp(gfp_t gfp_mask, int node_id)
 	if (ret)
 		goto fail_id;
 
-	q->backing_dev_info = bdi_alloc_node(gfp_mask, node_id);
+	q->backing_dev_info = bdi_alloc(node_id);
 	if (!q->backing_dev_info)
 		goto fail_split;
 
