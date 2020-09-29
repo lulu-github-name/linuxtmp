@@ -224,11 +224,17 @@ struct gendisk {
 	struct badblocks *bb;
 	struct lockdep_map lockdep_map;
 
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, struct cdrom_device_info *cdi)
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 };
+
+#if IS_REACHABLE(CONFIG_CDROM)
+#define disk_to_cdi(disk)	((disk)->cdi)
+#else
+#define disk_to_cdi(disk)	NULL
+#endif
 
 static inline struct gendisk *part_to_disk(struct hd_struct *part)
 {
