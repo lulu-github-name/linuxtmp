@@ -645,6 +645,28 @@ static int sd_zbc_check_zones(struct scsi_disk *sdkp, unsigned char *buf,
 	return 0;
 }
 
+int sd_zbc_init_disk(struct scsi_disk *sdkp)
+{
+	sdkp->aux->zones_wp_offset = NULL;
+	spin_lock_init(&sdkp->aux->zones_wp_offset_lock);
+	sdkp->aux->rev_wp_offset = NULL;
+	mutex_init(&sdkp->aux->rev_mutex);
+	INIT_WORK(&sdkp->aux->zone_wp_offset_work, sd_zbc_update_wp_offset_workfn);
+	sdkp->aux->zone_wp_update_buf = kzalloc(SD_BUF_SIZE, GFP_KERNEL);
+	if (!sdkp->aux->zone_wp_update_buf)
+		return -ENOMEM;
+
+	return 0;
+}
+
+void sd_zbc_release_disk(struct scsi_disk *sdkp)
+{
+	kvfree(sdkp->aux->zones_wp_offset);
+	sdkp->aux->zones_wp_offset = NULL;
+	kfree(sdkp->aux->zone_wp_update_buf);
+	sdkp->aux->zone_wp_update_buf = NULL;
+}
+
 static void sd_zbc_revalidate_zones_cb(struct gendisk *disk)
 {
 	struct scsi_disk *sdkp = scsi_disk(disk);
@@ -658,6 +680,19 @@ static int sd_zbc_revalidate_zones(struct scsi_disk *sdkp,
 {
 	struct gendisk *disk = sdkp->disk;
 	int ret = 0;
+
+	/*
+	 * For all zoned disks, initialize zone append emulation data if not
+	 * already done. This is necessary also for host-aware disks used as
+	 * regular disks due to the presence of partitions as these partitions
+	 * may be deleted and the disk zoned model changed back from
+	 * BLK_ZONED_NONE to BLK_ZONED_HA.
+	 */
+	if (sd_is_zoned(sdkp) && !sdkp->aux->zone_wp_update_buf) {
+		ret = sd_zbc_init_disk(sdkp);
+		if (ret)
+			return ret;
+	}
 
 	/*
 	 * Make sure revalidate zones are serialized to ensure exclusive
@@ -778,29 +813,4 @@ void sd_zbc_print_zones(struct scsi_disk *sdkp)
 			  "%u zones of %u logical blocks\n",
 			  sdkp->nr_zones,
 			  sdkp->zone_blocks);
-}
-
-int sd_zbc_init_disk(struct scsi_disk *sdkp)
-{
-	if (!sd_is_zoned(sdkp))
-		return 0;
-
-	sdkp->aux->zones_wp_offset = NULL;
-	spin_lock_init(&sdkp->aux->zones_wp_offset_lock);
-	sdkp->aux->rev_wp_offset = NULL;
-	mutex_init(&sdkp->aux->rev_mutex);
-	INIT_WORK(&sdkp->aux->zone_wp_offset_work, sd_zbc_update_wp_offset_workfn);
-	sdkp->aux->zone_wp_update_buf = kzalloc(SD_BUF_SIZE, GFP_KERNEL);
-	if (!sdkp->aux->zone_wp_update_buf)
-		return -ENOMEM;
-
-	return 0;
-}
-
-void sd_zbc_release_disk(struct scsi_disk *sdkp)
-{
-	kvfree(sdkp->aux->zones_wp_offset);
-	sdkp->aux->zones_wp_offset = NULL;
-	kfree(sdkp->aux->zone_wp_update_buf);
-	sdkp->aux->zone_wp_update_buf = NULL;
 }

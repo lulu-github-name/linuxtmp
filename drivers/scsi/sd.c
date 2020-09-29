@@ -3251,8 +3251,6 @@ static void sd_probe_async(void *data, async_cookie_t cookie)
 	sdkp->first_scan = 1;
 	sdkp->max_medium_access_timeouts = SD_MAX_MEDIUM_TIMEOUTS;
 
-	WARN_ON(sd_zbc_init_disk(sdkp));
-
 	sd_revalidate_disk(gd);
 
 	gd->flags = GENHD_FL_EXT_DEVT;
