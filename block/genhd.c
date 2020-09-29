@@ -86,12 +86,6 @@ char *disk_name(struct gendisk *hd, int partno, char *buf)
 	return buf;
 }
 
-const char *bdevname(struct block_device *bdev, char *buf)
-{
-	return disk_name(bdev->bd_disk, bdev->bd_part->partno, buf);
-}
-EXPORT_SYMBOL(bdevname);
-
 #ifdef CONFIG_SMP
 static void part_stat_read_all(struct hd_struct *part, struct disk_stats *stat)
 {
