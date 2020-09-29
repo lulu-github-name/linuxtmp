@@ -235,6 +235,7 @@ struct bio {
 				 * of this bio. */
 #define BIO_QUEUE_ENTERED 11	/* can use blk_queue_enter_live() */
 #define BIO_TRACKED 12		/* set if bio goes through the rq_qos path */
+#define	BIO_CGROUP_ACCT	BIO_QUEUE_ENTERED /* has been accounted to a cgroup */
 
 /* See BVEC_POOL_OFFSET below before adding new flags */
 
