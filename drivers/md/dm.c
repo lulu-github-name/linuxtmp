@@ -1698,6 +1698,9 @@ static blk_qc_t dm_make_request(struct request_queue *q, struct bio *bio)
 	int srcu_idx;
 	struct dm_table *map;
 
+	if (dm_get_md_type(md) == DM_TYPE_REQUEST_BASED)
+		return blk_mq_make_request(q, bio);
+
 	map = dm_get_live_table(md, &srcu_idx);
 	if (unlikely(!map)) {
 		DMERR_LIMIT("%s: mapping table unavailable, erroring io",
