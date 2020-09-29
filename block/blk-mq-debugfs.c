@@ -840,8 +840,6 @@ int blk_mq_debugfs_register(struct request_queue *q)
 	if (!blk_debugfs_root)
 		return -ENOENT;
 
-	q->debugfs_dir = debugfs_create_dir(kobject_name(q->kobj.parent),
-					    blk_debugfs_root);
 	if (!q->debugfs_dir)
 		return -ENOMEM;
 
@@ -884,9 +882,7 @@ err:
 
 void blk_mq_debugfs_unregister(struct request_queue *q)
 {
-	debugfs_remove_recursive(q->debugfs_dir);
 	q->sched_debugfs_dir = NULL;
-	q->debugfs_dir = NULL;
 }
 
 static int blk_mq_debugfs_register_ctx(struct blk_mq_hw_ctx *hctx,

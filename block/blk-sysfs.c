@@ -11,6 +11,7 @@
 #include <linux/blktrace_api.h>
 #include <linux/blk-mq.h>
 #include <linux/blk-cgroup.h>
+#include <linux/debugfs.h>
 
 #include "blk.h"
 #include "blk-mq.h"
@@ -935,6 +936,9 @@ static void blk_release_queue(struct kobject *kobj)
 		blk_mq_release(q);
 
 	blk_trace_shutdown(q);
+	mutex_lock(&q->debugfs_mutex);
+	debugfs_remove_recursive(q->debugfs_dir);
+	mutex_unlock(&q->debugfs_mutex);
 
 	if (queue_is_mq(q))
 		blk_mq_debugfs_unregister(q);
@@ -999,6 +1003,11 @@ int blk_register_queue(struct gendisk *disk)
 		blk_trace_remove_sysfs(dev);
 		goto unlock;
 	}
+
+	mutex_lock(&q->debugfs_mutex);
+	q->debugfs_dir = debugfs_create_dir(kobject_name(q->kobj.parent),
+					    blk_debugfs_root);
+	mutex_unlock(&q->debugfs_mutex);
 
 	if (queue_is_mq(q)) {
 		__blk_mq_register_dev(dev, q);

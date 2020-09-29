@@ -608,6 +608,8 @@ struct request_queue {
 	RH_KABI_EXTEND(struct dentry		*rqos_debugfs_dir)
 
 	RH_KABI_EXTEND(unsigned int	required_elevator_features)
+
+	RH_KABI_EXTEND(struct mutex		debugfs_mutex)
 };
 
 /* Keep blk_queue_flag_name[] in sync with the definitions below */
