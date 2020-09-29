@@ -1089,6 +1089,18 @@ end_io:
 	return false;
 }
 
+static blk_qc_t do_make_request(struct bio *bio)
+{
+	struct request_queue *q = bio->bi_disk->queue;
+	blk_qc_t ret = BLK_QC_T_NONE;
+
+	if (!q->make_request_fn)
+		return blk_mq_make_request(q, bio);
+	ret = q->make_request_fn(q, bio);
+	blk_queue_exit(q);
+	return ret;
+}
+
 /**
  * generic_make_request - re-submit a bio to the block device layer for I/O
  * @bio:  The bio describing the location in memory and on the device.
@@ -1154,12 +1166,7 @@ blk_qc_t generic_make_request(struct bio *bio)
 			/* Create a fresh bio_list for all subordinate requests */
 			bio_list_on_stack[1] = bio_list_on_stack[0];
 			bio_list_init(&bio_list_on_stack[0]);
-			if (q->make_request_fn)
-				ret = q->make_request_fn(q, bio);
-			else
-				ret = blk_mq_make_request(q, bio);
-
-			blk_queue_exit(q);
+			ret = do_make_request(bio);
 
 			/* sort new bios into those for a lower level
 			 * and those for the same level
@@ -1196,7 +1203,6 @@ EXPORT_SYMBOL(generic_make_request);
 blk_qc_t direct_make_request(struct bio *bio)
 {
 	struct request_queue *q = bio->bi_disk->queue;
-	blk_qc_t ret;
 
 	if (WARN_ON_ONCE(q->make_request_fn)) {
 		bio_io_error(bio);
@@ -1206,9 +1212,7 @@ blk_qc_t direct_make_request(struct bio *bio)
 		return BLK_QC_T_NONE;
 	if (unlikely(bio_queue_enter(bio)))
 		return BLK_QC_T_NONE;
-	ret = blk_mq_make_request(q, bio);
-	blk_queue_exit(q);
-	return ret;
+	return blk_mq_make_request(q, bio);
 }
 EXPORT_SYMBOL_GPL(direct_make_request);
 
