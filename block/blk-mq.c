@@ -1849,7 +1849,7 @@ static void blk_mq_bio_to_request(struct request *rq, struct bio *bio)
 	rq->write_hint = bio->bi_write_hint;
 	blk_rq_bio_prep(rq->q, rq, bio);
 
-	blk_account_io_start(rq, true);
+	blk_account_io_start(rq);
 }
 
 static blk_status_t __blk_mq_issue_directly(struct blk_mq_hw_ctx *hctx,
