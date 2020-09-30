@@ -368,7 +368,6 @@ struct net_bridge {
 
 #ifdef CONFIG_BRIDGE_IGMP_SNOOPING
 
-	u32				hash_elasticity;
 	u32				hash_max;
 
 	u32				multicast_last_member_count;
