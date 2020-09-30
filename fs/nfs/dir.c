@@ -1298,10 +1298,17 @@ nfs_lookup_revalidate_dentry(struct inode *dir, struct dentry *dentry,
 		goto out;
 
 	dir_verifier = nfs_save_change_attribute(dir);
-	ret = NFS_PROTO(dir)->lookup(dir, &dentry->d_name, fhandle, fattr, label);
+	ret = NFS_PROTO(dir)->lookup(dir, dentry, fhandle, fattr, label);
 	if (ret < 0) {
-		if (ret == -ESTALE || ret == -ENOENT)
+		switch (ret) {
+		case -ESTALE:
+		case -ENOENT:
 			ret = 0;
+			break;
+		case -ETIMEDOUT:
+			if (NFS_SERVER(inode)->flags & NFS_MOUNT_SOFTREVAL)
+				ret = 1;
+		}
 		goto out;
 	}
 	ret = 0;
@@ -1566,7 +1573,7 @@ struct dentry *nfs_lookup(struct inode *dir, struct dentry * dentry, unsigned in
 
 	dir_verifier = nfs_save_change_attribute(dir);
 	trace_nfs_lookup_enter(dir, dentry, flags);
-	error = NFS_PROTO(dir)->lookup(dir, &dentry->d_name, fhandle, fattr, label);
+	error = NFS_PROTO(dir)->lookup(dir, dentry, fhandle, fattr, label);
 	if (error == -ENOENT)
 		goto no_entry;
 	if (error < 0) {
@@ -1839,7 +1846,7 @@ nfs_add_or_obtain(struct dentry *dentry, struct nfs_fh *fhandle,
 	d_drop(dentry);
 
 	if (fhandle->size == 0) {
-		error = NFS_PROTO(dir)->lookup(dir, &dentry->d_name, fhandle, fattr, NULL);
+		error = NFS_PROTO(dir)->lookup(dir, dentry, fhandle, fattr, NULL);
 		if (error)
 			goto out_error;
 	}
