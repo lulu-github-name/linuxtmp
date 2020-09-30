@@ -74,6 +74,7 @@ enum nfs_param {
 	Opt_sloppy,
 	Opt_soft,
 	Opt_softerr,
+	Opt_softreval,
 	Opt_source,
 	Opt_tcp,
 	Opt_timeo,
@@ -158,6 +159,7 @@ static const struct fs_parameter_spec nfs_fs_parameters[] = {
 	fsparam_flag  ("sloppy",	Opt_sloppy),
 	fsparam_flag  ("soft",		Opt_soft),
 	fsparam_flag  ("softerr",	Opt_softerr),
+	fsparam_flag  ("softreval",	Opt_softreval),
 	fsparam_string("source",	Opt_source),
 	fsparam_flag  ("tcp",		Opt_tcp),
 	fsparam_u32   ("timeo",		Opt_timeo),
@@ -462,11 +464,19 @@ static int nfs_fs_context_parse_param(struct fs_context *fc,
 		ctx->flags &= ~NFS_MOUNT_SOFTERR;
 		break;
 	case Opt_softerr:
-		ctx->flags |= NFS_MOUNT_SOFTERR;
+		ctx->flags |= NFS_MOUNT_SOFTERR | NFS_MOUNT_SOFTREVAL;
 		ctx->flags &= ~NFS_MOUNT_SOFT;
 		break;
 	case Opt_hard:
-		ctx->flags &= ~(NFS_MOUNT_SOFT|NFS_MOUNT_SOFTERR);
+		ctx->flags &= ~(NFS_MOUNT_SOFT |
+				NFS_MOUNT_SOFTERR |
+				NFS_MOUNT_SOFTREVAL);
+		break;
+	case Opt_softreval:
+		if (result.negated)
+			ctx->flags &= ~NFS_MOUNT_SOFTREVAL;
+		else
+			ctx->flags &= NFS_MOUNT_SOFTREVAL;
 		break;
 	case Opt_posix:
 		if (result.negated)
