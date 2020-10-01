@@ -62,33 +62,6 @@ struct efi __read_mostly efi = {
 };
 EXPORT_SYMBOL(efi);
 
-static unsigned long *efi_tables[] = {
-	&efi.mps,
-	&efi.acpi,
-	&efi.acpi20,
-	&efi.smbios,
-	&efi.smbios3,
-	&efi.sal_systab,
-	&efi.boot_info,
-	&efi.hcdp,
-	&efi.uga,
-	&efi.uv_systab,
-	&efi.fw_vendor,
-	&efi.runtime,
-	&efi.config_table,
-	&efi.esrt,
-	&efi.properties_table,
-	&efi.mem_attr_table,
-#ifdef CONFIG_EFI_RCI2_TABLE
-	&rci2_table_phys,
-#endif
-	&efi.tpm_log,
-	&efi.tpm_final_log,
-#ifdef CONFIG_LOAD_UEFI_KEYS
-	&efi.mokvar_table,
-#endif
-};
-
 struct mm_struct efi_mm = {
 	.mm_rb			= RB_ROOT,
 	.mm_users		= ATOMIC_INIT(2),
@@ -998,20 +971,6 @@ int efi_status_to_err(efi_status_t status)
 	}
 
 	return err;
-}
-
-bool efi_is_table_address(unsigned long phys_addr)
-{
-	unsigned int i;
-
-	if (phys_addr == EFI_INVALID_TABLE_ADDR)
-		return false;
-
-	for (i = 0; i < ARRAY_SIZE(efi_tables); i++)
-		if (*(efi_tables[i]) == phys_addr)
-			return true;
-
-	return false;
 }
 
 static DEFINE_SPINLOCK(efi_mem_reserve_persistent_lock);

@@ -1235,7 +1235,6 @@ static inline bool __pure efi_soft_reserve_enabled(void)
 		&& __efi_soft_reserve_enabled();
 }
 
-extern bool efi_is_table_address(unsigned long phys_addr);
 extern void __init efi_set_secure_boot(enum efi_secureboot_mode mode);
 #else
 static inline bool efi_enabled(int feature)
@@ -1252,11 +1251,6 @@ efi_capsule_pending(int *reset_type)
 }
 
 static inline bool efi_soft_reserve_enabled(void)
-{
-	return false;
-}
-
-static inline bool efi_is_table_address(unsigned long phys_addr)
 {
 	return false;
 }
