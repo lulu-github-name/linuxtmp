@@ -523,7 +523,7 @@ DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
  */
 static const unsigned int exception_stack_sizes[N_EXCEPTION_STACKS] = {
 	  [0 ... N_EXCEPTION_STACKS - 1]	= EXCEPTION_STKSZ,
-	  [DEBUG_STACK - 1]			= DEBUG_STKSZ
+	  [ESTACK_DB]				= DEBUG_STKSZ
 };
 #endif
 
@@ -1849,7 +1849,7 @@ void cpu_init(void)
 			estacks += exception_stack_sizes[v];
 			oist->ist[v] = t->x86_tss.ist[v] =
 					(unsigned long)estacks;
-			if (v == DEBUG_STACK-1)
+			if (v == ESTACK_DB)
 				per_cpu(debug_stack_addr, cpu) = (unsigned long)estacks;
 		}
 	}
