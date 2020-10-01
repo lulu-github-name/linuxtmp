@@ -178,7 +178,7 @@ static long cmm_alloc_pages(long nr)
 
 		list_add(&page->lru, &cmm_page_list);
 		loaned_pages++;
-		totalram_pages--;
+		adjust_managed_page_count(page, -1);
 		spin_unlock(&cmm_lock);
 		nr--;
 	}
@@ -205,10 +205,10 @@ static long cmm_free_pages(long nr)
 			break;
 		plpar_page_set_active(page);
 		list_del(&page->lru);
+		adjust_managed_page_count(page, 1);
 		__free_page(page);
 		loaned_pages--;
 		nr--;
-		totalram_pages++;
 	}
 	spin_unlock(&cmm_lock);
 	cmm_dbg("End request with %ld pages unfulfilled\n", nr);
@@ -532,10 +532,10 @@ static int cmm_mem_going_offline(void *arg)
 			continue;
 		plpar_page_set_active(page);
 		list_del(&page->lru);
+		adjust_managed_page_count(page, 1);
 		__free_page(page);
 		freed++;
 		loaned_pages--;
-		totalram_pages_inc();
 	}
 
 	spin_unlock(&cmm_lock);
