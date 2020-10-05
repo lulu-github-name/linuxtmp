@@ -207,6 +207,7 @@ enum nla_policy_validation {
 	 * KABI for older kernel modules.
 	*/
 	NLA_VALIDATE_RANGE_PTR,
+	NLA_VALIDATE_WARN_TOO_LONG,
 };
 
 /**
@@ -240,10 +241,12 @@ enum nla_policy_validation {
  *                         just like "All other"
  *    NLA_BITFIELD32       Unused
  *    NLA_REJECT           Unused
- *    NLA_EXACT_LEN        Attribute must have exactly this length, otherwise
- *                         it is rejected.
- *    NLA_EXACT_LEN_WARN   Attribute should have exactly this length, a warning
- *                         is logged if it is longer, shorter is rejected.
+ *    NLA_EXACT_LEN        Attribute should have exactly this length, otherwise
+ *                         it is rejected or warned about, the latter happening
+ *                         if and only if the `validation_type' is set to
+ *                         NLA_VALIDATE_WARN_TOO_LONG.
+ *    NLA_EXACT_LEN_WARN   Deprecated, to preserve the numerical values
+ *                         of the successors in kabi.
  *    NLA_MIN_LEN          Minimum length of attribute payload
  *    All other            Minimum length of attribute payload
  *
@@ -377,8 +380,9 @@ static_assert(offsetofend(struct nla_policy,
 	      "The size of struct nla_policy is fixed and cannot be changed");
 
 #define NLA_POLICY_EXACT_LEN(_len)	{ .type = NLA_EXACT_LEN, .len = _len }
-#define NLA_POLICY_EXACT_LEN_WARN(_len)	{ .type = NLA_EXACT_LEN_WARN, \
-					  .len = _len }
+#define NLA_POLICY_EXACT_LEN_WARN(_len) \
+	{ .type = NLA_EXACT_LEN, .len = _len, \
+	  .validation_type = NLA_VALIDATE_WARN_TOO_LONG, }
 #define NLA_POLICY_MIN_LEN(_len)	{ .type = NLA_MIN_LEN, .len = _len }
 
 #define NLA_POLICY_ETH_ADDR		NLA_POLICY_EXACT_LEN(ETH_ALEN)
