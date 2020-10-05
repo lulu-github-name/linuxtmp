@@ -2146,6 +2146,7 @@ static const struct file_operations extrng_fops = {
 	.open  = random_open,
 	.read  = extrng_read,
 	.write = random_write,
+	.poll  = random_poll,
 	.unlocked_ioctl = random_ioctl,
 	.fasync = random_fasync,
 	.llseek = noop_llseek,
