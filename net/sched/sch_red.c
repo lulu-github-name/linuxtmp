@@ -52,7 +52,7 @@ struct red_sched_data {
 	struct Qdisc		*qdisc;
 };
 
-static const u32 red_supported_flags = TC_RED_HISTORIC_FLAGS | TC_RED_NODROP;
+#define TC_RED_SUPPORTED_FLAGS (TC_RED_HISTORIC_FLAGS | TC_RED_NODROP)
 
 static inline int red_use_ecn(struct red_sched_data *q)
 {
@@ -211,13 +211,13 @@ static void red_destroy(struct Qdisc *sch)
 	qdisc_put(q->qdisc);
 }
 
+static const u32 red_supported_flags = TC_RED_SUPPORTED_FLAGS;
 static const struct nla_policy red_policy[TCA_RED_MAX + 1] = {
 	[TCA_RED_UNSPEC] = { .strict_start_type = TCA_RED_FLAGS },
 	[TCA_RED_PARMS]	= { .len = sizeof(struct tc_red_qopt) },
 	[TCA_RED_STAB]	= { .len = RED_STAB_SIZE },
 	[TCA_RED_MAX_P] = { .type = NLA_U32 },
-	[TCA_RED_FLAGS] = { .type = NLA_BITFIELD32,
-			    .validation_data = &red_supported_flags },
+	[TCA_RED_FLAGS] = NLA_POLICY_BITFIELD32_PTR(&red_supported_flags),
 };
 
 static int red_change(struct Qdisc *sch, struct nlattr *opt,
