@@ -252,7 +252,7 @@ static int cmm_oom_notify(struct notifier_block *self,
 static void cmm_get_mpp(void)
 {
 	const long __loaned_pages = atomic_long_read(&loaned_pages);
-	const long total_pages = totalram_pages + __loaned_pages;
+	const long total_pages = totalram_pages() + __loaned_pages;
 	int rc;
 	struct hvcall_mpp_data mpp_data;
 	signed long active_pages_target, page_loan_request, target;
@@ -290,7 +290,7 @@ static void cmm_get_mpp(void)
 
 	cmm_dbg("delta = %ld, loaned = %lu, target = %lu, oom = %lu, totalram = %lu\n",
 		page_loan_request, __loaned_pages, loaned_pages_target,
-		oom_freed_pages, totalram_pages);
+		oom_freed_pages, totalram_pages());
 }
 
 static struct notifier_block cmm_oom_nb = {

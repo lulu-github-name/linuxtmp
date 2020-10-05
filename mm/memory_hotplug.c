@@ -585,7 +585,7 @@ void generic_online_page(struct page *page, unsigned int order)
 	if (debug_pagealloc_enabled())
 		kernel_map_pages(page, 1 << order, 1);
 	__free_pages_core(page, order);
-	totalram_pages += 1UL << order;
+	totalram_pages_add(1UL << order);
 #ifdef CONFIG_HIGHMEM
 	if (PageHighMem(page))
 		totalhigh_pages += 1UL << order;

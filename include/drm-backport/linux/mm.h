@@ -13,7 +13,5 @@
 
 #ifdef RH_DRM_BACKPORT
 
-#define totalram_pages() totalram_pages
-
 #endif /* RH_DRM_BACKPORT */
 #endif /* _RH_DRM_BACKPORT_LINUX_MM_H */
