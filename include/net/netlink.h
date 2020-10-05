@@ -209,6 +209,7 @@ enum nla_policy_validation {
 	NLA_VALIDATE_RANGE_PTR,
 	NLA_VALIDATE_WARN_TOO_LONG,
 	NLA_VALIDATE_RANGE_WARN_TOO_LONG,
+	NLA_VALIDATE_MASK,
 };
 
 /**
@@ -348,6 +349,7 @@ struct nla_policy {
 		 * bitfield32_valid. Old modules can safe dereference it.
 		 */
 		const u32 *bitfield32_valid_ptr;
+		const u32 mask;
 		const char *reject_message;
 		const struct nla_policy *nested_policy;
 		struct netlink_range_validation *range;
@@ -460,6 +462,12 @@ static_assert(offsetofend(struct nla_policy,
 	.type = NLA_ENSURE_INT_OR_BINARY_TYPE(tp),	\
 	.validation_type = NLA_VALIDATE_MAX,		\
 	.max = _max,					\
+}
+
+#define NLA_POLICY_MASK(tp, _mask) {			\
+	.type = NLA_ENSURE_UINT_TYPE(tp),		\
+	.validation_type = NLA_VALIDATE_MASK,		\
+	.mask = _mask,					\
 }
 
 #define NLA_POLICY_VALIDATE_FN(tp, fn, ...) {		\
