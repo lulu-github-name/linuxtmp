@@ -56,6 +56,9 @@ struct cpuidle_state_usage {
  * NB: most of the fields in this struct -- so far -- are unsigned long long.
  * Be careful when using the reserved fields since they are currently making
  * the assumption that sizeof(unsigned long) == sizeof(unsigned long long).
+ *
+ * DO NOT DO THIS FOR FUTURE VERSIONS OF RHEL: See code comment in struct
+ * rq in sched/sched.h.
  */
 struct rh_cpuidle_state_usage {
 	unsigned long long above; /* Number of times it's been too deep */
@@ -68,6 +71,9 @@ struct rh_cpuidle_state_usage {
  * several times since RHEL8 started, breaking kABI each time.  By using
  * this struct, we can isolate changes to the RHEL8 specific shadow structs
  * and preclude breaking kABI every time we need to add an element.
+ *
+ * DO NOT DO THIS FOR FUTURE VERSIONS OF RHEL: See code in struct
+ * rq in sched/sched.h.
  */
 struct rh_cpuidle_device {
 	u64 poll_limit_ns;
@@ -144,7 +150,10 @@ struct cpuidle_device {
 	struct cpuidle_coupled	*coupled;
 #endif
 
-	/* RHEL8 only: add in a shadow struct to contain new fields */
+	/*
+	 * DO NOT DO THIS FOR FUTURE VERSIONS OF RHEL: See code in struct
+	 * rq in sched/sched.h.
+	 */
 	RH_KABI_EXTEND(struct rh_cpuidle_device rh_cpuidle_dev)
 };
 

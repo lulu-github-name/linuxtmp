@@ -981,7 +981,11 @@ struct rq {
 #endif
 
 #ifdef CONFIG_CPU_IDLE
-	/* Must be inspected within a rcu lock section */
+	/*
+	 * Must be inspected within a rcu lock section.
+	 * RH_KABI: In future versions of RHEL wrap
+	 * idle_state with RH_KABI_EXCLUDE prior to GA.
+	 */
 	struct cpuidle_state	*idle_state;
 #endif
 
