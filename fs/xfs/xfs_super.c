@@ -160,8 +160,7 @@ xfs_parseargs(
 	const struct super_block *sb = mp->m_super;
 	char			*p;
 	substring_t		args[MAX_OPT_ARGS];
-	int			iosize = 0;
-	uint8_t			iosizelog = 0;
+	int			size = 0;
 
 	/*
 	 * set up the mount name first so all the errors will refer to the
@@ -193,6 +192,7 @@ xfs_parseargs(
 	 */
 	mp->m_logbufs = -1;
 	mp->m_logbsize = -1;
+	mp->m_allocsize_log = 16; /* 64k */
 
 	if (!options)
 		goto done;
@@ -227,9 +227,16 @@ xfs_parseargs(
 			break;
 		case Opt_allocsize:
 		case Opt_biosize:
-			if (suffix_kstrtoint(args, 10, &iosize))
+			if (suffix_kstrtoint(args, 10, &size))
 				return -EINVAL;
-			iosizelog = ffs(iosize) - 1;
+			/*
+			 * RHEL:
+			 * preserve historical behavior and ignore allocsize=1
+			 */
+			if (size == 1)
+				break;
+			mp->m_allocsize_log = ffs(size) - 1;
+			mp->m_flags |= XFS_MOUNT_DFLT_IOSIZE;
 			break;
 		case Opt_grpid:
 		case Opt_bsdgroups:
@@ -397,17 +404,12 @@ done:
 		return -EINVAL;
 	}
 
-	if (iosizelog) {
-		if (iosizelog > XFS_MAX_IO_LOG ||
-		    iosizelog < XFS_MIN_IO_LOG) {
-			xfs_warn(mp, "invalid log iosize: %d [not %d-%d]",
-				iosizelog, XFS_MIN_IO_LOG,
-				XFS_MAX_IO_LOG);
-			return -EINVAL;
-		}
-
-		mp->m_flags |= XFS_MOUNT_DFLT_IOSIZE;
-		mp->m_allocsize_log = iosizelog;
+	if ((mp->m_flags & XFS_MOUNT_DFLT_IOSIZE) &&
+	    (mp->m_allocsize_log > XFS_MAX_IO_LOG ||
+	     mp->m_allocsize_log < XFS_MIN_IO_LOG)) {
+		xfs_warn(mp, "invalid log iosize: %d [not %d-%d]",
+			mp->m_allocsize_log, XFS_MIN_IO_LOG, XFS_MAX_IO_LOG);
+		return -EINVAL;
 	}
 
 	return 0;
