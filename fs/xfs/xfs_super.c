@@ -200,7 +200,7 @@ xfs_parseargs(
 	mp->m_allocsize_log = 16; /* 64k */
 
 	if (!options)
-		goto done;
+		return 0;
 
 	while ((p = strsep(&options, ",")) != NULL) {
 		int		token;
@@ -387,7 +387,6 @@ xfs_parseargs(
 		return -EINVAL;
 	}
 
-done:
 	if (mp->m_logbufs != -1 &&
 	    mp->m_logbufs != 0 &&
 	    (mp->m_logbufs < XLOG_MIN_ICLOGS ||
