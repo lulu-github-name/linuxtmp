@@ -732,6 +732,16 @@ F:	include/linux/i2c-*.h
 F:	include/uapi/linux/i2c.h
 F:	include/uapi/linux/i2c-*.h
 
+INFINIBAND SUBSYSTEM
+M:	Kamal Heib <kheib@redhat.com>
+M:	Jonathan Toppins <jtoppins@redhat.com>
+S:	Maintained
+F:	drivers/infiniband/
+F:	include/rdma/
+F:	include/uapi/rdma/
+F:	include/uapi/linux/if_infiniband.h
+F:	Documentation/infiniband/
+
 INIT
 M:	Prarit Bhargava <prarit@redhat.com>
 S:	Maintained
@@ -836,11 +846,28 @@ M:	Tony Camuso <tcamuso@redhat.com>
 S:	Maintained
 F:	drivers/crypto/qat/*
 
+IOMMU DRIVERS
+M:	Jerry Snitselaar <jsnitsel@redhat.com>
+M:	Myron Stowe <myron.stowe@redhat.com>
+M:	Alex Williamson <alex.williamson@redhat.com>
+M:	Don Dutile <ddutile@redhat.com>
+S:	Maintained
+F:	drivers/iommu/
+
+IPMI SUBSYSTEM
+M:	Tony Camuso <tcamuso@redhat.com>
+S:	Maintained
+
 ISCSI (iscsi_tcp, libiscsi, libiscsi_tcp, scsi_transport_iscsi)
 M:	Chris Leech <cleech@redhat.com>
 S:	Maintained
 F:	drivers/scsi/*iscsi*
 F:	include/scsi/*iscsi*
+
+ISMT SMBUS DRIVER
+M:	Tony Camuso <tcamuso@redhat.com>
+S:	Maintained
+F:	drivers/i2c/busses/i2c-ismt.c
 
 JOURNALLING LAYER FOR BLOCK DEVICES (JBD2)
 M:	Lukas Czerner <lczerner@redhat.com>
@@ -966,33 +993,6 @@ F:	include/asm-generic/mshyperv.h
 F:	tools/hv/
 F:	Documentation/ABI/stable/sysfs-bus-vmbus
 F:	Documentation/ABI/testing/debugfs-hyperv
-
-INFINIBAND SUBSYSTEM
-M:	Kamal Heib <kheib@redhat.com>
-M:	Jonathan Toppins <jtoppins@redhat.com>
-S:	Maintained
-F:	drivers/infiniband/
-F:	include/rdma/
-F:	include/uapi/rdma/
-F:	include/uapi/linux/if_infiniband.h
-F:	Documentation/infiniband/
-
-IOMMU DRIVERS
-M:	Jerry Snitselaar <jsnitsel@redhat.com>
-M:	Myron Stowe <myron.stowe@redhat.com>
-M:	Alex Williamson <alex.williamson@redhat.com>
-M:	Don Dutile <ddutile@redhat.com>
-S:	Maintained
-F:	drivers/iommu/
-
-IPMI SUBSYSTEM
-M:	Tony Camuso <tcamuso@redhat.com>
-S:	Maintained
-
-ISMT SMBUS DRIVER
-M:	Tony Camuso <tcamuso@redhat.com>
-S:	Maintained
-F:	drivers/i2c/busses/i2c-ismt.c
 
 LIB
 M:	Prarit Bhargava <prarit@redhat.com>
