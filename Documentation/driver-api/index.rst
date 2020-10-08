@@ -50,6 +50,7 @@ available subsections can be seen below.
    uio-howto
    firmware/index
    pinctl
+   pldmfw/index
    gpio/index
    misc_devices
    dmaengine/index

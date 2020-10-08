@@ -637,6 +637,10 @@ config PARMAN
 config PRIME_NUMBERS
 	tristate
 
+config PLDMFW
+	bool
+	default n
+
 config OBJAGG
 	tristate "objagg" if COMPILE_TEST
 
