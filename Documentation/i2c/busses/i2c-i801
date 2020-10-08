@@ -42,6 +42,7 @@ Supported adapters:
   * Intel Ice Lake (PCH)
   * Intel Comet Lake (PCH)
   * Intel Tiger Lake (PCH)
+  * Intel Emmitsburg (PCH)
 
    Datasheets: Publicly available at the Intel website
 
