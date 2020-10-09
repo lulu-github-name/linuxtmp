@@ -149,9 +149,7 @@ struct mem_cgroup_per_node {
 	 * RHEL8: The mem_cgroup_per_node is dynamically allocated at
 	 * boot time and so is perfectly fine to be extended in size.
 	 */
-#ifdef CONFIG_MEMCG_KMEM
 	RH_KABI_EXTEND(struct memcg_shrinker_map __rcu	*shrinker_map)
-#endif
 };
 
 struct mem_cgroup_threshold {
@@ -1323,6 +1321,11 @@ static inline bool mem_cgroup_under_socket_pressure(struct mem_cgroup *memcg)
 	} while ((memcg = parent_mem_cgroup(memcg)));
 	return false;
 }
+
+extern int memcg_expand_shrinker_maps(int new_id);
+
+extern void memcg_set_shrinker_bit(struct mem_cgroup *memcg,
+				   int nid, int shrinker_id);
 #else
 #define mem_cgroup_sockets_enabled 0
 static inline void mem_cgroup_sk_alloc(struct sock *sk) { };
@@ -1330,6 +1333,11 @@ static inline void mem_cgroup_sk_free(struct sock *sk) { };
 static inline bool mem_cgroup_under_socket_pressure(struct mem_cgroup *memcg)
 {
 	return false;
+}
+
+static inline void memcg_set_shrinker_bit(struct mem_cgroup *memcg,
+					  int nid, int shrinker_id)
+{
 }
 #endif
 
@@ -1402,10 +1410,6 @@ static inline int memcg_cache_id(struct mem_cgroup *memcg)
 	return memcg ? memcg->kmemcg_id : -1;
 }
 
-extern int memcg_expand_shrinker_maps(int new_id);
-
-extern void memcg_set_shrinker_bit(struct mem_cgroup *memcg,
-				   int nid, int shrinker_id);
 struct mem_cgroup *mem_cgroup_from_obj(void *p);
 
 #else
@@ -1450,9 +1454,6 @@ static inline void memcg_get_cache_ids(void)
 static inline void memcg_put_cache_ids(void)
 {
 }
-
-static inline void memcg_set_shrinker_bit(struct mem_cgroup *memcg,
-					  int nid, int shrinker_id) { }
 
 static inline struct mem_cgroup *mem_cgroup_from_obj(void *p)
 {
