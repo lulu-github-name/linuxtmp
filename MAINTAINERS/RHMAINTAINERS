@@ -1074,6 +1074,13 @@ F:	mm/
 MEMORY HOTPLUG
 M:	Prarit Bhargava <prarit@redhat.com>
 S:	Maintained
+F:	drivers/char/ipmi/
+F:	include/linux/ipmi-fru.h
+F:	include/linux/ipmi.h
+F:	include/linux/ipmi_smi.h
+F:	include/uapi/linux/ipmi.h
+F:	include/uapi/linux/ipmi_bmc.h
+F:	include/uapi/linux/ipmi_msgdefs.h
 
 MICRON PCIe SSD DRIVER (mtip32xx)
 M:	David Milburn <dmilburn@redhat.com>
