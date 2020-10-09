@@ -333,6 +333,9 @@ struct mem_cgroup {
 	 *  - inc_lruvec_page_state(), __inc_lruvec_page_state()
 	 *  - dec_lruvec_page_state(), __dec_lruvec_page_state()
 	 */
+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+	RH_KABI_BROKEN_INSERT(struct deferred_split deferred_split_queue)
+#endif
 	RH_KABI_BROKEN_INSERT(MEMCG_PADDING(_pad3_))
 	struct mem_cgroup_per_node *nodeinfo[0];
 	/* WARNING: nodeinfo must be the last member here */
