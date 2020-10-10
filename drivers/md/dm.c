@@ -1674,7 +1674,9 @@ static blk_qc_t dm_make_request(struct request_queue *q, struct bio *bio)
 
 	/* If suspended, queue this IO for later */
 	if (unlikely(test_bit(DMF_BLOCK_IO_FOR_SUSPEND, &md->flags))) {
-		if (bio->bi_opf & REQ_RAHEAD)
+		if (bio->bi_opf & REQ_NOWAIT)
+			bio_wouldblock_error(bio);
+		else if (bio->bi_opf & REQ_RAHEAD)
 			bio_io_error(bio);
 		else
 			queue_io(md, bio);
