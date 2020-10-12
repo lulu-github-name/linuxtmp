@@ -2532,8 +2532,6 @@ static int __init dm_writecache_init(void)
 		return r;
 	}
 
-	mark_tech_preview("DM writecache", THIS_MODULE);
-
 	return 0;
 }
 
