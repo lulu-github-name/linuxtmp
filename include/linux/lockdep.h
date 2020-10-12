@@ -10,7 +10,9 @@
 #ifndef __LINUX_LOCKDEP_H
 #define __LINUX_LOCKDEP_H
 
+#include <linux/rh_kabi.h>
 #include <linux/lockdep_types.h>
+#include RH_KABI_HIDE_INCLUDE(<linux/smp.h>)
 #include <asm/percpu.h>
 
 struct task_struct;

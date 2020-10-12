@@ -2,8 +2,9 @@
 #ifndef _LINUX_TIME_H
 #define _LINUX_TIME_H
 
+# include <linux/rh_kabi.h>
 # include <linux/cache.h>
-# include <linux/seqlock.h>
+# include RH_KABI_FAKE_INCLUDE(<linux/seqlock.h>)
 # include <linux/math64.h>
 # include <linux/time64.h>
 

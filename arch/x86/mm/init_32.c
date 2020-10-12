@@ -51,6 +51,7 @@
 #include <asm/page_types.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/init.h>
+#include <asm/numa.h>
 
 #include "mm_internal.h"
 
