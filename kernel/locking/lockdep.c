@@ -3637,8 +3637,7 @@ static void __trace_hardirqs_on_caller(unsigned long ip)
 	debug_atomic_inc(hardirqs_on_events);
 }
 
-static void lockdep_hardirqs_on(void *none, unsigned long ignore,
-				unsigned long ip)
+void lockdep_hardirqs_on(unsigned long ip)
 {
 	if (unlikely(!debug_locks || current->lockdep_recursion))
 		return;
@@ -3682,8 +3681,7 @@ static void lockdep_hardirqs_on(void *none, unsigned long ignore,
 /*
  * Hardirqs were disabled:
  */
-static void lockdep_hardirqs_off(void *none, unsigned long ignore,
-				 unsigned long ip)
+void lockdep_hardirqs_off(unsigned long ip)
 {
 	struct task_struct *curr = current;
 
@@ -5422,14 +5420,6 @@ out_irq:
 	synchronize_rcu();
 }
 EXPORT_SYMBOL_GPL(lockdep_unregister_key);
-
-void __init lockdep_init_early(void)
-{
-#ifdef CONFIG_PROVE_LOCKING
-	register_trace_prio_irq_disable(lockdep_hardirqs_off, NULL, INT_MAX);
-	register_trace_prio_irq_enable(lockdep_hardirqs_on, NULL, INT_MIN);
-#endif
-}
 
 void __init lockdep_init(void)
 {
