@@ -1281,6 +1281,8 @@ static void disable_device(struct ib_device *device)
 		remove_client_context(device, cid);
 	}
 
+	ib_cq_pool_destroy(device);
+
 	/* Pairs with refcount_set in enable_device */
 	ib_device_put(device);
 	wait_for_completion(&device->unreg_completion);
@@ -1323,6 +1325,8 @@ static int enable_device_and_get(struct ib_device *device)
 		if (ret)
 			goto out;
 	}
+
+	ib_cq_pool_init(device);
 
 	down_read(&clients_rwsem);
 	xa_for_each_marked (&clients, index, client, CLIENT_REGISTERED) {
@@ -1396,7 +1400,6 @@ int ib_register_device(struct ib_device *device, const char *name)
 		goto dev_cleanup;
 	}
 
-	ib_cq_pool_init(device);
 	ret = enable_device_and_get(device);
 	dev_set_uevent_suppress(&device->dev, false);
 	/* Mark for userspace that device is ready */
@@ -1451,7 +1454,6 @@ static void __ib_unregister_device(struct ib_device *ib_dev)
 		goto out;
 
 	disable_device(ib_dev);
-	ib_cq_pool_destroy(ib_dev);
 
 	/* Expedite removing unregistered pointers from the hash table */
 	free_netdevs(ib_dev);
