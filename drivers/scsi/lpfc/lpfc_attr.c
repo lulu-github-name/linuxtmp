@@ -4655,7 +4655,7 @@ lpfc_aer_support_store(struct device *dev, struct device_attribute *attr,
 	struct Scsi_Host *shost = class_to_shost(dev);
 	struct lpfc_vport *vport = (struct lpfc_vport *)shost->hostdata;
 	struct lpfc_hba *phba = vport->phba;
-	int val = 0, rc = -EINVAL;
+	int val = 0, rc;
 
 	if (!isdigit(buf[0]))
 		return -EINVAL;
