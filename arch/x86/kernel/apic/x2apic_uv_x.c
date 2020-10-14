@@ -12,6 +12,7 @@
 #include <linux/cpumask.h>
 #include <linux/proc_fs.h>
 #include <linux/memory.h>
+#include <linux/numa.h>
 #include <linux/export.h>
 #include <linux/pci.h>
 #include <linux/acpi.h>
@@ -1364,7 +1365,7 @@ static void __init build_socket_tables(void)
 	}
 
 	/* Set socket -> node values: */
-	lnid = -1;
+	lnid = NUMA_NO_NODE;
 	for_each_present_cpu(cpu) {
 		int nid = cpu_to_node(cpu);
 		int apicid, sockid;
@@ -1592,7 +1593,7 @@ static void __init uv_system_init_hub(void)
 			new_hub->pnode = 0xffff;
 
 		new_hub->numa_blade_id = uv_node_to_blade_id(nodeid);
-		new_hub->memory_nid = -1;
+		new_hub->memory_nid = NUMA_NO_NODE;
 		new_hub->nr_possible_cpus = 0;
 		new_hub->nr_online_cpus = 0;
 	}
@@ -1609,7 +1610,7 @@ static void __init uv_system_init_hub(void)
 
 		uv_cpu_info_per(cpu)->p_uv_hub_info = uv_hub_info_list(nodeid);
 		uv_cpu_info_per(cpu)->blade_cpu_id = uv_cpu_hub_info(cpu)->nr_possible_cpus++;
-		if (uv_cpu_hub_info(cpu)->memory_nid == -1)
+		if (uv_cpu_hub_info(cpu)->memory_nid == NUMA_NO_NODE)
 			uv_cpu_hub_info(cpu)->memory_nid = cpu_to_node(cpu);
 
 		/* Init memoryless node: */

@@ -6,6 +6,7 @@
 #include <linux/export.h>
 #include <linux/memblock.h>
 #include <linux/sched/isolation.h>
+#include <linux/numa.h>
 
 /**
  * cpumask_next - get the next cpu in a cpumask
@@ -210,7 +211,7 @@ unsigned int cpumask_local_spread(unsigned int i, int node)
 	/* Wrap: we always want a cpu. */
 	i %= cpumask_weight(mask);
 
-	if (node == -1) {
+	if (node == NUMA_NO_NODE) {
 		for_each_cpu(cpu, mask) {
 			if (i-- == 0)
 				return cpu;
