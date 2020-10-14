@@ -1172,26 +1172,6 @@ lpfc_nvmet_defer_rcv(struct nvmet_fc_target_port *tgtport,
 	spin_unlock_irqrestore(&ctxp->ctxlock, iflag);
 }
 
-static struct nvmet_fc_target_template lpfc_tgttemplate = {
-	.targetport_delete = lpfc_nvmet_targetport_delete,
-	.xmt_ls_rsp     = lpfc_nvmet_xmt_ls_rsp,
-	.fcp_op         = lpfc_nvmet_xmt_fcp_op,
-	.fcp_abort      = lpfc_nvmet_xmt_fcp_abort,
-	.fcp_req_release = lpfc_nvmet_xmt_fcp_release,
-	.defer_rcv	= lpfc_nvmet_defer_rcv,
-	.host_release   = lpfc_nvmet_host_release,
-
-	.max_hw_queues  = 1,
-	.max_sgl_segments = LPFC_NVMET_DEFAULT_SEGS,
-	.max_dif_sgl_segments = LPFC_NVMET_DEFAULT_SEGS,
-	.dma_boundary = 0xFFFFFFFF,
-
-	/* optional features */
-	.target_features = 0,
-	/* sizes of additional private data for data structures */
-	.target_priv_sz = sizeof(struct lpfc_nvmet_tgtport),
-};
-
 static void
 __lpfc_nvmet_clean_io_for_cpu(struct lpfc_hba *phba,
 		struct lpfc_nvmet_ctx_info *infop)
@@ -1221,6 +1201,98 @@ __lpfc_nvmet_clean_io_for_cpu(struct lpfc_hba *phba,
 	spin_unlock_irqrestore(&infop->nvmet_ctx_list_lock, flags);
 }
 
+/**
+ * lpfc_nvmet_ls_req_cmp - completion handler for a nvme ls request
+ * @phba: Pointer to HBA context object
+ * @cmdwqe: Pointer to driver command WQE object.
+ * @wcqe: Pointer to driver response CQE object.
+ *
+ * This function is the completion handler for NVME LS requests.
+ * The function updates any states and statistics, then calls the
+ * generic completion handler to finish completion of the request.
+ **/
+static void
+lpfc_nvmet_ls_req_cmp(struct lpfc_hba *phba, struct lpfc_iocbq *cmdwqe,
+		       struct lpfc_wcqe_complete *wcqe)
+{
+	__lpfc_nvme_ls_req_cmp(phba, cmdwqe->vport, cmdwqe, wcqe);
+}
+
+/**
+ * lpfc_nvmet_ls_req - Issue an Link Service request
+ * @targetport - pointer to target instance registered with nvmet transport.
+ * @hosthandle - hosthandle set by the driver in a prior ls_rqst_rcv.
+ *               Driver sets this value to the ndlp pointer.
+ * @pnvme_lsreq - the transport nvme_ls_req structure for the LS
+ *
+ * Driver registers this routine to handle any link service request
+ * from the nvme_fc transport to a remote nvme-aware port.
+ *
+ * Return value :
+ *   0 - Success
+ *   non-zero: various error codes, in form of -Exxx
+ **/
+static int
+lpfc_nvmet_ls_req(struct nvmet_fc_target_port *targetport,
+		  void *hosthandle,
+		  struct nvmefc_ls_req *pnvme_lsreq)
+{
+	struct lpfc_nvmet_tgtport *lpfc_nvmet = targetport->private;
+	struct lpfc_hba *phba;
+	struct lpfc_nodelist *ndlp;
+	int ret;
+	u32 hstate;
+
+	if (!lpfc_nvmet)
+		return -EINVAL;
+
+	phba = lpfc_nvmet->phba;
+	if (phba->pport->load_flag & FC_UNLOADING)
+		return -EINVAL;
+
+	hstate = atomic_read(&lpfc_nvmet->state);
+	if (hstate == LPFC_NVMET_INV_HOST_ACTIVE)
+		return -EACCES;
+
+	ndlp = (struct lpfc_nodelist *)hosthandle;
+
+	ret = __lpfc_nvme_ls_req(phba->pport, ndlp, pnvme_lsreq,
+				 lpfc_nvmet_ls_req_cmp);
+
+	return ret;
+}
+
+/**
+ * lpfc_nvmet_ls_abort - Abort a prior NVME LS request
+ * @targetport: Transport targetport, that LS was issued from.
+ * @hosthandle - hosthandle set by the driver in a prior ls_rqst_rcv.
+ *               Driver sets this value to the ndlp pointer.
+ * @pnvme_lsreq - the transport nvme_ls_req structure for LS to be aborted
+ *
+ * Driver registers this routine to abort an NVME LS request that is
+ * in progress (from the transports perspective).
+ **/
+static void
+lpfc_nvmet_ls_abort(struct nvmet_fc_target_port *targetport,
+		    void *hosthandle,
+		    struct nvmefc_ls_req *pnvme_lsreq)
+{
+	struct lpfc_nvmet_tgtport *lpfc_nvmet = targetport->private;
+	struct lpfc_hba *phba;
+	struct lpfc_nodelist *ndlp;
+	int ret;
+
+	phba = lpfc_nvmet->phba;
+	if (phba->pport->load_flag & FC_UNLOADING)
+		return;
+
+	ndlp = (struct lpfc_nodelist *)hosthandle;
+
+	ret = __lpfc_nvme_ls_abort(phba->pport, ndlp, pnvme_lsreq);
+	if (!ret)
+		atomic_inc(&lpfc_nvmet->xmt_ls_abort);
+}
+
 static void
 lpfc_nvmet_host_release(void *hosthandle)
 {
@@ -1238,6 +1310,29 @@ lpfc_nvmet_host_release(void *hosthandle)
 	tgtp = (struct lpfc_nvmet_tgtport *)phba->targetport->private;
 	atomic_set(&tgtp->state, 0);
 }
+
+static struct nvmet_fc_target_template lpfc_tgttemplate = {
+	.targetport_delete = lpfc_nvmet_targetport_delete,
+	.xmt_ls_rsp     = lpfc_nvmet_xmt_ls_rsp,
+	.fcp_op         = lpfc_nvmet_xmt_fcp_op,
+	.fcp_abort      = lpfc_nvmet_xmt_fcp_abort,
+	.fcp_req_release = lpfc_nvmet_xmt_fcp_release,
+	.defer_rcv	= lpfc_nvmet_defer_rcv,
+	.ls_req         = lpfc_nvmet_ls_req,
+	.ls_abort       = lpfc_nvmet_ls_abort,
+	.host_release   = lpfc_nvmet_host_release,
+
+	.max_hw_queues  = 1,
+	.max_sgl_segments = LPFC_NVMET_DEFAULT_SEGS,
+	.max_dif_sgl_segments = LPFC_NVMET_DEFAULT_SEGS,
+	.dma_boundary = 0xFFFFFFFF,
+
+	/* optional features */
+	.target_features = 0,
+	/* sizes of additional private data for data structures */
+	.target_priv_sz = sizeof(struct lpfc_nvmet_tgtport),
+	.lsrqst_priv_sz = 0,
+};
 
 static void
 lpfc_nvmet_cleanup_io_context(struct lpfc_hba *phba)
