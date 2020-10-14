@@ -169,6 +169,7 @@ createfile() # $1 is m/y/is not set, $2 is filename
 {
 	option=$1
 	filename=$2
+	mkdir -p $(dirname $filename)
 	case $option in
 	m|y)
 		echo "$CONFIG=$STATUS" > $filename;;
