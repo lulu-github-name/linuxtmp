@@ -156,6 +156,14 @@ module_param(register_always, bool, 0444);
 MODULE_PARM_DESC(register_always,
 	 "Use memory registration even for contiguous memory regions");
 
+/* RHEL only params to test and verify the pi_capable devices.
+ */
+
+static bool rdma_pi_enable = false;
+module_param(rdma_pi_enable, bool, 0444);
+MODULE_PARM_DESC(rdma_pi_enable,
+         "Turn on RDMA T10-PI for capable devices.");
+
 static int nvme_rdma_cm_handler(struct rdma_cm_id *cm_id,
 		struct rdma_cm_event *event);
 static void nvme_rdma_recv_done(struct ib_cq *cq, struct ib_wc *wc);
@@ -864,9 +872,14 @@ static int nvme_rdma_configure_admin_queue(struct nvme_rdma_ctrl *ctrl,
 	ctrl->ctrl.numa_node = dev_to_node(ctrl->device->dev->dma_device);
 
 	/* T10-PI support */
-	if (ctrl->device->dev->attrs.device_cap_flags &
-	    IB_DEVICE_INTEGRITY_HANDOVER)
-		pi_capable = true;
+
+	/* Check rdma_pi_enable before checking T10-PI capability */
+
+	if(rdma_pi_enable) {
+		if (ctrl->device->dev->attrs.device_cap_flags &
+			IB_DEVICE_INTEGRITY_HANDOVER)
+			pi_capable = true;
+	}
 
 	ctrl->max_fr_pages = nvme_rdma_get_max_fr_pages(ctrl->device->dev,
 							pi_capable);
