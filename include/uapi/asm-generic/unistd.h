@@ -790,9 +790,11 @@ __SYSCALL(__NR_fsconfig, sys_fsconfig)
 __SYSCALL(__NR_fsmount, sys_fsmount)
 #define __NR_fspick 433
 __SYSCALL(__NR_fspick, sys_fspick)
+#define __NR_faccessat2 439
+__SYSCALL(__NR_faccessat2, sys_faccessat2)
 
 #undef __NR_syscalls
-#define __NR_syscalls 434
+#define __NR_syscalls 440
 
 /*
  * 32 bit systems traditionally used different
