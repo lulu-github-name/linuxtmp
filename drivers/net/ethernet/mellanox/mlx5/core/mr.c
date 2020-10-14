@@ -47,16 +47,8 @@ int mlx5_core_create_mkey_cb(struct mlx5_core_dev *dev,
 	u32 mkey_index;
 	void *mkc;
 	int err;
-	u8 key;
-
-	spin_lock_irq(&dev->priv.mkey_lock);
-	key = dev->priv.mkey_key++;
-	spin_unlock_irq(&dev->priv.mkey_lock);
-	mkc = MLX5_ADDR_OF(create_mkey_in, in, memory_key_mkey_entry);
 
 	MLX5_SET(create_mkey_in, in, opcode, MLX5_CMD_OP_CREATE_MKEY);
-	MLX5_SET(mkc, mkc, mkey_7_0, key);
-	mkey->key = key;
 
 	if (callback)
 		return mlx5_cmd_exec_cb(async_ctx, in, inlen, out, outlen,
@@ -66,14 +58,14 @@ int mlx5_core_create_mkey_cb(struct mlx5_core_dev *dev,
 	if (err)
 		return err;
 
+	mkc = MLX5_ADDR_OF(create_mkey_in, in, memory_key_mkey_entry);
 	mkey_index = MLX5_GET(create_mkey_out, lout, mkey_index);
 	mkey->iova = MLX5_GET64(mkc, mkc, start_addr);
 	mkey->size = MLX5_GET64(mkc, mkc, len);
 	mkey->key |= mlx5_idx_to_mkey(mkey_index);
 	mkey->pd = MLX5_GET(mkc, mkc, pd);
 
-	mlx5_core_dbg(dev, "out 0x%x, key 0x%x, mkey 0x%x\n",
-		      mkey_index, key, mkey->key);
+	mlx5_core_dbg(dev, "out 0x%x, mkey 0x%x\n", mkey_index, mkey->key);
 	return 0;
 }
 EXPORT_SYMBOL(mlx5_core_create_mkey_cb);
