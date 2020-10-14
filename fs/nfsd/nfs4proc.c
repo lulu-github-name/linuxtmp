@@ -1960,6 +1960,8 @@ nfsd4_proc_compound(struct svc_rqst *rqstp)
 		goto encode_op;
 	}
 
+	rqstp->rq_lease_breaker = (void **)&cstate->clp;
+
 	trace_nfsd_compound(rqstp, args->opcnt);
 	while (!status && resp->opcnt < args->opcnt) {
 		op = &args->ops[resp->opcnt++];
