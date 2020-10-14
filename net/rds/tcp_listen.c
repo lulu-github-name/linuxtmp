@@ -254,7 +254,7 @@ struct socket *rds_tcp_listen_init(struct net *net)
 		goto out;
 
 	sock->sk->sk_reuse = SK_CAN_REUSE;
-	rds_tcp_nonagle(sock);
+	tcp_sock_set_nodelay(sock->sk);
 
 	write_lock_bh(&sock->sk->sk_callback_lock);
 	sock->sk->sk_user_data = sock->sk->sk_data_ready;
