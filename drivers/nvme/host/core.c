@@ -100,7 +100,7 @@ static void nvme_set_queue_dying(struct nvme_ns *ns)
 	 * Revalidating a dead namespace sets capacity to 0. This will end
 	 * buffered writers dirtying pages that can't be synced.
 	 */
-	if (!ns->disk || test_and_set_bit(NVME_NS_DEAD, &ns->flags))
+	if (test_and_set_bit(NVME_NS_DEAD, &ns->flags))
 		return;
 	blk_set_queue_dying(ns->queue);
 	/* Forcibly unquiesce queues to avoid blocking dispatch */
@@ -1451,7 +1451,7 @@ static void nvme_update_formats(struct nvme_ctrl *ctrl)
 
 	down_read(&ctrl->namespaces_rwsem);
 	list_for_each_entry(ns, &ctrl->namespaces, list)
-		if (ns->disk && nvme_revalidate_disk(ns->disk))
+		if (nvme_revalidate_disk(ns->disk))
 			nvme_set_queue_dying(ns);
 	up_read(&ctrl->namespaces_rwsem);
 }
@@ -3924,7 +3924,7 @@ static void nvme_ns_remove(struct nvme_ns *ns)
 	nvme_mpath_clear_current_path(ns);
 	synchronize_srcu(&ns->head->srcu); /* wait for concurrent submissions */
 
-	if (ns->disk && ns->disk->flags & GENHD_FL_UP) {
+	if (ns->disk->flags & GENHD_FL_UP) {
 		del_gendisk(ns->disk);
 		blk_cleanup_queue(ns->queue);
 		if (blk_get_integrity(ns->disk))
@@ -3955,7 +3955,7 @@ static void nvme_validate_ns(struct nvme_ctrl *ctrl, unsigned nsid)
 
 	ns = nvme_find_get_ns(ctrl, nsid);
 	if (ns) {
-		if (ns->disk && revalidate_disk(ns->disk))
+		if (revalidate_disk(ns->disk))
 			nvme_ns_remove(ns);
 		nvme_put_ns(ns);
 	} else
