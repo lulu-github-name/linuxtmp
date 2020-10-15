@@ -423,7 +423,7 @@ struct scsi_host_template {
 	unsigned no_write_same:1;
 
 	/* True if the low-level driver supports blk-mq only */
-	unsigned force_blk_mq:1;
+	RH_KABI_DEPRECATE(unsigned, force_blk_mq:1)
 
 	/*
 	 * Countdown for host blocking with no commands outstanding.
