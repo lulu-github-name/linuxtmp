@@ -135,6 +135,8 @@ done
 
 # Just kill sound.
 filter_dir $1 kernel/sound
+filter_ko $1 drivers/base/regmap/regmap-sdw
+filter_dir $1 drivers/soundwire
 
 # Now go through and filter any single .ko files that might have deps on the
 # things we filtered above
