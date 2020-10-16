@@ -509,7 +509,7 @@ static int soc_pcm_close(struct snd_pcm_substream *substream)
 	for_each_rtd_dais(rtd, i, dai)
 		snd_soc_dai_shutdown(dai, substream);
 
-	snd_soc_link_shutdown(rtd, substream);
+	snd_soc_link_shutdown(substream);
 
 	soc_pcm_components_close(substream);
 
@@ -556,7 +556,7 @@ static int soc_pcm_open(struct snd_pcm_substream *substream)
 	if (ret < 0)
 		goto component_err;
 
-	ret = snd_soc_link_startup(rtd, substream);
+	ret = snd_soc_link_startup(substream);
 	if (ret < 0)
 		goto rtd_startup_err;
 
@@ -640,7 +640,7 @@ config_err:
 	for_each_rtd_dais(rtd, i, dai)
 		snd_soc_dai_shutdown(dai, substream);
 
-	snd_soc_link_shutdown(rtd, substream);
+	snd_soc_link_shutdown(substream);
 rtd_startup_err:
 	soc_pcm_components_close(substream);
 component_err:
@@ -682,7 +682,7 @@ static int soc_pcm_prepare(struct snd_pcm_substream *substream)
 
 	mutex_lock_nested(&rtd->card->pcm_mutex, rtd->card->pcm_subclass);
 
-	ret = snd_soc_link_prepare(rtd, substream);
+	ret = snd_soc_link_prepare(substream);
 	if (ret < 0)
 		goto out;
 
@@ -769,7 +769,7 @@ static int soc_pcm_hw_params(struct snd_pcm_substream *substream,
 	if (ret)
 		goto out;
 
-	ret = snd_soc_link_hw_params(rtd, substream, params);
+	ret = snd_soc_link_hw_params(substream, params);
 	if (ret < 0)
 		goto out;
 
@@ -881,7 +881,7 @@ codec_err:
 		codec_dai->rate = 0;
 	}
 
-	snd_soc_link_hw_free(rtd, substream);
+	snd_soc_link_hw_free(substream);
 
 	mutex_unlock(&rtd->card->pcm_mutex);
 	return ret;
@@ -913,7 +913,7 @@ static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
 	}
 
 	/* free any machine hw params */
-	snd_soc_link_hw_free(rtd, substream);
+	snd_soc_link_hw_free(substream);
 
 	/* free any component resources */
 	soc_pcm_components_hw_free(substream, NULL);
@@ -936,7 +936,7 @@ static int soc_pcm_trigger_start(struct snd_pcm_substream *substream, int cmd)
 	struct snd_soc_component *component;
 	int i, ret;
 
-	ret = snd_soc_link_trigger(rtd, substream, cmd);
+	ret = snd_soc_link_trigger(substream, cmd);
 	if (ret < 0)
 		return ret;
 
@@ -965,7 +965,7 @@ static int soc_pcm_trigger_stop(struct snd_pcm_substream *substream, int cmd)
 			return ret;
 	}
 
-	ret = snd_soc_link_trigger(rtd, substream, cmd);
+	ret = snd_soc_link_trigger(substream, cmd);
 	if (ret < 0)
 		return ret;
 
