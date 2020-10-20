@@ -26,7 +26,7 @@ struct blk_flush_queue {
 	 * flush_rq shares tag with this rq, both can't be active
 	 * at the same time
 	 */
-	struct request		*orig_rq;
+	RH_KABI_DEPRECATE(struct request		*, orig_rq)
 	spinlock_t		mq_flush_lock;
 	RH_KABI_EXTEND(blk_status_t 		rq_status)
 	RH_KABI_EXTEND(struct lock_class_key	key)
