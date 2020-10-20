@@ -610,6 +610,8 @@ struct request_queue {
 	RH_KABI_EXTEND(unsigned int	required_elevator_features)
 
 	RH_KABI_EXTEND(struct mutex		debugfs_mutex)
+
+	RH_KABI_EXTEND(atomic_t		nr_active_requests_shared_sbitmap)
 };
 
 /* Keep blk_queue_flag_name[] in sync with the definitions below */
