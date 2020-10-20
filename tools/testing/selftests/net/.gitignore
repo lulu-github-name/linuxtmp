@@ -20,3 +20,7 @@ ipv6_flowlabel
 ipv6_flowlabel_mgr
 so_txtime
 nettest
+hwtstamp_config
+rxtimestamp
+timestamping
+txtimestamp
