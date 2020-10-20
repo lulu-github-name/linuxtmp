@@ -1290,7 +1290,12 @@ static enum prep_dispatch blk_mq_prep_dispatch_rq(struct request *rq,
 		 * we'll re-run it below.
 		 */
 		if (!blk_mq_mark_tag_wait(hctx, rq)) {
-			blk_mq_put_dispatch_budget(hctx);
+			/*
+			 * All budgets not got from this function will be put
+			 * together during handling partial dispatch
+			 */
+			if (need_budget)
+				blk_mq_put_dispatch_budget(hctx);
 			return PREP_DISPATCH_NO_TAG;
 		}
 	}
@@ -1298,11 +1303,21 @@ static enum prep_dispatch blk_mq_prep_dispatch_rq(struct request *rq,
 	return PREP_DISPATCH_OK;
 }
 
+/* release all allocated budgets before calling to blk_mq_dispatch_rq_list */
+static void blk_mq_release_budgets(struct blk_mq_hw_ctx *hctx,
+		unsigned int nr_budgets)
+{
+	int i;
+
+	for (i = 0; i < nr_budgets; i++)
+		blk_mq_put_dispatch_budget(hctx);
+}
+
 /*
  * Returns true if we did some work AND can potentially do more.
  */
 bool blk_mq_dispatch_rq_list(struct blk_mq_hw_ctx *hctx, struct list_head *list,
-			     bool got_budget)
+			     unsigned int nr_budgets)
 {
 	enum prep_dispatch prep;
 	struct request_queue *q = hctx->queue;
@@ -1314,7 +1329,7 @@ bool blk_mq_dispatch_rq_list(struct blk_mq_hw_ctx *hctx, struct list_head *list,
 	if (list_empty(list))
 		return false;
 
-	WARN_ON(!list_is_singular(list) && got_budget);
+	WARN_ON(!list_is_singular(list) && nr_budgets);
 
 	/*
 	 * Now process all the entries, sending them to the driver.
@@ -1326,7 +1341,7 @@ bool blk_mq_dispatch_rq_list(struct blk_mq_hw_ctx *hctx, struct list_head *list,
 		rq = list_first_entry(list, struct request, queuelist);
 
 		WARN_ON_ONCE(hctx != rq->mq_hctx);
-		prep = blk_mq_prep_dispatch_rq(rq, !got_budget);
+		prep = blk_mq_prep_dispatch_rq(rq, !nr_budgets);
 		if (prep != PREP_DISPATCH_OK)
 			break;
 
@@ -1345,6 +1360,12 @@ bool blk_mq_dispatch_rq_list(struct blk_mq_hw_ctx *hctx, struct list_head *list,
 			bd.last = !blk_mq_get_driver_tag(nxt);
 		}
 
+		/*
+		 * once the request is queued to lld, no need to cover the
+		 * budget any more
+		 */
+		if (nr_budgets)
+			nr_budgets--;
 		ret = q->mq_ops->queue_rq(hctx, &bd);
 		if (ret == BLK_STS_RESOURCE || ret == BLK_STS_DEV_RESOURCE) {
 			blk_mq_handle_dev_resource(rq, list);
@@ -1385,6 +1406,8 @@ bool blk_mq_dispatch_rq_list(struct blk_mq_hw_ctx *hctx, struct list_head *list,
 		bool no_tag = prep == PREP_DISPATCH_NO_TAG &&
                         (hctx->flags & BLK_MQ_F_TAG_SHARED);
 		bool no_budget_avail = prep == PREP_DISPATCH_NO_BUDGET;
+
+		blk_mq_release_budgets(hctx, nr_budgets);
 
 		/*
 		 * If we didn't flush the entire list, we could have told
