@@ -164,6 +164,11 @@ struct blk_mq_alloc_data {
 	RH_KABI_EXTEND(struct bio *bio)
 };
 
+static inline bool blk_mq_is_sbitmap_shared(unsigned int flags)
+{
+	return flags & BLK_MQ_F_TAG_HCTX_SHARED;
+}
+
 static inline struct blk_mq_tags *blk_mq_tags_from_data(struct blk_mq_alloc_data *data)
 {
 	if (data->q->elevator)

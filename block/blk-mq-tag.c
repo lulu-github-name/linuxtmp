@@ -197,7 +197,7 @@ static bool bt_iter(struct sbitmap *bitmap, unsigned int bitnr, void *data)
 	 * We can hit rq == NULL here, because the tagging functions
 	 * test and set the bit before assigning ->rqs[].
 	 */
-	if (rq && rq->q == hctx->queue)
+	if (rq && rq->q == hctx->queue && rq->mq_hctx == hctx)
 		return iter_data->fn(hctx, rq, iter_data->data, reserved);
 	return true;
 }
@@ -448,6 +448,38 @@ free_bitmap_tags:
 	return -ENOMEM;
 }
 
+int blk_mq_init_shared_sbitmap(struct blk_mq_tag_set *set, unsigned int flags)
+{
+	unsigned int depth = set->queue_depth - set->reserved_tags;
+	int alloc_policy = BLK_MQ_FLAG_TO_ALLOC_POLICY(set->flags);
+	bool round_robin = alloc_policy == BLK_TAG_ALLOC_RR;
+	int i, node = set->numa_node;
+
+	if (bt_alloc(&set->aux->__bitmap_tags, depth, round_robin, node))
+		return -ENOMEM;
+	if (bt_alloc(&set->aux->__breserved_tags, set->reserved_tags,
+		     round_robin, node))
+		goto free_bitmap_tags;
+
+	for (i = 0; i < set->nr_hw_queues; i++) {
+		struct blk_mq_tags *tags = set->tags[i];
+
+		tags->bitmap_tags = &set->aux->__bitmap_tags;
+		tags->breserved_tags = &set->aux->__breserved_tags;
+	}
+
+	return 0;
+free_bitmap_tags:
+	sbitmap_queue_free(&set->aux->__bitmap_tags);
+	return -ENOMEM;
+}
+
+void blk_mq_exit_shared_sbitmap(struct blk_mq_tag_set *set)
+{
+	sbitmap_queue_free(&set->aux->__bitmap_tags);
+	sbitmap_queue_free(&set->aux->__breserved_tags);
+}
+
 struct blk_mq_tags *blk_mq_init_tags(unsigned int total_tags,
 				     unsigned int reserved_tags,
 				     int node, unsigned int flags)
@@ -467,6 +499,9 @@ struct blk_mq_tags *blk_mq_init_tags(unsigned int total_tags,
 	tags->nr_tags = total_tags;
 	tags->nr_reserved_tags = reserved_tags;
 
+	if (flags & BLK_MQ_F_TAG_HCTX_SHARED)
+		return tags;
+
 	if (blk_mq_init_bitmap_tags(tags, node, alloc_policy) < 0) {
 		kfree(tags);
 		return NULL;
@@ -476,8 +511,10 @@ struct blk_mq_tags *blk_mq_init_tags(unsigned int total_tags,
 
 void blk_mq_free_tags(struct blk_mq_tags *tags, unsigned int flags)
 {
-	sbitmap_queue_free(&tags->__bitmap_tags);
-	sbitmap_queue_free(&tags->__breserved_tags);
+	if (!(flags & BLK_MQ_F_TAG_HCTX_SHARED)) {
+		sbitmap_queue_free(tags->bitmap_tags);
+		sbitmap_queue_free(tags->breserved_tags);
+	}
 	kfree(tags);
 }
 
@@ -496,7 +533,8 @@ int blk_mq_tag_update_depth(struct blk_mq_hw_ctx *hctx,
 	 */
 	if (tdepth > tags->nr_tags) {
 		struct blk_mq_tag_set *set = hctx->queue->tag_set;
-		unsigned int flags = set->flags;
+		/* Only sched tags can grow, so clear HCTX_SHARED flag  */
+		unsigned int flags = set->flags & ~BLK_MQ_F_TAG_HCTX_SHARED;
 		struct blk_mq_tags *new;
 		bool ret;
 
@@ -533,6 +571,11 @@ int blk_mq_tag_update_depth(struct blk_mq_hw_ctx *hctx,
 	}
 
 	return 0;
+}
+
+void blk_mq_tag_resize_shared_sbitmap(struct blk_mq_tag_set *set, unsigned int size)
+{
+	sbitmap_queue_resize(&set->aux->__bitmap_tags, size - set->reserved_tags);
 }
 
 /**

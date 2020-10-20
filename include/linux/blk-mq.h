@@ -110,6 +110,11 @@ enum hctx_type {
 	RH_HCTX_MAX_TYPES = 6,	/* RH extend for reserving space*/
 };
 
+struct blk_mq_tag_set_aux {
+	struct sbitmap_queue	__bitmap_tags;
+	struct sbitmap_queue	__breserved_tags;
+};
+
 /**
  * struct blk_mq_tag_set - tag set that can be shared between request queues
  * @map:	   One or more ctx -> hctx mappings. One map exists for each
@@ -132,6 +137,9 @@ enum hctx_type {
  * @flags:	   Zero or more BLK_MQ_F_* flags.
  * @driver_data:   Pointer to data owned by the block driver that created this
  *		   tag set.
+ * @__bitmap_tags: A shared tags sbitmap, used over all hctx's
+ * @__breserved_tags:
+ *		   A shared reserved tags sbitmap, used over all hctx's
  * @tags:	   Tag sets. One tag set per hardware queue. Has @nr_hw_queues
  *		   elements.
  * @tag_list_lock: Serializes tag_list accesses.
@@ -156,7 +164,8 @@ struct blk_mq_tag_set {
 	struct mutex		tag_list_lock;
 	struct list_head	tag_list;
 
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, struct blk_mq_tag_set_aux * aux)
+
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
@@ -294,6 +303,7 @@ enum {
 	 * completing IO:
 	 */
 	BLK_MQ_F_STACKING	= 1 << 3,
+	BLK_MQ_F_TAG_HCTX_SHARED = 1 << 4,
 	BLK_MQ_F_BLOCKING	= 1 << 5,
 	BLK_MQ_F_NO_SCHED	= 1 << 6,
 	BLK_MQ_F_ALLOC_POLICY_START_BIT = 8,
