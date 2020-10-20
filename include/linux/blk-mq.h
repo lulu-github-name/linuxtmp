@@ -287,6 +287,7 @@ struct blk_mq_ops {
 enum {
 	BLK_MQ_F_SHOULD_MERGE	= 1 << 0,
 	BLK_MQ_F_TAG_SHARED	= 1 << 1,
+	BLK_MQ_F_TAG_QUEUE_SHARED = BLK_MQ_F_TAG_SHARED,
 	BLK_MQ_F_SG_MERGE	= 1 << 2,	/* obsolete */
 	/*
 	 * Set when this device requires underlying blk-mq device for
