@@ -69,6 +69,12 @@ S:	Maintained
 F:	redhat/
 I:	INTERNAL
 
+RHEL 8.4 Kernel Maintainer
+M:	Jan Stancek <jstancek@redhat.com>
+T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git rhel-8.4.0
+S:	Maintained
+F:	redhat/
+
 RHEL 8.3 Kernel Maintainer
 M:	Frantisek Hrbata <fhrbata@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git rhel-8.3.0
