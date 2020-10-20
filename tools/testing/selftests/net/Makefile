@@ -12,6 +12,7 @@ TEST_PROGS += test_vxlan_fdb_changelink.sh so_txtime.sh ipv6_flowlabel.sh
 TEST_PROGS += fcnal-test.sh l2tp.sh traceroute.sh
 TEST_PROGS += txtimestamp.sh
 TEST_PROGS += vrf-xfrm-tests.sh
+TEST_PROGS += rxtimestamp.sh
 TEST_PROGS += devlink_port_split.py
 TEST_PROGS_EXTENDED := in_netns.sh
 TEST_GEN_FILES =  socket nettest
