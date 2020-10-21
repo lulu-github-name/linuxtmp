@@ -274,43 +274,63 @@ looking metadata from the upstream text.  The metadata section consists of
 four parts:
 
 a) Bugzilla:
-[Required] Each patch has at least one bugzilla number in the body or subject.
+[Required] Each patch has at least one bugzilla number in the body.
 
     Patches that modify or add to publicly released code and are lacking a
 bugzilla number will not be committed and will be immediately flagged by the
 maintainers.  Every patch needs to be coordinated with management and QE, and
-this is done through bugzilla flags.  If the qa_ack, pm_ack, and devel_ack
-flags are set on a bugzilla, then and only then, will the patch be considered
-for inclusion into the trees by the maintainers.   Additionally, the bugzilla
-number can potentially give the reviewer more details about the reported
-problem the patch is addressing.
+this is done through bugzilla flags.  The release flag must be set, which
+requires various other flags, fields and states are properly tended to. Then
+and only then, will the patch be considered for inclusion into the trees by
+the maintainers.  Additionally, the bugzilla number can potentially give the
+reviewer more details about the reported problem the patch is addressing.
 
     A bugzilla is not required for patches that change redhat code or
 documents that will not be released to the public.  In those cases use INTERNAL
 as the BZ number.
 
-    Patches can list multiple bugzilla numbers in the body, one per line, if
-the patch fixes or is part of the fix for multiple bugs.  All bugzillas must
-must have appropriate flags before the patch can be committed.  In patchsets,
-it is preferred that bugs are listed only in the patches relevant to the bug,
-for both changelog clarity and for the benefit of Engineering teams work on
-z-stream kernels.
+    Patches can list multiple bugzilla numbers in the body, using one or more
+lines prefixed with Bugzilla: to list them all, if the patch fixes or is part
+part of the fix for multiple bugs.  All bugzillas must must have appropriate
+flags before the patch can be committed.  In patchsets, it is preferred that
+bugs are listed only in the patches relevant to the bug, for both changelog
+clarity and for the benefit of Engineering teams work on z-stream kernels,
+and all bugs the set touches must be listed in the patchset cover letter.
 
-Good examples for bugzilla numbers in the body:
+Good examples for bugzilla number references:
 
-	BZ 783023 (this is also the preferred subject line format)
-	Bug 783023
+	Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=783023
+	Bugzilla: http://bugzilla.redhat.com/783023
 	Bugzilla: 783023
-	Fixes BZ 789023
-	Resolves BZ 783023
-	Resolves: bz783023
-	https://bugzilla.redhat.com/show_bug.cgi?id=783023
+	Bugzilla: 123456, 789012
 	Bugzilla: INTERNAL
 
-When referring to multiple bugzilla numbers:
+Many reviewers greatly appreciate the first two forms, which provides them
+with an easily clickable link to immediately open the relevant bugzilla(s).
 
-	Bugzilla: 783023
-	Bugzilla: 911119
+Formatting is important here. Only a new line starting with "Bugzilla:" and
+containing 4 to 8 consecutive digits or the string "INTERNAL" will be
+evaluated as a valid bugzilla reference by the maintainer tooling. If you
+include the full URL to a bug, additional checking will ensure that you're
+pointing to bugzilla.redhat.com instead of another bugzilla instance.
+
+Example python bits used to filter commit message lines, less the bit to
+ensure a URL for a non-Red Hat bugzilla isn't evaluated:
+
+bzs = []
+bz_re = re.compile(r'\d{4,8}')
+for line in commit_message.split("\n"):
+    if not line.startswith("Bugzilla:"):
+        continue
+    if "INTERNAL" in line:
+        bzs.append("INTERNAL")
+    bugnumbers = bz_re.findall(line)
+        for bug in bugnumbers:
+	    bzs.append(bug)
+return bzs
+
+Having a single supported format greatly reduces the chances of false
+positives, improving the reliability of automated tooling.
 
 b) Upstream Status:
 [Required] A mention of where the patch(es) came from.
