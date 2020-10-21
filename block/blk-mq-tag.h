@@ -13,12 +13,15 @@ struct blk_mq_tags {
 
 	atomic_t active_queues;
 
-	struct sbitmap_queue bitmap_tags;
-	struct sbitmap_queue breserved_tags;
+	struct sbitmap_queue RH_KABI_RENAME(bitmap_tags, __bitmap_tags);
+	struct sbitmap_queue RH_KABI_RENAME(breserved_tags, __breserved_tags);
 
 	struct request **rqs;
 	struct request **static_rqs;
 	struct list_head page_list;
+
+	RH_KABI_EXTEND(struct sbitmap_queue *bitmap_tags)
+	RH_KABI_EXTEND(struct sbitmap_queue *breserved_tags)
 };
 
 extern struct blk_mq_tags *blk_mq_init_tags(unsigned int nr_tags,
