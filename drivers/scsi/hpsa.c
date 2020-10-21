@@ -6550,13 +6550,11 @@ static void check_ioctl_unit_attention(struct ctlr_info *h,
 /*
  * ioctl
  */
-static int hpsa_ioctl(struct scsi_device *dev, int cmd, void __user *arg)
+static int hpsa_ioctl(struct scsi_device *dev, int cmd,
+		      void __user *argp)
 {
-	struct ctlr_info *h;
-	void __user *argp = (void __user *)arg;
+	struct ctlr_info *h = sdev_to_hba(dev);
 	int rc;
-
-	h = sdev_to_hba(dev);
 
 	switch (cmd) {
 	case CCISS_DEREGDISK:
