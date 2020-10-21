@@ -439,6 +439,11 @@ S:	Maintained
 F:	drivers/net/bonding/
 F:	include/linux/if_bonding.h
 
+BUS DRIVER
+M:	Myron Stowe <myron.stowe@redhat.com>
+S:	Maintained
+F:	drivers/bus/
+
 CEPH COMMON CODE (LIBCEPH)
 M:	Ilya Dryomov <idryomov@redhat.com>
 M:	Jeff Layton <jlayton@redhat.com>
@@ -595,6 +600,12 @@ S:	Maintained
 F:	drivers/dma-buf/
 F:	include/linux/dma-buf*
 
+DMA DRIVERS
+M:	Jerry Snitselaar <jsnitsel@redhat.com>
+M:	David Arcari <darcari@redhat.com>
+S:	Maintained
+F:	drivers/dma/
+
 DMA SUPPORT
 M:	Jerry Snitselaar <jsnitsel@redhat.com>
 M:	Donald Dutile <ddutile@redhat.com>
@@ -669,6 +680,13 @@ S:	Maintained
 F:	drivers/firewire/
 F:	include/linux/firewire*.h
 
+FIRMWARE SUBSYSTEM
+M:	Lenny Szubowicz <lszubowi@redhat.com>
+M:	David Arcari <darcari@redhat.com>
+M:	Mark Langsdorf <mlangsdo@redhat.com>
+S:	Maintained
+F:	drivers/firmware/
+
 FTRACE
 M:	Jerome Marchand <jmarchan@redhat.com>
 S:	Maintained
@@ -731,6 +749,16 @@ F:	include/linux/i2c.h
 F:	include/linux/i2c-*.h
 F:	include/uapi/linux/i2c.h
 F:	include/uapi/linux/i2c-*.h
+
+INFINIBAND SUBSYSTEM
+M:	Kamal Heib <kheib@redhat.com>
+M:	Jonathan Toppins <jtoppins@redhat.com>
+S:	Maintained
+F:	drivers/infiniband/
+F:	include/rdma/
+F:	include/uapi/rdma/
+F:	include/uapi/linux/if_infiniband.h
+F:	Documentation/infiniband/
 
 INIT
 M:	Prarit Bhargava <prarit@redhat.com>
@@ -836,11 +864,28 @@ M:	Tony Camuso <tcamuso@redhat.com>
 S:	Maintained
 F:	drivers/crypto/qat/*
 
+IOMMU DRIVERS
+M:	Jerry Snitselaar <jsnitsel@redhat.com>
+M:	Myron Stowe <myron.stowe@redhat.com>
+M:	Alex Williamson <alex.williamson@redhat.com>
+M:	Don Dutile <ddutile@redhat.com>
+S:	Maintained
+F:	drivers/iommu/
+
+IPMI SUBSYSTEM
+M:	Tony Camuso <tcamuso@redhat.com>
+S:	Maintained
+
 ISCSI (iscsi_tcp, libiscsi, libiscsi_tcp, scsi_transport_iscsi)
 M:	Chris Leech <cleech@redhat.com>
 S:	Maintained
 F:	drivers/scsi/*iscsi*
 F:	include/scsi/*iscsi*
+
+ISMT SMBUS DRIVER
+M:	Tony Camuso <tcamuso@redhat.com>
+S:	Maintained
+F:	drivers/i2c/busses/i2c-ismt.c
 
 JOURNALLING LAYER FOR BLOCK DEVICES (JBD2)
 M:	Lukas Czerner <lczerner@redhat.com>
@@ -967,32 +1012,10 @@ F:	tools/hv/
 F:	Documentation/ABI/stable/sysfs-bus-vmbus
 F:	Documentation/ABI/testing/debugfs-hyperv
 
-INFINIBAND SUBSYSTEM
-M:	Kamal Heib <kheib@redhat.com>
-M:	Jonathan Toppins <jtoppins@redhat.com>
-S:	Maintained
-F:	drivers/infiniband/
-F:	include/rdma/
-F:	include/uapi/rdma/
-F:	include/uapi/linux/if_infiniband.h
-F:	Documentation/infiniband/
-
-IOMMU DRIVERS
-M:	Jerry Snitselaar <jsnitsel@redhat.com>
-M:	Myron Stowe <myron.stowe@redhat.com>
-M:	Alex Williamson <alex.williamson@redhat.com>
-M:	Don Dutile <ddutile@redhat.com>
-S:	Maintained
-F:	drivers/iommu/
-
-IPMI SUBSYSTEM
+LEDS DRIVERS
 M:	Tony Camuso <tcamuso@redhat.com>
 S:	Maintained
-
-ISMT SMBUS DRIVER
-M:	Tony Camuso <tcamuso@redhat.com>
-S:	Maintained
-F:	drivers/i2c/busses/i2c-ismt.c
+F:	drivers/leds/
 
 LIB
 M:	Prarit Bhargava <prarit@redhat.com>
@@ -1055,6 +1078,11 @@ M:	Prarit Bhargava <prarit@redhat.com>
 S:	Maintained
 F:	arch/x86/kernel/cpu/mcheck/
 
+MAILBOX DRIVERS
+M:	Al Stone <ahs3@redhat.com>
+S:	Maintained
+F:	drivers/mailbox/
+
 MELLANOX ETHERNET SWITCH DRIVERS
 M:	Ivan Vecera <ivecera@redhat.com>
 S:	Maintained
@@ -1074,6 +1102,20 @@ F:	mm/
 MEMORY HOTPLUG
 M:	Prarit Bhargava <prarit@redhat.com>
 S:	Maintained
+F:	drivers/char/ipmi/
+F:	include/linux/ipmi-fru.h
+F:	include/linux/ipmi.h
+F:	include/linux/ipmi_smi.h
+F:	include/uapi/linux/ipmi.h
+F:	include/uapi/linux/ipmi_bmc.h
+F:	include/uapi/linux/ipmi_msgdefs.h
+
+MFD DRIVERS (Multi Function Devices)
+M:	Torez Smith <torez@redhat.com>
+M:	David Arcari <darcari@redhat.com>
+M:	Tony Camuso <tcamuso@redhat.com>
+S:	Maintained
+F:	drivers/mfd/
 
 MICRON PCIe SSD DRIVER (mtip32xx)
 M:	David Milburn <dmilburn@redhat.com>
@@ -1268,8 +1310,7 @@ NVM EXPRESS DRIVER (nvme)
 M:	David Milburn <dmilburn@redhat.com>
 M:	Gopal Tiwari <gtiwari@redhat.com>
 S:	Maintained
-F:	drivers/nvme/host/
-F:	drivers/nvme/target/
+F:	drivers/nvme/
 F:	include/linux/nvme.h
 F:	include/linux/nvme-rdma*.h
 
@@ -1340,10 +1381,16 @@ S:	Maintained
 F:	drivers/pinctrl/
 F:	include/linux/pinctrl/
 
-LINUX FOR POWERPC (64-BIT)
-M:	Steve Best <sbest@redhat.com>
+PLATFORM DRIVERS
+M:	David Arcari <darcari@redhat.com>
+M:	Mark Langsdorf <mlangsdo@redhat.com>
 S:	Maintained
-F:	arch/powerpc/
+F:	drivers/platform/
+
+POWER DRIVERS (Batteries, power supplies, etc.)
+M:	Lenny Szubowicz <lszubowi@redhat.com>
+S:	Maintained
+F:	drivers/power/
 
 POWER STATE COORDINATION INTERFACE (PSCI)
 M:	Mark Salter <msalter@redhat.com>
@@ -1351,6 +1398,11 @@ S:	Maintained
 F:	drivers/firmware/psci*.c
 F:	include/linux/psci.h
 F:	include/uapi/linux/psci.h
+
+POWERPC (64-BIT)
+M:	Steve Best <sbest@redhat.com>
+S:	Maintained
+F:	arch/powerpc/
 
 PSTORE PERSISTENT STORAGE
 M:	Lenny Szubowicz <lszubowi@redhat.com>
@@ -1452,6 +1504,19 @@ F:	include/linux/sctp.h
 F:	include/net/sctp/
 F:	include/uapi/linux/sctp.h
 
+SECURITY SUBSYSTEM
+M:	Ondrej Mosnacek <omosnace@redhat.com>
+S:	Supported
+F:	include/linux/lsm_*
+F:	include/linux/security.h
+F:	security/commoncap.c
+F:	security/inode.c
+F:	security/lsm_audit.c
+F:	security/min_addr.c
+F:	security/security.c
+F:	security/Kconfig
+F:	security/Makefile
+
 SELINUX SECURITY MODULE
 M:	Ondrej Mosnacek <omosnace@redhat.com>
 S:	Supported
@@ -1487,6 +1552,11 @@ M:	Abhijith Das <adas@redhat.com>
 S:	Maintained
 F:	Documentation/filesystems/squashfs.txt
 F:	fs/squashfs/
+
+SPI DRIVERS (Serial Peripheral Interface)
+M:	Al Stone <ahs3@redhat.com>
+S:	Maintained
+F:	drivers/spi/
 
 SUN REMOTE PROCEDURE CALL (sunrpc)
 L:	Red Hat NFS Team <nfs-team@redhat.com>
@@ -1574,6 +1644,11 @@ M:	Torez Smith <torez@redhat.com>
 M:	Don Zickus <dzickus@redhat.com>
 S:	Maintained
 F:	drivers/usb/
+
+USR DIRECTORY
+M:	Prarit Bhargava <prarit@redhat.com>
+S:	Maintained
+F:	usr/
 
 UVC WEBCAM DRIVER
 M:	Tony Camuso <tcamuso@redhat.com>
