@@ -26,6 +26,14 @@ int nfs42_proc_layouterror(struct pnfs_layout_segment *lseg,
 			   const struct nfs42_layout_error *errors,
 			   size_t n);
 
+ssize_t nfs42_proc_getxattr(struct inode *inode, const char *name,
+			    void *buf, size_t buflen);
+int nfs42_proc_setxattr(struct inode *inode, const char *name,
+			const void *buf, size_t buflen, int flags);
+ssize_t nfs42_proc_listxattrs(struct inode *inode, void *buf,
+			       size_t buflen, u64 *cookiep, bool *eofp);
+int nfs42_proc_removexattr(struct inode *inode, const char *name);
+
 /*
  * Maximum XDR buffer size needed for a listxattr buffer of buflen size.
  *
