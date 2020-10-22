@@ -1690,6 +1690,12 @@ static int cred_has_capability(const struct cred *cred,
 	u32 av = CAP_TO_MASK(cap);
 	int rc;
 
+	/* RHEL-8 only: map these two to SYS_ADMIN for backwards compat */
+	if (cap == CAP_PERFMON || cap == CAP_BPF) {
+		cap = CAP_SYS_ADMIN;
+		av = CAP_TO_MASK(cap);
+	}
+
 	ad.type = LSM_AUDIT_DATA_CAP;
 	ad.u.cap = cap;
 
