@@ -24,6 +24,11 @@
 /*
  * Vendors and devices.  Sort key: vendor first, device next.
  */
+
+#define SDIO_VENDOR_ID_ATHEROS			0x0271
+#define SDIO_DEVICE_ID_ATHEROS_AR6005		0x050A
+#define SDIO_DEVICE_ID_ATHEROS_QCA9377		0x0701
+
 #define SDIO_VENDOR_ID_BROADCOM			0x02d0
 #define SDIO_DEVICE_ID_BROADCOM_43143		0xa887
 #define SDIO_DEVICE_ID_BROADCOM_43241		0x4324
