@@ -174,7 +174,9 @@ long kvmppc_h_set_xdabr(struct kvm_vcpu *vcpu, unsigned long dabr,
 			unsigned long dabrx);
 
 /* Patch sites */
-extern s32 patch__call_flush_branch_caches;
+extern s32 patch__call_flush_branch_caches1;
+extern s32 patch__call_flush_branch_caches2;
+extern s32 patch__call_flush_branch_caches3;
 extern s32 patch__flush_count_cache_return;
 extern s32 patch__flush_link_stack_return;
 extern s32 patch__call_kvm_flush_link_stack;
