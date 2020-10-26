@@ -185,6 +185,7 @@ struct net {
 	RH_KABI_EXTEND(struct netns_mptcp_mib  mptcp_mib)
 #endif
 	RH_KABI_EXTEND(atomic64_t		net_cookie) /* written once */
+	RH_KABI_EXTEND(int	sctp_pf_expose)
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
