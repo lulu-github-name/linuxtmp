@@ -186,6 +186,7 @@ struct net {
 #endif
 	RH_KABI_EXTEND(atomic64_t		net_cookie) /* written once */
 	RH_KABI_EXTEND(int	sctp_pf_expose)
+	RH_KABI_EXTEND(int	sctp_ps_retrans)
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
