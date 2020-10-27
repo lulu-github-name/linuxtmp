@@ -499,7 +499,7 @@ static void cntvct_read_handler(unsigned int esr, struct pt_regs *regs)
 {
 	int rt = ESR_ELx_SYS64_ISS_RT(esr);
 
-	pt_regs_write_reg(regs, rt, arch_counter_get_cntvct());
+	pt_regs_write_reg(regs, rt, arch_timer_read_counter());
 	arm64_skip_faulting_instruction(regs, AARCH64_INSN_SIZE);
 }
 
