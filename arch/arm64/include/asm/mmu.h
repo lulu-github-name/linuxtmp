@@ -29,6 +29,9 @@
 
 typedef struct {
 	atomic64_t	id;
+#ifdef CONFIG_COMPAT
+	void		*sigpage;
+#endif
 	void		*vdso;
 	unsigned long	flags;
 	atomic_t	nr_active_mm;
