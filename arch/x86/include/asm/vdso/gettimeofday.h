@@ -21,6 +21,7 @@
 #include <clocksource/hyperv_timer.h>
 
 #define __vdso_data (VVAR(_vdso_data))
+#define __timens_vdso_data (TIMENS(_vdso_data))
 
 #define VDSO_HAS_TIME 1
 
@@ -34,6 +35,13 @@ extern u8 pvclock_page[PAGE_SIZE]
 #ifdef CONFIG_HYPERV_TIMER
 extern u8 hvclock_page[PAGE_SIZE]
 	__attribute__((visibility("hidden")));
+#endif
+
+#ifdef CONFIG_TIME_NS
+static __always_inline const struct vdso_data *__arch_get_timens_vdso_data(void)
+{
+	return __timens_vdso_data;
+}
 #endif
 
 #ifndef BUILD_VDSO32
