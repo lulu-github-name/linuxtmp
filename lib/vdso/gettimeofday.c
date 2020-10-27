@@ -4,6 +4,7 @@
  */
 #include <linux/compiler.h>
 #include <linux/math64.h>
+#include <linux/compat_time.h>
 #include <linux/time.h>
 #include <linux/kernel.h>
 #include <linux/hrtimer_defs.h>
