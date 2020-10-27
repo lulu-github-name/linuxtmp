@@ -1013,4 +1013,7 @@ config LOCK_EVENT_COUNTS
 config ARCH_HAS_MEM_ENCRYPT
 	bool
 
+config ARCH_HAS_VDSO_DATA
+	bool
+
 source "kernel/gcov/Kconfig"
