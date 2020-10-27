@@ -30,13 +30,10 @@ cat << EOF
 #define __IGNORE_readlink	/* readlinkat */
 #define __IGNORE_symlink	/* symlinkat */
 #define __IGNORE_utimes		/* futimesat */
-#if BITS_PER_LONG == 64
 #define __IGNORE_stat		/* fstatat */
 #define __IGNORE_lstat		/* fstatat */
-#else
 #define __IGNORE_stat64		/* fstatat64 */
 #define __IGNORE_lstat64	/* fstatat64 */
-#endif
 
 /* Missing flags argument */
 #define __IGNORE_renameat	/* renameat2 */
@@ -133,7 +130,7 @@ cat << EOF
 #define __IGNORE_io_pgetevents
 #define __IGNORE_recvmmsg
 #define __IGNORE_mq_timedsend
-#define __IGNORE_mq_timedreceiv
+#define __IGNORE_mq_timedreceive
 #define __IGNORE_semtimedop
 #define __IGNORE_rt_sigtimedwait
 #define __IGNORE_futex
