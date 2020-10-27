@@ -21,6 +21,11 @@
 #include "zfcp_reqlist.h"
 #include "zfcp_diag.h"
 
+/* timeout for FSF requests sent during scsi_eh: abort or FCP TMF */
+#define ZFCP_FSF_SCSI_ER_TIMEOUT (10*HZ)
+/* timeout for: exchange config/port data outside ERP, or open/close WKA port */
+#define ZFCP_FSF_REQUEST_TIMEOUT (60*HZ)
+
 struct kmem_cache *zfcp_fsf_qtcb_cache;
 
 static bool ber_stop = true;
@@ -1027,7 +1032,7 @@ struct zfcp_fsf_req *zfcp_fsf_abort_fcp_cmnd(struct scsi_cmnd *scmnd)
 	req->qtcb->header.port_handle = zfcp_sdev->port->handle;
 	req->qtcb->bottom.support.req_handle = (u64) old_req_id;
 
-	zfcp_fsf_start_timer(req, ZFCP_SCSI_ER_TIMEOUT);
+	zfcp_fsf_start_timer(req, ZFCP_FSF_SCSI_ER_TIMEOUT);
 	if (!zfcp_fsf_req_send(req))
 		goto out;
 
@@ -2650,7 +2655,7 @@ struct zfcp_fsf_req *zfcp_fsf_fcp_task_mgmt(struct scsi_device *sdev,
 	fcp_cmnd = &req->qtcb->bottom.io.fcp_cmnd.iu;
 	zfcp_fc_fcp_tm(fcp_cmnd, sdev, tm_flags);
 
-	zfcp_fsf_start_timer(req, ZFCP_SCSI_ER_TIMEOUT);
+	zfcp_fsf_start_timer(req, ZFCP_FSF_SCSI_ER_TIMEOUT);
 	if (!zfcp_fsf_req_send(req))
 		goto out;
 
