@@ -1873,7 +1873,7 @@ static u16 qeth_l3_iqd_select_queue(struct net_device *dev, struct sk_buff *skb,
 				    select_queue_fallback_t fallback)
 {
 	return qeth_iqd_select_queue(dev, skb, qeth_l3_get_cast_type(skb),
-				     sb_dev);
+				     sb_dev, fallback);
 }
 
 static u16 qeth_l3_osa_select_queue(struct net_device *dev, struct sk_buff *skb,

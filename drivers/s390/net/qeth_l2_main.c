@@ -571,7 +571,7 @@ static u16 qeth_l2_select_queue(struct net_device *dev, struct sk_buff *skb,
 	if (IS_IQD(card))
 		return qeth_iqd_select_queue(dev, skb,
 					     qeth_get_ether_cast_type(skb),
-					     sb_dev);
+					     sb_dev, fallback);
 
 	return IS_VM_NIC(card) ? fallback(dev, skb, sb_dev) :
 				 qeth_get_priority_queue(card, skb);

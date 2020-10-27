@@ -1062,7 +1062,8 @@ netdev_features_t qeth_features_check(struct sk_buff *skb,
 				      netdev_features_t features);
 void qeth_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *stats);
 u16 qeth_iqd_select_queue(struct net_device *dev, struct sk_buff *skb,
-			  u8 cast_type, struct net_device *sb_dev);
+			  u8 cast_type, struct net_device *sb_dev,
+			  select_queue_fallback_t fallback);
 int qeth_open(struct net_device *dev);
 int qeth_stop(struct net_device *dev);
 
