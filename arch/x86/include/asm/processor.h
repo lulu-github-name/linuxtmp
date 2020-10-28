@@ -87,6 +87,7 @@ extern u16 __read_mostly tlb_lld_1g[NR_INFO];
 struct cpuinfo_x86_extended_rh {
 	u16			cpu_die_id;
 	u16			logical_die_id;
+	int                     x86_cache_mbm_width_offset;
 #ifdef CONFIG_X86_VMX_FEATURE_NAMES
 	__u32			vmx_capability[NVMXINTS];
 #endif
@@ -122,7 +123,7 @@ struct cpuinfo_x86 {
 	/* in KB - valid for CPUS which support this call: */
 	unsigned int		x86_cache_size;
 	int			x86_cache_alignment;	/* In bytes */
-	/* Cache QoS architectural values: */
+	/* Cache QoS architectural values, valid only on the BSP: */
 	int			x86_cache_max_rmid;	/* max index */
 	int			x86_cache_occ_scale;	/* scale to bytes */
 	int			x86_power;
