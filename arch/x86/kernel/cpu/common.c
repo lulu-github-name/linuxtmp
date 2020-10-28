@@ -59,8 +59,6 @@
 #include <asm/uv/uv.h>
 #endif
 
-#include <asm/resctrl.h>
-
 #include "cpu.h"
 
 u32 elf_hwcap2 __read_mostly;
@@ -872,7 +870,6 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 
 	init_scattered_cpuid_features(c);
 	init_speculation_control(c);
-	resctrl_cpu_detect(c);
 
 	/*
 	 * Clear/Set all flags overridden by options, after probe.
