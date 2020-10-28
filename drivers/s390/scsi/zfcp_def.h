@@ -41,8 +41,6 @@
 #include "zfcp_fc.h"
 #include "zfcp_qdio.h"
 
-struct zfcp_reqlist;
-
 /********************* SCSI SPECIFIC DEFINES *********************************/
 #define ZFCP_SCSI_ER_TIMEOUT                    (10*HZ)
 
