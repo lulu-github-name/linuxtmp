@@ -1502,7 +1502,7 @@ qla2x00_prep_ct_fdmi_req(struct ct_sns_pkt *p, uint16_t cmd,
 	return &p->p.req;
 }
 
-static uint
+uint
 qla25xx_fdmi_port_speed_capability(struct qla_hw_data *ha)
 {
 	if (IS_CNA_CAPABLE(ha))
@@ -1539,7 +1539,7 @@ qla25xx_fdmi_port_speed_capability(struct qla_hw_data *ha)
 	if (IS_QLA2031(ha))
 		return FDMI_PORT_SPEED_16GB|FDMI_PORT_SPEED_8GB|
 			FDMI_PORT_SPEED_4GB;
-	if (IS_QLA25XX(ha))
+	if (IS_QLA25XX(ha) || IS_QLAFX00(ha))
 		return FDMI_PORT_SPEED_8GB|FDMI_PORT_SPEED_4GB|
 			FDMI_PORT_SPEED_2GB|FDMI_PORT_SPEED_1GB;
 	if (IS_QLA24XX_TYPE(ha))
@@ -1549,7 +1549,8 @@ qla25xx_fdmi_port_speed_capability(struct qla_hw_data *ha)
 		return FDMI_PORT_SPEED_2GB|FDMI_PORT_SPEED_1GB;
 	return FDMI_PORT_SPEED_1GB;
 }
-static uint
+
+uint
 qla25xx_fdmi_port_speed_currently(struct qla_hw_data *ha)
 {
 	switch (ha->link_data_rate) {
