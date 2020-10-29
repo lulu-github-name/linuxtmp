@@ -1270,12 +1270,13 @@ xfs_file_mmap(
 	struct vm_area_struct	*vma)
 {
 	struct inode		*inode = file_inode(file);
+	struct xfs_buftarg	*target = xfs_inode_buftarg(XFS_I(inode));
 
 	/*
-	 * We don't support synchronous mappings for non-DAX files. At least
-	 * until someone comes with a sensible use case.
+	 * We don't support synchronous mappings for non-DAX files and
+	 * for DAX files if underneath dax_device is not synchronous.
 	 */
-	if (!IS_DAX(inode) && (vma->vm_flags & VM_SYNC))
+	if (!daxdev_mapping_supported(vma, target->bt_daxdev))
 		return -EOPNOTSUPP;
 
 	file_accessed(file);
