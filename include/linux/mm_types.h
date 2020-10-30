@@ -18,6 +18,8 @@
 
 #include <asm/mmu.h>
 
+#include <linux/rh_kabi.h>
+
 #ifndef AT_VECTOR_SIZE_ARCH
 #define AT_VECTOR_SIZE_ARCH 0
 #endif
@@ -147,7 +149,11 @@ struct page {
 			unsigned long _pt_pad_1;	/* compound_head */
 			pgtable_t pmd_huge_pte; /* protected by page->ptl */
 			unsigned long _pt_pad_2;	/* mapping */
-			struct mm_struct *pt_mm;	/* x86 pgds only */
+			RH_KABI_REPLACE(struct mm_struct *pt_mm,
+					union {
+						struct mm_struct *pt_mm; /* x86 pgds only */
+						atomic_t pt_frag_refcount; /* powerpc */
+			})
 #if ALLOC_SPLIT_PTLOCKS
 			spinlock_t *ptl;
 #else
