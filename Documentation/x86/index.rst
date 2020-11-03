@@ -6,4 +6,5 @@ x86 architecture specifics
    :maxdepth: 1
 
    mds
+   resctrl_ui
    tsx_async_abort
