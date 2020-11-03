@@ -9,6 +9,7 @@
 #include <linux/virtio.h>
 #include <linux/virtio_fs.h>
 #include <linux/delay.h>
+#include <linux/fs_context.h>
 #include <linux/highmem.h>
 #include "fuse_i.h"
 
@@ -1169,45 +1170,41 @@ static void virtio_kill_sb(struct super_block *sb)
 	virtio_fs_free_devs(vfs);
 }
 
-static int virtio_fs_test_super(struct super_block *sb, void *data)
+static int virtio_fs_test_super(struct super_block *sb,
+				struct fs_context *fsc)
 {
-	struct fuse_conn *fc = data;
+	struct fuse_conn *fc = fsc->s_fs_info;
 
 	return fc->iq.priv == get_fuse_conn_super(sb)->iq.priv;
 }
 
-static int virtio_fs_set_super(struct super_block *sb, void *data)
+static int virtio_fs_set_super(struct super_block *sb,
+			       struct fs_context *fsc)
 {
 	int err;
 
 	err = get_anon_bdev(&sb->s_dev);
 	if (!err)
-		sb->s_fs_info = fuse_conn_get(data);
+		fuse_conn_get(fsc->s_fs_info);
 
 	return err;
 }
 
-static struct dentry *virtio_fs_mount(struct file_system_type *fs_type,
-				      int flags, const char *dev_name,
-				      void *opts)
+static int virtio_fs_get_tree(struct fs_context *fsc)
 {
 	struct virtio_fs *fs;
 	struct super_block *sb;
 	struct fuse_conn *fc;
 	int err;
 
-	/* We don't support any mount options yet */
-	if (opts && *(char *)opts)
-		return ERR_PTR(-EINVAL);
-
 	/* This gets a reference on virtio_fs object. This ptr gets installed
 	 * in fc->iq->priv. Once fuse_conn is going away, it calls ->put()
 	 * to drop the reference to this object.
 	 */
-	fs = virtio_fs_find_instance(dev_name);
+	fs = virtio_fs_find_instance(fsc->source);
 	if (!fs) {
-		pr_info("virtio-fs: tag <%s> not found\n", dev_name);
-		return ERR_PTR(-EINVAL);
+		pr_info("virtio-fs: tag <%s> not found\n", fsc->source);
+		return -EINVAL;
 	}
 
 	fc = kzalloc(sizeof(struct fuse_conn), GFP_KERNEL);
@@ -1215,7 +1212,7 @@ static struct dentry *virtio_fs_mount(struct file_system_type *fs_type,
 		mutex_lock(&virtio_fs_mutex);
 		virtio_fs_put(fs);
 		mutex_unlock(&virtio_fs_mutex);
-		return ERR_PTR(-ENOMEM);
+		return -ENOMEM;
 	}
 
 	fuse_conn_init(fc, get_user_ns(current_user_ns()), &virtio_fs_fiq_ops,
@@ -1223,35 +1220,41 @@ static struct dentry *virtio_fs_mount(struct file_system_type *fs_type,
 	fc->release = fuse_free_conn;
 	fc->delete_stale = true;
 
-	sb = sget(fs_type, virtio_fs_test_super, virtio_fs_set_super, flags,
-		  fc);
+	fsc->s_fs_info = fc;
+	sb = sget_fc(fsc, virtio_fs_test_super, virtio_fs_set_super);
 	fuse_conn_put(fc);
 	if (IS_ERR(sb))
-		return ERR_CAST(sb);
+		return PTR_ERR(sb);
 
 	if (!sb->s_root) {
 		err = virtio_fs_fill_super(sb);
 		if (err) {
 			deactivate_locked_super(sb);
-			return ERR_PTR(err);
+			return err;
 		}
 
 		sb->s_flags |= SB_ACTIVE;
-	} else {
-		err = -EBUSY;
-		if ((flags ^ sb->s_flags) & SB_RDONLY) {
-			deactivate_locked_super(sb);
-			return ERR_PTR(err);
-		}
 	}
 
-	return dget(sb->s_root);
+	WARN_ON(fsc->root);
+	fsc->root = dget(sb->s_root);
+	return 0;
+}
+
+static const struct fs_context_operations virtio_fs_context_ops = {
+	.get_tree	= virtio_fs_get_tree,
+};
+
+static int virtio_fs_init_fs_context(struct fs_context *fsc)
+{
+	fsc->ops = &virtio_fs_context_ops;
+	return 0;
 }
 
 static struct file_system_type virtio_fs_type = {
 	.owner		= THIS_MODULE,
 	.name		= "virtiofs",
-	.mount		= virtio_fs_mount,
+	.init_fs_context = virtio_fs_init_fs_context,
 	.kill_sb	= virtio_kill_sb,
 };
 
