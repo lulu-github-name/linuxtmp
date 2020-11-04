@@ -1493,18 +1493,11 @@ static void gfs2_evict_inode(struct inode *inode)
 	ret = evict_should_delete(inode, &gh);
 	if (ret == SHOULD_DEFER_EVICTION)
 		goto out;
+	if (ret == SHOULD_DELETE_DINODE)
+		ret = evict_unlinked_inode(inode);
+	else
+		ret = evict_linked_inode(inode);
 
-	if (ret == SHOULD_NOT_DELETE_DINODE)
-		goto out_truncate;
-
-	ret = evict_unlinked_inode(inode);
-	goto out_unlock;
-
-out_truncate:
-	ret = evict_linked_inode(inode);
-
-out_unlock:
-	/* Error path for case 1 */
 	if (gfs2_rs_active(&ip->i_res))
 		gfs2_rs_deltree(&ip->i_res);
 
