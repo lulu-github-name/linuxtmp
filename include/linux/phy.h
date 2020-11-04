@@ -724,6 +724,9 @@ struct phy_driver {
 
 	/* Override default interrupt handling */
         RH_KABI_BROKEN_INSERT(int (*handle_interrupt)(struct phy_device *phydev))
+
+	RH_KABI_BROKEN_INSERT(int (*get_sqi)(struct phy_device *dev))
+	RH_KABI_BROKEN_INSERT(int (*get_sqi_max)(struct phy_device *dev))
 };
 #define to_phy_driver(d) container_of(to_mdio_common_driver(d),		\
 				      struct phy_driver, mdiodrv)
