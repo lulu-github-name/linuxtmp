@@ -1663,14 +1663,6 @@ ENTRY(general_protection)
 	jmp	common_exception
 END(general_protection)
 
-#ifdef CONFIG_KVM_GUEST
-ENTRY(async_page_fault)
-	ASM_CLAC
-	pushl	$do_async_page_fault
-	jmp	common_exception
-END(async_page_fault)
-#endif
-
 ENTRY(rewind_stack_do_exit)
 	/* Prevent any naive code from trying to unwind to our caller. */
 	xorl	%ebp, %ebp
