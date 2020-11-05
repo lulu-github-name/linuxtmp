@@ -8562,7 +8562,7 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
 		kvm_x86_ops.request_immediate_exit(vcpu);
 	}
 
-	trace_kvm_entry(vcpu->vcpu_id);
+	trace_kvm_entry(vcpu);
 	guest_enter_irqoff();
 
 	fpregs_assert_state_consistent();
