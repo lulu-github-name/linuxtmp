@@ -3224,9 +3224,9 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
 		 * even when not intercepted. AMD manual doesn't explicitly
 		 * state this but appears to behave the same.
 		 *
-		 * On userspace reads and writes, however, we unconditionally
-		 * operate L1's TSC value to ensure backwards-compatible
-		 * behavior for migration.
+		 * Unconditionally return L1's TSC offset on userspace reads
+		 * so that userspace reads and writes always operate on L1's
+		 * offset, e.g. to ensure deterministic behavior for migration.
 		 */
 		u64 tsc_offset = msr_info->host_initiated ? vcpu->arch.l1_tsc_offset :
 							    vcpu->arch.tsc_offset;
@@ -5714,6 +5714,9 @@ int handle_ud(struct kvm_vcpu *vcpu)
 	char sig[5]; /* ud2; .ascii "kvm" */
 	struct x86_exception e;
 
+	if (unlikely(!kvm_x86_ops.can_emulate_instruction(vcpu, NULL, 0)))
+		return 1;
+
 	if (force_emulation_prefix &&
 	    kvm_read_guest_virt(vcpu, kvm_get_linear_rip(vcpu),
 				sig, sizeof(sig), &e) == 0 &&
@@ -6919,7 +6922,10 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 	int r;
 	struct x86_emulate_ctxt *ctxt = vcpu->arch.emulate_ctxt;
 	bool writeback = true;
-	bool write_fault_to_spt = vcpu->arch.write_fault_to_shadow_pgtable;
+	bool write_fault_to_spt;
+
+	if (unlikely(!kvm_x86_ops.can_emulate_instruction(vcpu, insn, insn_len)))
+		return 1;
 
 	vcpu->arch.l1tf_flush_l1d = true;
 
@@ -6927,6 +6933,7 @@ int x86_emulate_instruction(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
 	 * Clear write_fault_to_shadow_pgtable here to ensure it is
 	 * never reused.
 	 */
+	write_fault_to_spt = vcpu->arch.write_fault_to_shadow_pgtable;
 	vcpu->arch.write_fault_to_shadow_pgtable = false;
 	kvm_clear_exception_queue(vcpu);
 
