@@ -673,8 +673,9 @@ static long zcrypt_rsa_modexpo(struct ap_perms *perms,
 	pref_zq = NULL;
 	spin_lock(&zcrypt_list_lock);
 	for_each_zcrypt_card(zc) {
-		/* Check for online accelarator and CCA cards */
-		if (!zc->online || !(zc->card->functions & 0x18000000))
+		/* Check for useable accelarator or CCA card */
+		if (!zc->online || !zc->card->config ||
+		    !(zc->card->functions & 0x18000000))
 			continue;
 		/* Check for size limits */
 		if (zc->min_mod_size > mex->inputdatalength ||
@@ -692,8 +693,9 @@ static long zcrypt_rsa_modexpo(struct ap_perms *perms,
 		if (!zcrypt_card_compare(zc, pref_zc, wgt + cpen, pref_wgt))
 			continue;
 		for_each_zcrypt_queue(zq, zc) {
-			/* check if device is online and eligible */
-			if (!zq->online || !zq->ops->rsa_modexpo)
+			/* check if device is useable and eligible */
+			if (!zq->online || !zq->ops->rsa_modexpo ||
+			    !zq->queue->config)
 				continue;
 			/* check if device node has admission for this queue */
 			if (!zcrypt_check_queue(perms,
@@ -770,8 +772,9 @@ static long zcrypt_rsa_crt(struct ap_perms *perms,
 	pref_zq = NULL;
 	spin_lock(&zcrypt_list_lock);
 	for_each_zcrypt_card(zc) {
-		/* Check for online accelarator and CCA cards */
-		if (!zc->online || !(zc->card->functions & 0x18000000))
+		/* Check for useable accelarator or CCA card */
+		if (!zc->online || !zc->card->config ||
+		    !(zc->card->functions & 0x18000000))
 			continue;
 		/* Check for size limits */
 		if (zc->min_mod_size > crt->inputdatalength ||
@@ -789,8 +792,9 @@ static long zcrypt_rsa_crt(struct ap_perms *perms,
 		if (!zcrypt_card_compare(zc, pref_zc, wgt + cpen, pref_wgt))
 			continue;
 		for_each_zcrypt_queue(zq, zc) {
-			/* check if device is online and eligible */
-			if (!zq->online || !zq->ops->rsa_modexpo_crt)
+			/* check if device is useable and eligible */
+			if (!zq->online || !zq->ops->rsa_modexpo_crt ||
+			    !zq->queue->config)
 				continue;
 			/* check if device node has admission for this queue */
 			if (!zcrypt_check_queue(perms,
@@ -869,8 +873,9 @@ static long _zcrypt_send_cprb(struct ap_perms *perms,
 	pref_zq = NULL;
 	spin_lock(&zcrypt_list_lock);
 	for_each_zcrypt_card(zc) {
-		/* Check for online CCA cards */
-		if (!zc->online || !(zc->card->functions & 0x10000000))
+		/* Check for useable CCA card */
+		if (!zc->online || !zc->card->config ||
+		    !(zc->card->functions & 0x10000000))
 			continue;
 		/* Check for user selected CCA card */
 		if (xcRB->user_defined != AUTOSELECT &&
@@ -888,9 +893,10 @@ static long _zcrypt_send_cprb(struct ap_perms *perms,
 		if (!zcrypt_card_compare(zc, pref_zc, wgt + cpen, pref_wgt))
 			continue;
 		for_each_zcrypt_queue(zq, zc) {
-			/* check if device is online and eligible */
+			/* check for device useable and eligible */
 			if (!zq->online ||
 			    !zq->ops->send_cprb ||
+			    !zq->queue->config ||
 			    (tdom != AUTOSEL_DOM &&
 			     tdom != AP_QID_QUEUE(zq->queue->qid)))
 				continue;
@@ -1022,8 +1028,9 @@ static long _zcrypt_send_ep11_cprb(struct ap_perms *perms,
 	pref_zq = NULL;
 	spin_lock(&zcrypt_list_lock);
 	for_each_zcrypt_card(zc) {
-		/* Check for online EP11 cards */
-		if (!zc->online || !(zc->card->functions & 0x04000000))
+		/* Check for useable EP11 card */
+		if (!zc->online || !zc->card->config ||
+		    !(zc->card->functions & 0x04000000))
 			continue;
 		/* Check for user selected EP11 card */
 		if (targets &&
@@ -1041,9 +1048,10 @@ static long _zcrypt_send_ep11_cprb(struct ap_perms *perms,
 		if (!zcrypt_card_compare(zc, pref_zc, wgt + cpen, pref_wgt))
 			continue;
 		for_each_zcrypt_queue(zq, zc) {
-			/* check if device is online and eligible */
+			/* check if device is useable and eligible */
 			if (!zq->online ||
 			    !zq->ops->send_ep11_cprb ||
+			    !zq->queue->config ||
 			    (targets &&
 			     !is_desired_ep11_queue(zq->queue->qid,
 						    target_num, targets)))
@@ -1120,16 +1128,18 @@ static long zcrypt_rng(char *buffer)
 	pref_zq = NULL;
 	spin_lock(&zcrypt_list_lock);
 	for_each_zcrypt_card(zc) {
-		/* Check for online CCA cards */
-		if (!zc->online || !(zc->card->functions & 0x10000000))
+		/* Check for useable CCA card */
+		if (!zc->online || !zc->card->config ||
+		    !(zc->card->functions & 0x10000000))
 			continue;
 		/* get weight index of the card device	*/
 		wgt = zc->speed_rating[func_code];
 		if (!zcrypt_card_compare(zc, pref_zc, wgt, pref_wgt))
 			continue;
 		for_each_zcrypt_queue(zq, zc) {
-			/* check if device is online and eligible */
-			if (!zq->online || !zq->ops->rng)
+			/* check if device is useable and eligible */
+			if (!zq->online || !zq->ops->rng ||
+			    !zq->queue->config)
 				continue;
 			if (!zcrypt_queue_compare(zq, pref_zq, wgt, pref_wgt))
 				continue;
