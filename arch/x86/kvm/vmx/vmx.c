@@ -55,7 +55,6 @@
 #include "lapic.h"
 #include "mmu.h"
 #include "nested.h"
-#include "ops.h"
 #include "pmu.h"
 #include "trace.h"
 #include "vmcs.h"
