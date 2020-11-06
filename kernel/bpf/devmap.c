@@ -477,9 +477,11 @@ static struct xdp_buff *dev_map_run_prog(struct net_device *dev,
 					 struct xdp_buff *xdp,
 					 struct bpf_prog *xdp_prog)
 {
+	struct xdp_txq_info txq = { .dev = dev };
 	u32 act;
 
 	xdp_set_data_meta_invalid(xdp);
+	xdp->txq = &txq;
 
 	act = bpf_prog_run_xdp(xdp_prog, xdp);
 	switch (act) {
