@@ -1034,6 +1034,22 @@ L:	linux-media@vger.kernel.org
 S:	Maintained
 F:	drivers/media/i2c/aptina-pll.*
 
+AQUANTIA ETHERNET DRIVER (atlantic)
+M:      Igor Russkikh <irusskikh@marvell.com>
+L:      netdev@vger.kernel.org
+S:      Supported
+W:      https://www.marvell.com/
+Q:      http://patchwork.ozlabs.org/project/netdev/list/
+F:      Documentation/networking/device_drivers/ethernet/aquantia/atlantic.rst
+F:      drivers/net/ethernet/aquantia/atlantic/
+
+AQUANTIA ETHERNET DRIVER PTP SUBSYSTEM
+M:      Egor Pomozov <epomozov@marvell.com>
+L:      netdev@vger.kernel.org
+S:      Supported
+W:      http://www.aquantia.com
+F:      drivers/net/ethernet/aquantia/atlantic/aq_ptp*
+
 ARC FRAMEBUFFER DRIVER
 M:	Jaya Kumar <jayalk@intworks.biz>
 S:	Maintained
