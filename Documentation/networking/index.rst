@@ -22,6 +22,7 @@ Contents:
    sfp-phylink
    tls
    tls-offload
+   filter
 
 .. only::  subproject
 
