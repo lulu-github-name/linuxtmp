@@ -104,18 +104,23 @@ static const char aq_ethtool_priv_flag_names[][ETH_GSTRING_LEN] = {
 	"PHYExternalLoopback",
 };
 
+static u32 aq_ethtool_n_stats(struct net_device *ndev)
+{
+	struct aq_nic_s *nic = netdev_priv(ndev);
+	struct aq_nic_cfg_s *cfg = aq_nic_get_cfg(nic);
+	u32 n_stats = ARRAY_SIZE(aq_ethtool_stat_names) +
+		      ARRAY_SIZE(aq_ethtool_queue_stat_names) * cfg->vecs;
+
+	return n_stats;
+}
+
 static void aq_ethtool_stats(struct net_device *ndev,
 			     struct ethtool_stats *stats, u64 *data)
 {
 	struct aq_nic_s *aq_nic = netdev_priv(ndev);
-	struct aq_nic_cfg_s *cfg;
 
-	cfg = aq_nic_get_cfg(aq_nic);
-
-	memset(data, 0, (ARRAY_SIZE(aq_ethtool_stat_names) +
-			 ARRAY_SIZE(aq_ethtool_queue_stat_names) *
-			 cfg->vecs) * sizeof(u64));
-	aq_nic_get_stats(aq_nic, data);
+	memset(data, 0, aq_ethtool_n_stats(ndev) * sizeof(u64));
+	data = aq_nic_get_stats(aq_nic, data);
 }
 
 static void aq_ethtool_get_drvinfo(struct net_device *ndev,
@@ -123,11 +128,9 @@ static void aq_ethtool_get_drvinfo(struct net_device *ndev,
 {
 	struct pci_dev *pdev = to_pci_dev(ndev->dev.parent);
 	struct aq_nic_s *aq_nic = netdev_priv(ndev);
-	struct aq_nic_cfg_s *cfg;
 	u32 firmware_version;
 	u32 regs_count;
 
-	cfg = aq_nic_get_cfg(aq_nic);
 	firmware_version = aq_nic_get_fw_version(aq_nic);
 	regs_count = aq_nic_get_regs_count(aq_nic);
 
@@ -139,8 +142,7 @@ static void aq_ethtool_get_drvinfo(struct net_device *ndev,
 
 	strlcpy(drvinfo->bus_info, pdev ? pci_name(pdev) : "",
 		sizeof(drvinfo->bus_info));
-	drvinfo->n_stats = ARRAY_SIZE(aq_ethtool_stat_names) +
-		cfg->vecs * ARRAY_SIZE(aq_ethtool_queue_stat_names);
+	drvinfo->n_stats = aq_ethtool_n_stats(ndev);
 	drvinfo->testinfo_len = 0;
 	drvinfo->regdump_len = regs_count;
 	drvinfo->eedump_len = 0;
@@ -209,16 +211,11 @@ static int aq_ethtool_set_phys_id(struct net_device *ndev,
 
 static int aq_ethtool_get_sset_count(struct net_device *ndev, int stringset)
 {
-	struct aq_nic_s *aq_nic = netdev_priv(ndev);
-	struct aq_nic_cfg_s *cfg;
 	int ret = 0;
-
-	cfg = aq_nic_get_cfg(aq_nic);
 
 	switch (stringset) {
 	case ETH_SS_STATS:
-		ret = ARRAY_SIZE(aq_ethtool_stat_names) +
-			cfg->vecs * ARRAY_SIZE(aq_ethtool_queue_stat_names);
+		ret = aq_ethtool_n_stats(ndev);
 		break;
 	case ETH_SS_PRIV_FLAGS:
 		ret = ARRAY_SIZE(aq_ethtool_priv_flag_names);
