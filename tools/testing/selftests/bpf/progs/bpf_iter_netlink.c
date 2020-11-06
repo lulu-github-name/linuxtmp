@@ -9,7 +9,7 @@ char _license[] SEC("license") = "GPL";
 #define sk_rmem_alloc	sk_backlog.rmem_alloc
 #define sk_refcnt	__sk_common.skc_refcnt
 
-static inline struct inode *SOCK_INODE(struct socket *socket)
+static __attribute__((noinline)) struct inode *SOCK_INODE(struct socket *socket)
 {
 	return &container_of(socket, struct socket_alloc, socket)->vfs_inode;
 }
