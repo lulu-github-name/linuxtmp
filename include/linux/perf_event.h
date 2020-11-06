@@ -61,7 +61,11 @@ struct perf_guest_info_callbacks {
 
 struct perf_callchain_entry {
 	__u64				nr;
+#ifdef __GENKSYMS__
 	__u64				ip[0]; /* /proc/sys/kernel/perf_event_max_stack */
+#else
+	__u64				ip[]; /* /proc/sys/kernel/perf_event_max_stack */
+#endif /* __GENKSYMS__ */
 };
 
 struct perf_callchain_entry_ctx {
@@ -113,7 +117,11 @@ struct perf_raw_record {
 struct perf_branch_stack {
 	__u64				nr;
 	RH_KABI_BROKEN_INSERT(__u64				hw_idx)
+#ifdef __GENKSYMS__
 	struct perf_branch_entry	entries[0];
+#else
+	struct perf_branch_entry	entries[];
+#endif /* __GENKSYMS__ */
 };
 
 struct task_struct;
