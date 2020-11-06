@@ -90,7 +90,8 @@ struct virtnet_sq_stats {
 	u64 kicks;
 };
 
-struct virtnet_rq_stat_items {
+struct virtnet_rq_stats {
+	struct u64_stats_sync syncp;
 	u64 packets;
 	u64 bytes;
 	u64 drops;
@@ -101,17 +102,8 @@ struct virtnet_rq_stat_items {
 	u64 kicks;
 };
 
-struct virtnet_rq_stats {
-	struct u64_stats_sync syncp;
-	struct virtnet_rq_stat_items items;
-};
-
-struct virtnet_rx_stats {
-	struct virtnet_rq_stat_items rx;
-};
-
 #define VIRTNET_SQ_STAT(m)	offsetof(struct virtnet_sq_stats, m)
-#define VIRTNET_RQ_STAT(m)	offsetof(struct virtnet_rq_stat_items, m)
+#define VIRTNET_RQ_STAT(m)	offsetof(struct virtnet_rq_stats, m)
 
 static const struct virtnet_stat_desc virtnet_sq_stats_desc[] = {
 	{ "packets",		VIRTNET_SQ_STAT(packets) },
@@ -640,7 +632,7 @@ static struct sk_buff *receive_small(struct net_device *dev,
 				     void *buf, void *ctx,
 				     unsigned int len,
 				     unsigned int *xdp_xmit,
-				     struct virtnet_rx_stats *stats)
+				     struct virtnet_rq_stats *stats)
 {
 	struct sk_buff *skb;
 	struct bpf_prog *xdp_prog;
@@ -655,7 +647,7 @@ static struct sk_buff *receive_small(struct net_device *dev,
 	int err;
 
 	len -= vi->hdr_len;
-	stats->rx.bytes += len;
+	stats->bytes += len;
 
 	rcu_read_lock();
 	xdp_prog = rcu_dereference(rq->xdp_prog);
@@ -697,7 +689,7 @@ static struct sk_buff *receive_small(struct net_device *dev,
 		xdp.rxq = &rq->xdp_rxq;
 		orig_data = xdp.data;
 		act = bpf_prog_run_xdp(xdp_prog, &xdp);
-		stats->rx.xdp_packets++;
+		stats->xdp_packets++;
 
 		switch (act) {
 		case XDP_PASS:
@@ -706,7 +698,7 @@ static struct sk_buff *receive_small(struct net_device *dev,
 			len = xdp.data_end - xdp.data;
 			break;
 		case XDP_TX:
-			stats->rx.xdp_tx++;
+			stats->xdp_tx++;
 			xdpf = xdp_convert_buff_to_frame(&xdp);
 			if (unlikely(!xdpf))
 				goto err_xdp;
@@ -719,7 +711,7 @@ static struct sk_buff *receive_small(struct net_device *dev,
 			rcu_read_unlock();
 			goto xdp_xmit;
 		case XDP_REDIRECT:
-			stats->rx.xdp_redirects++;
+			stats->xdp_redirects++;
 			err = xdp_do_redirect(dev, &xdp, xdp_prog);
 			if (err)
 				goto err_xdp;
@@ -753,8 +745,8 @@ err:
 
 err_xdp:
 	rcu_read_unlock();
-	stats->rx.xdp_drops++;
-	stats->rx.drops++;
+	stats->xdp_drops++;
+	stats->drops++;
 	put_page(page);
 xdp_xmit:
 	return NULL;
@@ -765,19 +757,19 @@ static struct sk_buff *receive_big(struct net_device *dev,
 				   struct receive_queue *rq,
 				   void *buf,
 				   unsigned int len,
-				   struct virtnet_rx_stats *stats)
+				   struct virtnet_rq_stats *stats)
 {
 	struct page *page = buf;
 	struct sk_buff *skb = page_to_skb(vi, rq, page, 0, len, PAGE_SIZE);
 
-	stats->rx.bytes += len - vi->hdr_len;
+	stats->bytes += len - vi->hdr_len;
 	if (unlikely(!skb))
 		goto err;
 
 	return skb;
 
 err:
-	stats->rx.drops++;
+	stats->drops++;
 	give_pages(rq, page);
 	return NULL;
 }
@@ -789,7 +781,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 					 void *ctx,
 					 unsigned int len,
 					 unsigned int *xdp_xmit,
-					 struct virtnet_rx_stats *stats)
+					 struct virtnet_rq_stats *stats)
 {
 	struct virtio_net_hdr_mrg_rxbuf *hdr = buf;
 	u16 num_buf = virtio16_to_cpu(vi->vdev, hdr->num_buffers);
@@ -802,7 +794,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 	int err;
 
 	head_skb = NULL;
-	stats->rx.bytes += len - vi->hdr_len;
+	stats->bytes += len - vi->hdr_len;
 
 	rcu_read_lock();
 	xdp_prog = rcu_dereference(rq->xdp_prog);
@@ -851,7 +843,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 		xdp.rxq = &rq->xdp_rxq;
 
 		act = bpf_prog_run_xdp(xdp_prog, &xdp);
-		stats->rx.xdp_packets++;
+		stats->xdp_packets++;
 
 		switch (act) {
 		case XDP_PASS:
@@ -876,7 +868,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 			}
 			break;
 		case XDP_TX:
-			stats->rx.xdp_tx++;
+			stats->xdp_tx++;
 			xdpf = xdp_convert_buff_to_frame(&xdp);
 			if (unlikely(!xdpf))
 				goto err_xdp;
@@ -893,7 +885,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 			rcu_read_unlock();
 			goto xdp_xmit;
 		case XDP_REDIRECT:
-			stats->rx.xdp_redirects++;
+			stats->xdp_redirects++;
 			err = xdp_do_redirect(dev, &xdp, xdp_prog);
 			if (err) {
 				if (unlikely(xdp_page != page))
@@ -943,7 +935,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 			goto err_buf;
 		}
 
-		stats->rx.bytes += len;
+		stats->bytes += len;
 		page = virt_to_head_page(buf);
 
 		truesize = mergeable_ctx_to_truesize(ctx);
@@ -989,7 +981,7 @@ static struct sk_buff *receive_mergeable(struct net_device *dev,
 
 err_xdp:
 	rcu_read_unlock();
-	stats->rx.xdp_drops++;
+	stats->xdp_drops++;
 err_skb:
 	put_page(page);
 	while (num_buf-- > 1) {
@@ -1000,12 +992,12 @@ err_skb:
 			dev->stats.rx_length_errors++;
 			break;
 		}
-		stats->rx.bytes += len;
+		stats->bytes += len;
 		page = virt_to_head_page(buf);
 		put_page(page);
 	}
 err_buf:
-	stats->rx.drops++;
+	stats->drops++;
 	dev_kfree_skb(head_skb);
 xdp_xmit:
 	return NULL;
@@ -1014,7 +1006,7 @@ xdp_xmit:
 static void receive_buf(struct virtnet_info *vi, struct receive_queue *rq,
 			void *buf, unsigned int len, void **ctx,
 			unsigned int *xdp_xmit,
-			struct virtnet_rx_stats *stats)
+			struct virtnet_rq_stats *stats)
 {
 	struct net_device *dev = vi->dev;
 	struct sk_buff *skb;
@@ -1236,7 +1228,7 @@ static bool try_fill_recv(struct virtnet_info *vi, struct receive_queue *rq,
 	} while (rq->vq->num_free);
 	if (virtqueue_kick_prepare(rq->vq) && virtqueue_notify(rq->vq)) {
 		u64_stats_update_begin(&rq->stats.syncp);
-		rq->stats.items.kicks++;
+		rq->stats.kicks++;
 		u64_stats_update_end(&rq->stats.syncp);
 	}
 
@@ -1314,7 +1306,7 @@ static int virtnet_receive(struct receive_queue *rq, int budget,
 			   unsigned int *xdp_xmit)
 {
 	struct virtnet_info *vi = rq->vq->vdev->priv;
-	struct virtnet_rx_stats stats = {};
+	struct virtnet_rq_stats stats = {};
 	unsigned int len;
 	void *buf;
 	int i;
@@ -1322,16 +1314,16 @@ static int virtnet_receive(struct receive_queue *rq, int budget,
 	if (!vi->big_packets || vi->mergeable_rx_bufs) {
 		void *ctx;
 
-		while (stats.rx.packets < budget &&
+		while (stats.packets < budget &&
 		       (buf = virtqueue_get_buf_ctx(rq->vq, &len, &ctx))) {
 			receive_buf(vi, rq, buf, len, ctx, xdp_xmit, &stats);
-			stats.rx.packets++;
+			stats.packets++;
 		}
 	} else {
-		while (stats.rx.packets < budget &&
+		while (stats.packets < budget &&
 		       (buf = virtqueue_get_buf(rq->vq, &len)) != NULL) {
 			receive_buf(vi, rq, buf, len, NULL, xdp_xmit, &stats);
-			stats.rx.packets++;
+			stats.packets++;
 		}
 	}
 
@@ -1345,12 +1337,12 @@ static int virtnet_receive(struct receive_queue *rq, int budget,
 		size_t offset = virtnet_rq_stats_desc[i].offset;
 		u64 *item;
 
-		item = (u64 *)((u8 *)&rq->stats.items + offset);
-		*item += *(u64 *)((u8 *)&stats.rx + offset);
+		item = (u64 *)((u8 *)&rq->stats + offset);
+		*item += *(u64 *)((u8 *)&stats + offset);
 	}
 	u64_stats_update_end(&rq->stats.syncp);
 
-	return stats.rx.packets;
+	return stats.packets;
 }
 
 static void free_old_xmit_skbs(struct send_queue *sq)
@@ -1736,9 +1728,9 @@ static void virtnet_stats(struct net_device *dev,
 
 		do {
 			start = u64_stats_fetch_begin_irq(&rq->stats.syncp);
-			rpackets = rq->stats.items.packets;
-			rbytes   = rq->stats.items.bytes;
-			rdrops   = rq->stats.items.drops;
+			rpackets = rq->stats.packets;
+			rbytes   = rq->stats.bytes;
+			rdrops   = rq->stats.drops;
 		} while (u64_stats_fetch_retry_irq(&rq->stats.syncp, start));
 
 		tot->rx_packets += rpackets;
@@ -2141,7 +2133,7 @@ static void virtnet_get_ethtool_stats(struct net_device *dev,
 	for (i = 0; i < vi->curr_queue_pairs; i++) {
 		struct receive_queue *rq = &vi->rq[i];
 
-		stats_base = (u8 *)&rq->stats.items;
+		stats_base = (u8 *)&rq->stats;
 		do {
 			start = u64_stats_fetch_begin_irq(&rq->stats.syncp);
 			for (j = 0; j < VIRTNET_RQ_STATS_LEN; j++) {
