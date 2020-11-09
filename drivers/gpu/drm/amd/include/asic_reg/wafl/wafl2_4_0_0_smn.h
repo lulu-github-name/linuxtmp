@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Red Hat Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -18,43 +18,12 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
+ *
  */
-#define gv100_disp_caps(p) container_of((p), struct gv100_disp_caps, object)
-#include "rootnv50.h"
 
-struct gv100_disp_caps {
-	struct nvkm_object object;
-	struct nv50_disp *disp;
-};
+#ifndef _wafl2_4_0_0_SMN_HEADER
+#define _wafl2_4_0_0_SMN_HEADER
 
-static int
-gv100_disp_caps_map(struct nvkm_object *object, void *argv, u32 argc,
-		    enum nvkm_object_map *type, u64 *addr, u64 *size)
-{
-	struct gv100_disp_caps *caps = gv100_disp_caps(object);
-	struct nvkm_device *device = caps->disp->base.engine.subdev.device;
-	*type = NVKM_OBJECT_MAP_IO;
-	*addr = 0x640000 + device->func->resource_addr(device, 0);
-	*size = 0x1000;
-	return 0;
-}
+#define	smnPCS_GOPX1_0_PCS_GOPX1_PCS_ERROR_STATUS						0x11cf0210
 
-static const struct nvkm_object_func
-gv100_disp_caps = {
-	.map = gv100_disp_caps_map,
-};
-
-int
-gv100_disp_caps_new(const struct nvkm_oclass *oclass, void *argv, u32 argc,
-		    struct nv50_disp *disp, struct nvkm_object **pobject)
-{
-	struct gv100_disp_caps *caps;
-
-	if (!(caps = kzalloc(sizeof(*caps), GFP_KERNEL)))
-		return -ENOMEM;
-	*pobject = &caps->object;
-
-	nvkm_object_ctor(&gv100_disp_caps, oclass, &caps->object);
-	caps->disp = disp;
-	return 0;
-}
+#endif

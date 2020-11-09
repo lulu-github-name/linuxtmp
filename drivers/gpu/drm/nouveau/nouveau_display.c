@@ -54,14 +54,9 @@ nouveau_display_vblank_handler(struct nvif_notify *notify)
 }
 
 int
-nouveau_display_vblank_enable(struct drm_device *dev, unsigned int pipe)
+nouveau_display_vblank_enable(struct drm_crtc *crtc)
 {
-	struct drm_crtc *crtc;
 	struct nouveau_crtc *nv_crtc;
-
-	crtc = drm_crtc_from_index(dev, pipe);
-	if (!crtc)
-		return -EINVAL;
 
 	nv_crtc = nouveau_crtc(crtc);
 	nvif_notify_get(&nv_crtc->vblank);
@@ -70,14 +65,9 @@ nouveau_display_vblank_enable(struct drm_device *dev, unsigned int pipe)
 }
 
 void
-nouveau_display_vblank_disable(struct drm_device *dev, unsigned int pipe)
+nouveau_display_vblank_disable(struct drm_crtc *crtc)
 {
-	struct drm_crtc *crtc;
 	struct nouveau_crtc *nv_crtc;
-
-	crtc = drm_crtc_from_index(dev, pipe);
-	if (!crtc)
-		return;
 
 	nv_crtc = nouveau_crtc(crtc);
 	nvif_notify_put(&nv_crtc->vblank);
@@ -136,21 +126,13 @@ nouveau_display_scanoutpos_head(struct drm_crtc *crtc, int *vpos, int *hpos,
 }
 
 bool
-nouveau_display_scanoutpos(struct drm_device *dev, unsigned int pipe,
+nouveau_display_scanoutpos(struct drm_crtc *crtc,
 			   bool in_vblank_irq, int *vpos, int *hpos,
 			   ktime_t *stime, ktime_t *etime,
 			   const struct drm_display_mode *mode)
 {
-	struct drm_crtc *crtc;
-
-	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		if (nouveau_crtc(crtc)->index == pipe) {
-			return nouveau_display_scanoutpos_head(crtc, vpos, hpos,
-							       stime, etime);
-		}
-	}
-
-	return false;
+	return nouveau_display_scanoutpos_head(crtc, vpos, hpos,
+					       stime, etime);
 }
 
 static void
@@ -355,7 +337,7 @@ nouveau_display_hpd_work(struct work_struct *work)
 	drm_helper_hpd_irq_event(drm->dev);
 
 	pm_runtime_mark_last_busy(drm->dev->dev);
-	pm_runtime_put_autosuspend(drm->dev->dev);
+	pm_runtime_put_sync(drm->dev->dev);
 }
 
 #ifdef CONFIG_ACPI
@@ -368,34 +350,34 @@ nouveau_display_acpi_ntfy(struct notifier_block *nb, unsigned long val,
 	struct acpi_bus_event *info = data;
 	int ret;
 
-	if (strcmp(info->device_class, ACPI_VIDEO_CLASS) ||
-	    info->type != ACPI_VIDEO_NOTIFY_PROBE)
-		return NOTIFY_DONE;
+	if (!strcmp(info->device_class, ACPI_VIDEO_CLASS)) {
+		if (info->type == ACPI_VIDEO_NOTIFY_PROBE) {
+			ret = pm_runtime_get(drm->dev->dev);
+			if (ret == 1 || ret == -EACCES) {
+				/* If the GPU is already awake, or in a state
+				 * where we can't wake it up, it can handle
+				 * it's own hotplug events.
+				 */
+				pm_runtime_put_autosuspend(drm->dev->dev);
+			} else if (ret == 0) {
+				/* This may be the only indication we receive
+				 * of a connector hotplug on a runtime
+				 * suspended GPU, schedule hpd_work to check.
+				 */
+				NV_DEBUG(drm, "ACPI requested connector reprobe\n");
+				schedule_work(&drm->hpd_work);
+				pm_runtime_put_noidle(drm->dev->dev);
+			} else {
+				NV_WARN(drm, "Dropped ACPI reprobe event due to RPM error: %d\n",
+					ret);
+			}
 
-	ret = pm_runtime_get(drm->dev->dev);
-	if (ret == 1 || ret == -EACCES || ret == -EINPROGRESS) {
-		/* If the GPU is already awake, is waking up, or is in a state
-		 * where we can't wake it up, it can handle its own hotplug
-		 * events.
-		 */
-		pm_runtime_put_autosuspend(drm->dev->dev);
-	} else if (ret == 0) {
-		/* This may be the only indication we receive
-		 * of a connector hotplug on a runtime
-		 * suspended GPU, schedule hpd_work to check.
-		 */
-		NV_DEBUG(drm, "ACPI requested connector reprobe\n");
-		schedule_work(&drm->hpd_work);
-		pm_runtime_put_noidle(drm->dev->dev);
-	} else {
-		NV_WARN(drm, "Dropped ACPI reprobe event due to RPM error: %d\n",
-			ret);
-		pm_runtime_mark_last_busy(drm->dev->dev);
-		pm_runtime_put_autosuspend(drm->dev->dev);
+			/* acpi-video should not generate keypresses for this */
+			return NOTIFY_BAD;
+		}
 	}
 
-	/* acpi-video should not generate keypresses for this */
-	return NOTIFY_BAD;
+	return NOTIFY_DONE;
 }
 #endif
 

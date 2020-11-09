@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Advanced Micro Devices, Inc.
+ * Copyright 2012-16 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,15 +23,3 @@
  *
  */
 
-#ifndef __DC_COMMON_DEFS_H__
-#define __DC_COMMON_DEFS_H__
-
-#include "dm_services.h"
-#include "dc_features.h"
-#include "display_mode_structs.h"
-#include "display_mode_enums.h"
-
-
-double dml_round(double a);
-
-#endif /* __DC_COMMON_DEFS_H__ */

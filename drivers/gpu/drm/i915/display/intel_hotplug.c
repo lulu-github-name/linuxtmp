@@ -23,8 +23,6 @@
 
 #include <linux/kernel.h>
 
-#include <drm/i915_drm.h>
-
 #include "i915_drv.h"
 #include "intel_display_types.h"
 #include "intel_hotplug.h"
@@ -89,29 +87,16 @@
 enum hpd_pin intel_hpd_pin_default(struct drm_i915_private *dev_priv,
 				   enum port port)
 {
-	switch (port) {
-	case PORT_A:
-		return HPD_PORT_A;
-	case PORT_B:
-		return HPD_PORT_B;
-	case PORT_C:
-		return HPD_PORT_C;
-	case PORT_D:
-		return HPD_PORT_D;
-	case PORT_E:
-		return HPD_PORT_E;
-	case PORT_F:
-		if (IS_CNL_WITH_PORT_F(dev_priv))
-			return HPD_PORT_E;
-		return HPD_PORT_F;
-	case PORT_G:
-		return HPD_PORT_G;
-	case PORT_H:
-		return HPD_PORT_H;
-	case PORT_I:
-		return HPD_PORT_I;
+	enum phy phy = intel_port_to_phy(dev_priv, port);
+
+	switch (phy) {
+	case PHY_F:
+		return IS_CNL_WITH_PORT_F(dev_priv) ? HPD_PORT_E : HPD_PORT_F;
+	case PHY_A ... PHY_E:
+	case PHY_G ... PHY_I:
+		return HPD_PORT_A + phy - PHY_A;
 	default:
-		MISSING_CASE(port);
+		MISSING_CASE(phy);
 		return HPD_NONE;
 	}
 }
@@ -185,10 +170,13 @@ static bool intel_hpd_irq_storm_detect(struct drm_i915_private *dev_priv,
 	hpd->stats[pin].count += increment;
 	if (hpd->stats[pin].count > threshold) {
 		hpd->stats[pin].state = HPD_MARK_DISABLED;
-		DRM_DEBUG_KMS("HPD interrupt storm detected on PIN %d\n", pin);
+		drm_dbg_kms(&dev_priv->drm,
+			    "HPD interrupt storm detected on PIN %d\n", pin);
 		storm = true;
 	} else {
-		DRM_DEBUG_KMS("Received HPD interrupt on PIN %d - cnt: %d\n", pin,
+		drm_dbg_kms(&dev_priv->drm,
+			    "Received HPD interrupt on PIN %d - cnt: %d\n",
+			      pin,
 			      hpd->stats[pin].count);
 	}
 
@@ -217,7 +205,8 @@ intel_hpd_irq_storm_switch_to_polling(struct drm_i915_private *dev_priv)
 		    dev_priv->hotplug.stats[pin].state != HPD_MARK_DISABLED)
 			continue;
 
-		DRM_INFO("HPD interrupt storm detected on connector %s: "
+		drm_info(&dev_priv->drm,
+			 "HPD interrupt storm detected on connector %s: "
 			 "switching from hotplug detection to polling\n",
 			 connector->base.name);
 
@@ -242,36 +231,38 @@ static void intel_hpd_irq_storm_reenable_work(struct work_struct *work)
 		container_of(work, typeof(*dev_priv),
 			     hotplug.reenable_work.work);
 	struct drm_device *dev = &dev_priv->drm;
+	struct drm_connector_list_iter conn_iter;
+	struct intel_connector *connector;
 	intel_wakeref_t wakeref;
 	enum hpd_pin pin;
 
 	wakeref = intel_runtime_pm_get(&dev_priv->runtime_pm);
 
 	spin_lock_irq(&dev_priv->irq_lock);
-	for_each_hpd_pin(pin) {
-		struct drm_connector_list_iter conn_iter;
-		struct intel_connector *connector;
 
-		if (dev_priv->hotplug.stats[pin].state != HPD_DISABLED)
+	drm_connector_list_iter_begin(dev, &conn_iter);
+	for_each_intel_connector_iter(connector, &conn_iter) {
+		pin = intel_connector_hpd_pin(connector);
+		if (pin == HPD_NONE ||
+		    dev_priv->hotplug.stats[pin].state != HPD_DISABLED)
 			continue;
 
-		dev_priv->hotplug.stats[pin].state = HPD_ENABLED;
-
-		drm_connector_list_iter_begin(dev, &conn_iter);
-		for_each_intel_connector_iter(connector, &conn_iter) {
-			if (intel_connector_hpd_pin(connector) == pin) {
-				if (connector->base.polled != connector->polled)
-					DRM_DEBUG_DRIVER("Reenabling HPD on connector %s\n",
-							 connector->base.name);
-				connector->base.polled = connector->polled;
-				if (!connector->base.polled)
-					connector->base.polled = DRM_CONNECTOR_POLL_HPD;
-			}
-		}
-		drm_connector_list_iter_end(&conn_iter);
+		if (connector->base.polled != connector->polled)
+			drm_dbg(&dev_priv->drm,
+				"Reenabling HPD on connector %s\n",
+				connector->base.name);
+		connector->base.polled = connector->polled;
 	}
+	drm_connector_list_iter_end(&conn_iter);
+
+	for_each_hpd_pin(pin) {
+		if (dev_priv->hotplug.stats[pin].state == HPD_DISABLED)
+			dev_priv->hotplug.stats[pin].state = HPD_ENABLED;
+	}
+
 	if (dev_priv->display_irqs_enabled && dev_priv->display.hpd_irq_setup)
 		dev_priv->display.hpd_irq_setup(dev_priv);
+
 	spin_unlock_irq(&dev_priv->irq_lock);
 
 	intel_runtime_pm_put(&dev_priv->runtime_pm, wakeref);
@@ -279,12 +270,13 @@ static void intel_hpd_irq_storm_reenable_work(struct work_struct *work)
 
 enum intel_hotplug_state
 intel_encoder_hotplug(struct intel_encoder *encoder,
-		      struct intel_connector *connector)
+		      struct intel_connector *connector,
+		      bool irq_received)
 {
 	struct drm_device *dev = connector->base.dev;
 	enum drm_connector_status old_status;
 
-	WARN_ON(!mutex_is_locked(&dev->mode_config.mutex));
+	drm_WARN_ON(dev, !mutex_is_locked(&dev->mode_config.mutex));
 	old_status = connector->base.status;
 
 	connector->base.status =
@@ -293,11 +285,12 @@ intel_encoder_hotplug(struct intel_encoder *encoder,
 	if (old_status == connector->base.status)
 		return INTEL_HOTPLUG_UNCHANGED;
 
-	DRM_DEBUG_KMS("[CONNECTOR:%d:%s] status updated from %s to %s\n",
-		      connector->base.base.id,
-		      connector->base.name,
-		      drm_get_connector_status_name(old_status),
-		      drm_get_connector_status_name(connector->base.status));
+	drm_dbg_kms(&to_i915(dev)->drm,
+		    "[CONNECTOR:%d:%s] status updated from %s to %s\n",
+		    connector->base.base.id,
+		    connector->base.name,
+		    drm_get_connector_status_name(old_status),
+		    drm_get_connector_status_name(connector->base.status));
 
 	return INTEL_HOTPLUG_CHANGED;
 }
@@ -371,7 +364,7 @@ static void i915_hotplug_work_func(struct work_struct *work)
 	u32 hpd_retry_bits;
 
 	mutex_lock(&dev->mode_config.mutex);
-	DRM_DEBUG_KMS("running encoder hotplug functions\n");
+	drm_dbg_kms(&dev_priv->drm, "running encoder hotplug functions\n");
 
 	spin_lock_irq(&dev_priv->irq_lock);
 
@@ -399,16 +392,12 @@ static void i915_hotplug_work_func(struct work_struct *work)
 			struct intel_encoder *encoder =
 				intel_attached_encoder(connector);
 
-			if (hpd_event_bits & hpd_bit)
-				connector->hotplug_retries = 0;
-			else
-				connector->hotplug_retries++;
+			drm_dbg_kms(&dev_priv->drm,
+				    "Connector %s (pin %i) received hotplug event.\n",
+				    connector->base.name, pin);
 
-			DRM_DEBUG_KMS("Connector %s (pin %i) received hotplug event. (retry %d)\n",
-				      connector->base.name, pin,
-				      connector->hotplug_retries);
-
-			switch (encoder->hotplug(encoder, connector)) {
+			switch (encoder->hotplug(encoder, connector,
+						 hpd_event_bits & hpd_bit)) {
 			case INTEL_HOTPLUG_UNCHANGED:
 				break;
 			case INTEL_HOTPLUG_CHANGED:
@@ -490,9 +479,10 @@ void intel_hpd_irq_handler(struct drm_i915_private *dev_priv,
 
 		long_hpd = long_mask & BIT(pin);
 
-		DRM_DEBUG_DRIVER("digital hpd on [ENCODER:%d:%s] - %s\n",
-				 encoder->base.base.id, encoder->base.name,
-				 long_hpd ? "long" : "short");
+		drm_dbg(&dev_priv->drm,
+			"digital hpd on [ENCODER:%d:%s] - %s\n",
+			encoder->base.base.id, encoder->base.name,
+			long_hpd ? "long" : "short");
 		queue_dig = true;
 
 		if (long_hpd) {
@@ -518,8 +508,9 @@ void intel_hpd_irq_handler(struct drm_i915_private *dev_priv,
 			 * hotplug bits itself. So only WARN about unexpected
 			 * interrupts on saner platforms.
 			 */
-			WARN_ONCE(!HAS_GMCH(dev_priv),
-				  "Received HPD interrupt on pin %d although disabled\n", pin);
+			drm_WARN_ONCE(&dev_priv->drm, !HAS_GMCH(dev_priv),
+				      "Received HPD interrupt on pin %d although disabled\n",
+				      pin);
 			continue;
 		}
 
@@ -620,16 +611,17 @@ static void i915_hpd_poll_init_work(struct work_struct *work)
 
 	drm_connector_list_iter_begin(dev, &conn_iter);
 	for_each_intel_connector_iter(connector, &conn_iter) {
-		enum hpd_pin pin = intel_connector_hpd_pin(connector);
+		enum hpd_pin pin;
+
+		pin = intel_connector_hpd_pin(connector);
+		if (pin == HPD_NONE)
+			continue;
 
 		connector->base.polled = connector->polled;
 
-		if (pin != HPD_NONE && I915_HAS_HOTPLUG(dev_priv) &&
-		    !connector->base.polled)
-			connector->base.polled = enabled ?
-				DRM_CONNECTOR_POLL_CONNECT |
-				DRM_CONNECTOR_POLL_DISCONNECT :
-				DRM_CONNECTOR_POLL_HPD;
+		if (enabled && connector->base.polled == DRM_CONNECTOR_POLL_HPD)
+			connector->base.polled = DRM_CONNECTOR_POLL_CONNECT |
+				DRM_CONNECTOR_POLL_DISCONNECT;
 	}
 	drm_connector_list_iter_end(&conn_iter);
 

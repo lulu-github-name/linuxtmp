@@ -703,7 +703,7 @@ static bool dc_construct(struct dc *dc,
 		dc_ctx->created_bios = true;
 	}
 
-
+	dc->vendor_signature = init_params->vendor_signature;
 
 	/* Create GPIO service */
 	dc_ctx->gpio_service = dal_gpio_service_create(
@@ -780,7 +780,6 @@ void apply_ctx_interdependent_lock(struct dc *dc, struct dc_state *context, stru
 				if (!pipe_ctx->top_pipe &&
 					(pipe_ctx->plane_state || old_pipe_ctx->plane_state))
 					dc->hwss.pipe_control_lock(dc, pipe_ctx, lock);
-				break;
 			}
 		}
 	}
@@ -1403,7 +1402,7 @@ bool dc_post_update_surfaces_to_stream(struct dc *dc)
 	int i;
 	struct dc_state *context = dc->current_state;
 
-	if (!dc->optimized_required || dc->optimize_seamless_boot_streams > 0)
+	if ((!dc->optimized_required) || dc->optimize_seamless_boot_streams > 0)
 		return true;
 
 	post_surface_trace(dc);
@@ -1418,9 +1417,11 @@ bool dc_post_update_surfaces_to_stream(struct dc *dc)
 			dc->hwss.disable_plane(dc, &context->res_ctx.pipe_ctx[i]);
 		}
 
-	dc->optimized_required = false;
-
 	dc->hwss.optimize_bandwidth(dc, context);
+
+	dc->optimized_required = false;
+	dc->wm_optimized_required = false;
+
 	return true;
 }
 
@@ -1742,6 +1743,9 @@ static enum surface_update_type det_surface_update(const struct dc *dc,
 	if (u->coeff_reduction_factor)
 		update_flags->bits.coeff_reduction_change = 1;
 
+	if (u->gamut_remap_matrix)
+		update_flags->bits.gamut_remap_change = 1;
+
 	if (u->gamma) {
 		enum surface_pixel_format format = SURFACE_PIXEL_FORMAT_GRPH_BEGIN;
 
@@ -1767,7 +1771,8 @@ static enum surface_update_type det_surface_update(const struct dc *dc,
 
 	if (update_flags->bits.input_csc_change
 			|| update_flags->bits.coeff_reduction_change
-			|| update_flags->bits.gamma_change) {
+			|| update_flags->bits.gamma_change
+			|| update_flags->bits.gamut_remap_change) {
 		type = UPDATE_TYPE_FULL;
 		elevate_update_type(&overall_type, type);
 	}
@@ -1872,6 +1877,8 @@ enum surface_update_type dc_check_update_surfaces_for_stream(
 		} else if (memcmp(&dc->current_state->bw_ctx.bw.dcn.clk, &dc->clk_mgr->clks, offsetof(struct dc_clocks, prev_p_state_change_support)) != 0) {
 			dc->optimized_required = true;
 		}
+
+		dc->optimized_required |= dc->wm_optimized_required;
 	}
 
 	return type;
@@ -1910,6 +1917,8 @@ static void copy_surface_update_to_plane(
 		surface->time.index++;
 		if (surface->time.index >= DC_PLANE_UPDATE_TIMES_MAX)
 			surface->time.index = 0;
+
+		surface->triplebuffer_flips = srf_update->flip_addr->triplebuffer_flips;
 	}
 
 	if (srf_update->scaling_info) {
@@ -2009,6 +2018,10 @@ static void copy_surface_update_to_plane(
 	if (srf_update->coeff_reduction_factor)
 		surface->coeff_reduction_factor =
 			*srf_update->coeff_reduction_factor;
+
+	if (srf_update->gamut_remap_matrix)
+		surface->gamut_remap_matrix =
+			*srf_update->gamut_remap_matrix;
 }
 
 static void copy_stream_update_to_stream(struct dc *dc,
@@ -2261,6 +2274,11 @@ static void commit_planes_for_stream(struct dc *dc,
 		}
 	}
 
+	if ((update_type != UPDATE_TYPE_FAST) && stream->update_flags.bits.dsc_changed)
+		if (top_pipe_to_program->stream_res.tg->funcs->lock_doublebuffer_enable)
+			top_pipe_to_program->stream_res.tg->funcs->lock_doublebuffer_enable(
+					top_pipe_to_program->stream_res.tg);
+
 	if ((update_type != UPDATE_TYPE_FAST) && dc->hwss.interdependent_update_lock)
 		dc->hwss.interdependent_update_lock(dc, context, true);
 	else
@@ -2417,6 +2435,21 @@ static void commit_planes_for_stream(struct dc *dc,
 		dc->hwss.interdependent_update_lock(dc, context, false);
 	else
 		dc->hwss.pipe_control_lock(dc, top_pipe_to_program, false);
+
+	if ((update_type != UPDATE_TYPE_FAST) && stream->update_flags.bits.dsc_changed)
+		if (top_pipe_to_program->stream_res.tg->funcs->lock_doublebuffer_enable) {
+			top_pipe_to_program->stream_res.tg->funcs->wait_for_state(
+					top_pipe_to_program->stream_res.tg,
+					CRTC_STATE_VACTIVE);
+			top_pipe_to_program->stream_res.tg->funcs->wait_for_state(
+					top_pipe_to_program->stream_res.tg,
+					CRTC_STATE_VBLANK);
+			top_pipe_to_program->stream_res.tg->funcs->wait_for_state(
+					top_pipe_to_program->stream_res.tg,
+					CRTC_STATE_VACTIVE);
+			top_pipe_to_program->stream_res.tg->funcs->lock_doublebuffer_disable(
+					top_pipe_to_program->stream_res.tg);
+		}
 
 	if (update_type != UPDATE_TYPE_FAST)
 		dc->hwss.post_unlock_program_front_end(dc, context);

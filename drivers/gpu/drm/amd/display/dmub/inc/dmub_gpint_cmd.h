@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Advanced Micro Devices, Inc.
+ * Copyright 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,21 +23,53 @@
  *
  */
 
-#include "dml_common_defs.h"
-#include "dcn_calc_math.h"
+#ifndef _DMUB_GPINT_CMD_H_
+#define _DMUB_GPINT_CMD_H_
 
-#include "dml_inline_defs.h"
+#include "dmub_types.h"
 
-double dml_round(double a)
-{
-	double round_pt = 0.5;
-	double ceil = dml_ceil(a, 1);
-	double floor = dml_floor(a, 1);
+/**
+ * The register format for sending a command via the GPINT.
+ */
+union dmub_gpint_data_register {
+	struct {
+		uint32_t param : 16;
+		uint32_t command_code : 12;
+		uint32_t status : 4;
+	} bits;
+	uint32_t all;
+};
 
-	if (a - floor >= round_pt)
-		return ceil;
-	else
-		return floor;
-}
+/**
+ * The shifts and masks below may alternatively be used to format and read
+ * the command register bits.
+ */
 
+#define DMUB_GPINT_DATA_PARAM_MASK 0xFFFF
+#define DMUB_GPINT_DATA_PARAM_SHIFT 0
 
+#define DMUB_GPINT_DATA_COMMAND_CODE_MASK 0xFFF
+#define DMUB_GPINT_DATA_COMMAND_CODE_SHIFT 16
+
+#define DMUB_GPINT_DATA_STATUS_MASK 0xF
+#define DMUB_GPINT_DATA_STATUS_SHIFT 28
+
+/*
+ * Command IDs should be treated as stable ABI.
+ * Do not reuse or modify IDs.
+ */
+
+enum dmub_gpint_command {
+	DMUB_GPINT__INVALID_COMMAND = 0,
+	DMUB_GPINT__GET_FW_VERSION = 1,
+	DMUB_GPINT__STOP_FW = 2,
+	DMUB_GPINT__GET_PSR_STATE = 7,
+};
+
+/**
+ * Command responses.
+ */
+
+#define DMUB_GPINT__STOP_FW_RESPONSE 0xDEADDEAD
+
+#endif /* _DMUB_GPINT_CMD_H_ */

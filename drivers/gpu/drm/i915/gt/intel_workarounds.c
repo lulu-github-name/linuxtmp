@@ -1076,7 +1076,7 @@ wa_init_mcr(struct drm_i915_private *i915, struct i915_wa_list *wal)
 		DRM_WARN("No common index found between subslice mask %x and L3 bank mask %x!\n",
 			 intel_sseu_get_subslices(sseu, slice), l3_en);
 		subslice = fls(l3_en);
-		WARN_ON(!subslice);
+		drm_WARN_ON(&i915->drm, !subslice);
 	}
 	subslice--;
 
@@ -1160,20 +1160,15 @@ icl_gt_workarounds_init(struct drm_i915_private *i915, struct i915_wa_list *wal)
 		    GAMT_CHKN_BIT_REG,
 		    GAMT_CHKN_DISABLE_L3_COH_PIPE);
 
-	/* Wa_1607087056:icl,ehl,jsl */
-	if (IS_ICELAKE(i915) ||
-	    IS_EHL_REVID(i915, EHL_REVID_A0, EHL_REVID_A0)) {
-		wa_write_or(wal,
-			    SLICE_UNIT_LEVEL_CLKGATE,
-			    L3_CLKGATE_DIS | L3_CR2X_CLKGATE_DIS);
-	}
+	/* Wa_1607087056:icl */
+	wa_write_or(wal,
+		    SLICE_UNIT_LEVEL_CLKGATE,
+		    L3_CLKGATE_DIS | L3_CR2X_CLKGATE_DIS);
 }
 
 static void
 tgl_gt_workarounds_init(struct drm_i915_private *i915, struct i915_wa_list *wal)
 {
-	wa_init_mcr(i915, wal);
-
 	/* Wa_1409420604:tgl */
 	if (IS_TGL_REVID(i915, TGL_REVID_A0, TGL_REVID_A0))
 		wa_write_or(wal,

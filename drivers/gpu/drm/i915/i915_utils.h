@@ -102,11 +102,23 @@ bool i915_error_injected(void);
 	typeof(max) max__ = (max); \
 	(void)(&start__ == &size__); \
 	(void)(&start__ == &max__); \
-	start__ > max__ || size__ > max__ - start__; \
+	start__ >= max__ || size__ > max__ - start__; \
 })
 
 #define range_overflows_t(type, start, size, max) \
 	range_overflows((type)(start), (type)(size), (type)(max))
+
+#define range_overflows_end(start, size, max) ({ \
+	typeof(start) start__ = (start); \
+	typeof(size) size__ = (size); \
+	typeof(max) max__ = (max); \
+	(void)(&start__ == &size__); \
+	(void)(&start__ == &max__); \
+	start__ > max__ || size__ > max__ - start__; \
+})
+
+#define range_overflows_end_t(type, start, size, max) \
+	range_overflows_end((type)(start), (type)(size), (type)(max))
 
 /* Note we don't consider signbits :| */
 #define overflows_type(x, T) \
@@ -246,6 +258,12 @@ static inline void __list_del_many(struct list_head *head,
 {
 	first->prev = head;
 	WRITE_ONCE(head->next, first);
+}
+
+static inline int list_is_last_rcu(const struct list_head *list,
+				   const struct list_head *head)
+{
+	return READ_ONCE(list->next) == head;
 }
 
 /*

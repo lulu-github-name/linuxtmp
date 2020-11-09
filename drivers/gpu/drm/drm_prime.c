@@ -976,7 +976,7 @@ int drm_prime_sg_to_page_addr_arrays(struct sg_table *sgt, struct page **pages,
 	page_index = 0;
 	dma_index = 0;
 	for_each_sg(sgt->sgl, sg, sgt->nents, count) {
-		page_len = sg_dma_len(sg);
+		page_len = sg->length;
 		page = sg_page(sg);
 		dma_len = sg_dma_len(sg);
 		addr = sg_dma_address(sg);
