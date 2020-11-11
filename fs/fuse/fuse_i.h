@@ -485,6 +485,7 @@ struct fuse_fs_context {
 	bool no_mount_options:1;
 	unsigned int max_read;
 	unsigned int blksize;
+	const char *subtype;
 
 	/* fuse_dev pointer to fill in, should contain NULL on entry */
 	void **fudptr;
@@ -965,9 +966,9 @@ void fuse_send_init(struct fuse_conn *fc);
 /**
  * Fill in superblock and initialize fuse connection
  * @sb: partially-initialized superblock to fill in
- * @mount_data: mount parameters
+ * @ctx: mount context
  */
-int fuse_fill_super_common(struct super_block *sb, struct fuse_fs_context *d);
+int fuse_fill_super_common(struct super_block *sb, struct fuse_fs_context *ctx);
 
 /**
  * Disassociate fuse connection from superblock and kill the superblock
