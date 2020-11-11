@@ -1967,7 +1967,7 @@ static enum compact_result __compact_finished(struct compact_control *cc)
 			return COMPACT_PARTIAL_SKIPPED;
 	}
 
-	if (cc->proactive_compaction) {
+	if (unlikely(cc->proactive_compaction)) {
 		int score, wmark_low;
 		pg_data_t *pgdat;
 
@@ -2411,6 +2411,7 @@ static enum compact_result compact_zone_order(struct zone *zone, int order,
 		.alloc_flags = alloc_flags,
 		.classzone_idx = classzone_idx,
 		.direct_compaction = true,
+		.proactive_compaction = false,
 		.whole_zone = (prio == MIN_COMPACT_PRIORITY),
 		.ignore_skip_hint = (prio == MIN_COMPACT_PRIORITY),
 		.ignore_block_suitable = (prio == MIN_COMPACT_PRIORITY)
@@ -2573,6 +2574,7 @@ static void compact_node(int nid)
 		.ignore_skip_hint = true,
 		.whole_zone = true,
 		.gfp_mask = GFP_KERNEL,
+		.proactive_compaction = false,
 	};
 
 
@@ -2610,8 +2612,36 @@ int sysctl_compact_memory;
  * Tunable for proactive compaction. It determines how
  * aggressively the kernel should compact memory in the
  * background. It takes values in the range [0, 100].
+ *
+ * RHEL-8: we are introducing this feature disabled by default
+ * in order to not upset the current established and expected
+ * behavior of the system with a kthread that will be woken up
+ * every 500msec in order to try to move memory around.
  */
-unsigned int __read_mostly sysctl_compaction_proactiveness = 20;
+unsigned int __read_mostly sysctl_compaction_proactiveness = 0;
+
+DEFINE_STATIC_KEY_TRUE(proactive_compaction_disabled);
+
+int sysctl_compaction_proactiveness_handler(struct ctl_table *table, int write,
+					    void __user *buffer, size_t *lenp,
+					    loff_t *ppos)
+{
+	int err, oldval = sysctl_compaction_proactiveness;
+
+	err = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
+
+	if (!err && write) {
+		if (sysctl_compaction_proactiveness == oldval)
+			return 0;
+
+		if (sysctl_compaction_proactiveness == 0)
+			static_branch_enable(&proactive_compaction_disabled);
+		else
+			static_branch_disable(&proactive_compaction_disabled);
+	}
+
+	return err;
+}
 
 /*
  * This is the entry point for compacting all nodes via
@@ -2695,6 +2725,7 @@ static void kcompactd_do_work(pg_data_t *pgdat)
 		.mode = MIGRATE_SYNC_LIGHT,
 		.ignore_skip_hint = false,
 		.gfp_mask = GFP_KERNEL,
+		.proactive_compaction = false,
 	};
 	trace_mm_compaction_kcompactd_wake(pgdat->node_id, cc.order,
 							cc.classzone_idx);
@@ -2808,33 +2839,40 @@ static int kcompactd(void *p)
 		unsigned long pflags;
 
 		trace_mm_compaction_kcompactd_sleep(pgdat->node_id);
-		if (wait_event_freezable_timeout(pgdat->kcompactd_wait,
-			kcompactd_work_requested(pgdat),
-			msecs_to_jiffies(HPAGE_FRAG_CHECK_INTERVAL_MSEC))) {
-
+		if (static_branch_likely(&proactive_compaction_disabled)) {
+			wait_event_freezable(pgdat->kcompactd_wait,
+					     kcompactd_work_requested(pgdat));
 			psi_memstall_enter(&pflags);
 			kcompactd_do_work(pgdat);
 			psi_memstall_leave(&pflags);
-			continue;
-		}
-
-		/* kcompactd wait timeout */
-		if (should_proactive_compact_node(pgdat)) {
-			unsigned int prev_score, score;
-
-			if (proactive_defer) {
-				proactive_defer--;
+		} else {
+			if (wait_event_freezable_timeout(pgdat->kcompactd_wait,
+			    kcompactd_work_requested(pgdat),
+			    msecs_to_jiffies(HPAGE_FRAG_CHECK_INTERVAL_MSEC))) {
+				psi_memstall_enter(&pflags);
+				kcompactd_do_work(pgdat);
+				psi_memstall_leave(&pflags);
 				continue;
 			}
-			prev_score = fragmentation_score_node(pgdat);
-			proactive_compact_node(pgdat);
-			score = fragmentation_score_node(pgdat);
-			/*
-			 * Defer proactive compaction if the fragmentation
-			 * score did not go down i.e. no progress made.
-			 */
-			proactive_defer = score < prev_score ?
-					0 : 1 << COMPACT_MAX_DEFER_SHIFT;
+
+			/* kcompactd wait timeout */
+			if (should_proactive_compact_node(pgdat)) {
+				unsigned int prev_score, score;
+
+				if (proactive_defer) {
+					proactive_defer--;
+					continue;
+				}
+				prev_score = fragmentation_score_node(pgdat);
+				proactive_compact_node(pgdat);
+				score = fragmentation_score_node(pgdat);
+				/*
+				 * Defer proactive compaction if the fragmentation
+				 * score did not go down i.e. no progress made.
+				 */
+				proactive_defer = score < prev_score ?
+						0 : 1 << COMPACT_MAX_DEFER_SHIFT;
+			}
 		}
 	}
 

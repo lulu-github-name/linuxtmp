@@ -211,6 +211,9 @@ static int proc_taint(struct ctl_table *table, int write,
 static int proc_dointvec_minmax_warn_RT_change(struct ctl_table *table,
 					       int write, void __user *buffer,
 					       size_t *lenp, loff_t *ppos);
+extern int sysctl_compaction_proactiveness_handler(struct ctl_table *table,
+						 int write, void __user *buffer,
+						 size_t *lenp, loff_t *ppos);
 #endif
 #endif
 
@@ -1454,7 +1457,7 @@ static struct ctl_table vm_table[] = {
 		.data		= &sysctl_compaction_proactiveness,
 		.maxlen		= sizeof(sysctl_compaction_proactiveness),
 		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
+		.proc_handler	= sysctl_compaction_proactiveness_handler,
 		.extra1		= SYSCTL_ZERO,
 		.extra2		= &one_hundred,
 	},
