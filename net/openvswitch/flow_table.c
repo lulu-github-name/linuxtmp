@@ -124,12 +124,16 @@ static void flow_free(struct sw_flow *flow)
 	if (ovs_identifier_is_key(&flow->id))
 		kfree(flow->id.unmasked_key);
 	if (flow->sf_acts)
-		ovs_nla_free_flow_actions((struct sw_flow_actions __force *)flow->sf_acts);
+		ovs_nla_free_flow_actions((struct sw_flow_actions __force *)
+					  flow->sf_acts);
 	/* We open code this to make sure cpu 0 is always considered */
-	for (cpu = 0; cpu < nr_cpu_ids; cpu = cpumask_next(cpu, &flow->cpu_used_mask))
+	for (cpu = 0; cpu < nr_cpu_ids;
+	     cpu = cpumask_next(cpu, &flow->cpu_used_mask)) {
 		if (flow->stats[cpu])
 			kmem_cache_free(flow_stats_cache,
 					(struct sw_flow_stats __force *)flow->stats[cpu]);
+	}
+
 	kmem_cache_free(flow_cache, flow);
 }
 
@@ -205,7 +209,7 @@ static void tbl_mask_array_reset_counters(struct mask_array *ma)
 	 * zero based counter we store the value at reset, and subtract it
 	 * later when processing.
 	 */
-	for (i = 0; i < ma->max; i++)  {
+	for (i = 0; i < ma->max; i++) {
 		ma->masks_usage_zero_cntr[i] = 0;
 
 		for_each_possible_cpu(cpu) {
@@ -287,7 +291,7 @@ static int tbl_mask_array_add_mask(struct flow_table *tbl,
 
 	if (ma_count >= ma->max) {
 		err = tbl_mask_array_realloc(tbl, ma->max +
-					      MASK_ARRAY_SIZE_MIN);
+						  MASK_ARRAY_SIZE_MIN);
 		if (err)
 			return err;
 
@@ -302,7 +306,7 @@ static int tbl_mask_array_add_mask(struct flow_table *tbl,
 	BUG_ON(ovsl_dereference(ma->masks[ma_count]));
 
 	rcu_assign_pointer(ma->masks[ma_count], new);
-	WRITE_ONCE(ma->count, ma_count +1);
+	WRITE_ONCE(ma->count, ma_count + 1);
 
 	return 0;
 }
@@ -323,10 +327,10 @@ static void tbl_mask_array_del_mask(struct flow_table *tbl,
 	return;
 
 found:
-	WRITE_ONCE(ma->count, ma_count -1);
+	WRITE_ONCE(ma->count, ma_count - 1);
 
-	rcu_assign_pointer(ma->masks[i], ma->masks[ma_count -1]);
-	RCU_INIT_POINTER(ma->masks[ma_count -1], NULL);
+	rcu_assign_pointer(ma->masks[i], ma->masks[ma_count - 1]);
+	RCU_INIT_POINTER(ma->masks[ma_count - 1], NULL);
 
 	kfree_rcu(mask, rcu);
 
@@ -462,16 +466,17 @@ free_mask_cache:
 
 static void flow_tbl_destroy_rcu_cb(struct rcu_head *rcu)
 {
-	struct table_instance *ti = container_of(rcu, struct table_instance, rcu);
+	struct table_instance *ti;
 
+	ti = container_of(rcu, struct table_instance, rcu);
 	__table_instance_destroy(ti);
 }
 
 static void table_instance_flow_free(struct flow_table *table,
-				  struct table_instance *ti,
-				  struct table_instance *ufid_ti,
-				  struct sw_flow *flow,
-				  bool count)
+				     struct table_instance *ti,
+				     struct table_instance *ufid_ti,
+				     struct sw_flow *flow,
+				     bool count)
 {
 	hlist_del_rcu(&flow->flow_table.node[ti->node_ver]);
 	if (count)
@@ -498,9 +503,9 @@ void table_instance_flow_flush(struct flow_table *table,
 		return;
 
 	for (i = 0; i < ti->n_buckets; i++) {
-		struct sw_flow *flow;
 		struct hlist_head *head = &ti->buckets[i];
 		struct hlist_node *n;
+		struct sw_flow *flow;
 
 		hlist_for_each_entry_safe(flow, n, head,
 					  flow_table.node[ti->node_ver]) {
@@ -675,7 +680,7 @@ static int flow_key_start(const struct sw_flow_key *key)
 		return 0;
 	else
 		return rounddown(offsetof(struct sw_flow_key, phy),
-					  sizeof(long));
+				 sizeof(long));
 }
 
 static bool cmp_key(const struct sw_flow_key *key1,
@@ -687,7 +692,7 @@ static bool cmp_key(const struct sw_flow_key *key1,
 	long diffs = 0;
 	int i;
 
-	for (i = key_start; i < key_end;  i += sizeof(long))
+	for (i = key_start; i < key_end; i += sizeof(long))
 		diffs |= *cp1++ ^ *cp2++;
 
 	return diffs == 0;
@@ -920,7 +925,8 @@ static bool ovs_flow_cmp_ufid(const struct sw_flow *flow,
 	return !memcmp(flow->id.ufid, sfid->ufid, sfid->ufid_len);
 }
 
-bool ovs_flow_cmp(const struct sw_flow *flow, const struct sw_flow_match *match)
+bool ovs_flow_cmp(const struct sw_flow *flow,
+		  const struct sw_flow_match *match)
 {
 	if (ovs_identifier_is_ufid(&flow->id))
 		return flow_cmp_masked_key(flow, match->key, &match->range);
@@ -1129,7 +1135,7 @@ void ovs_flow_masks_rebalance(struct flow_table *table)
 	if (!masks_and_count)
 		return;
 
-	for (i = 0; i < ma->max; i++)  {
+	for (i = 0; i < ma->max; i++) {
 		struct sw_flow_mask *mask;
 		int cpu;
 
