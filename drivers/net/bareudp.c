@@ -11,6 +11,7 @@
 #include <linux/module.h>
 #include <linux/etherdevice.h>
 #include <linux/hash.h>
+#include <linux/rh_features.h>
 #include <net/dst_metadata.h>
 #include <net/gro_cells.h>
 #include <net/rtnetlink.h>
@@ -806,6 +807,8 @@ static int __init bareudp_init_module(void)
 	rc = rtnl_link_register(&bareudp_link_ops);
 	if (rc)
 		goto out2;
+
+	rh_mark_used_feature("bareudp");
 
 	return 0;
 out2:

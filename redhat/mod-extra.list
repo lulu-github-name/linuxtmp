@@ -17,6 +17,7 @@ avm_cs.ko
 avmfritz.ko
 ax25.ko
 b1.ko
+bareudp.ko
 bas_gigaset.ko
 batman-adv.ko
 baycom_par.ko
