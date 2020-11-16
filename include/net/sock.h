@@ -1529,7 +1529,6 @@ static inline void sk_mem_uncharge(struct sock *sk, int size)
 
 static inline void sk_wmem_free_skb(struct sock *sk, struct sk_buff *skb)
 {
-	sock_set_flag(sk, SOCK_QUEUE_SHRUNK);
 	sk_wmem_queued_add(sk, -skb->truesize);
 	sk_mem_uncharge(sk, skb->truesize);
 	__kfree_skb(skb);
