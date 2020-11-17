@@ -269,6 +269,10 @@ struct thread_struct {
 
 	unsigned 	used_ebb;
 	RH_KABI_DEPRECATE(unsigned int, used_vas)
+	RH_KABI_EXTEND(unsigned long   mmcr3)
+	RH_KABI_EXTEND(unsigned long   sier2)
+	RH_KABI_EXTEND(unsigned long   sier3)
+
 #endif
 };
 
