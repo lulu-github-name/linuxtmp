@@ -588,6 +588,11 @@ struct task_struct_rh {
 #ifdef CONFIG_COMPACTION
 	struct capture_control          *capture_control;
 #endif
+#ifdef CONFIG_X86_MCE
+	__u64				mce_ripv : 1,
+					mce_whole_page : 1,
+					__mce_reserved : 62;
+#endif
 };
 
 struct task_struct {
