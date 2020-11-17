@@ -8560,6 +8560,8 @@ bnx2_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
 	int rc;
 	char str[40];
 
+	mark_hardware_deprecated(DRV_MODULE_NAME);
+
 	/* dev zeroed in init_etherdev */
 	dev = alloc_etherdev_mq(sizeof(*bp), TX_MAX_RINGS);
 	if (!dev)
