@@ -267,7 +267,7 @@ static int __meminit create_physical_mapping(unsigned long start,
 	int split_text_mapping = 0;
 #endif
 
-	start = _ALIGN_UP(start, PAGE_SIZE);
+	start = ALIGN(start, PAGE_SIZE);
 	for (addr = start; addr < end; addr += mapping_size) {
 		unsigned long gap, previous_size;
 		int rc;
