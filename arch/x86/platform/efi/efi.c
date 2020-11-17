@@ -940,9 +940,6 @@ static void __init kexec_enter_virtual_mode(void)
 	efi_native_runtime_setup();
 
 	efi.set_virtual_address_map = NULL;
-
-	if (efi_have_uv1_memmap() && (__supported_pte_mask & _PAGE_NX))
-		runtime_code_page_mkexec();
 #endif
 }
 
