@@ -3362,6 +3362,7 @@ static int req_prot_init(const struct proto *prot)
 	return 0;
 }
 
+RH_KABI_FORCE_CHANGE(1)
 int proto_register(struct proto *prot, int alloc_slab)
 {
 	if (alloc_slab) {

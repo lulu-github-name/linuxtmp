@@ -2080,11 +2080,11 @@ bool mptcp_finish_join(struct sock *sk)
 	return true;
 }
 
-static bool mptcp_memory_free(const struct sock *sk)
+static bool mptcp_memory_free(const struct sock *sk, int wake)
 {
 	struct mptcp_sock *msk = mptcp_sk(sk);
 
-	return test_bit(MPTCP_SEND_SPACE, &msk->flags);
+	return wake ? test_bit(MPTCP_SEND_SPACE, &msk->flags) : true;
 }
 
 static struct proto mptcp_prot = {

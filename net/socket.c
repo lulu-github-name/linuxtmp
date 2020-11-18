@@ -2921,6 +2921,7 @@ SYSCALL_DEFINE2(socketcall, int, call, unsigned long __user *, args)
  *	socket interface. The value ops->family corresponds to the
  *	socket system call protocol family.
  */
+RH_KABI_FORCE_CHANGE(1)
 int sock_register(const struct net_proto_family *ops)
 {
 	int err;
