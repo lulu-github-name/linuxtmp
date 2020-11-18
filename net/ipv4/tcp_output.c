@@ -3344,7 +3344,7 @@ struct sk_buff *tcp_make_synack(const struct sock *sk, struct dst_entry *dst,
 
 	memset(&opts, 0, sizeof(opts));
 #ifdef CONFIG_SYN_COOKIES
-	if (unlikely(req->cookie_ts))
+	if (unlikely(synack_type == TCP_SYNACK_COOKIE && ireq->tstamp_ok))
 		skb->skb_mstamp = cookie_init_timestamp(req);
 	else
 #endif
