@@ -930,6 +930,9 @@ static inline int tcp_v6_sdif(const struct sk_buff *skb)
 #endif
 	return 0;
 }
+
+extern const struct inet_connection_sock_af_ops ipv6_specific;
+
 #endif
 
 static inline bool inet_exact_dif_match(struct net *net, struct sk_buff *skb)
