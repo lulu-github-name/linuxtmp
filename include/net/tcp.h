@@ -1419,6 +1419,8 @@ static inline bool tcp_rmem_pressure(const struct sock *sk)
 	return atomic_read(&sk->sk_rmem_alloc) > threshold;
 }
 
+void tcp_cleanup_rbuf(struct sock *sk, int copied);
+
 extern void tcp_openreq_init_rwin(struct request_sock *req,
 				  const struct sock *sk_listener,
 				  const struct dst_entry *dst);
