@@ -3100,7 +3100,7 @@ static struct fib6_info *ip6_route_info_create(struct fib6_config *cfg,
 	if ((cfg->fc_flags & RTF_REJECT) ||
 	    (dev && (dev->flags & IFF_LOOPBACK) &&
 	     !(addr_type & IPV6_ADDR_LOOPBACK) &&
-	     !(cfg->fc_flags & RTF_LOCAL))) {
+	     !(cfg->fc_flags & (RTF_ANYCAST | RTF_LOCAL)))) {
 		/* hold loopback dev/idev if we haven't done so. */
 		if (dev != net->loopback_dev) {
 			if (dev) {
