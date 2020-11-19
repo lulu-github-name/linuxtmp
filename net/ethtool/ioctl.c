@@ -27,7 +27,7 @@
 #include <linux/sched/signal.h>
 #include <linux/net.h>
 #include <net/devlink.h>
-#include RH_KABI_HIDE_INCLUDE(<net/xdp_sock.h>)
+#include RH_KABI_HIDE_INCLUDE(<net/xdp_sock_drv.h>)
 #include <net/flow_offload.h>
 #include <linux/ethtool_netlink.h>
 #include <generated/utsrelease.h>
