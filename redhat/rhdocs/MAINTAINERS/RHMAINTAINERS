@@ -304,6 +304,13 @@ M:	Tomas Henzl <thenzl@redhat.com>
 S:	Maintained
 F:	drivers/scsi/arcmsr/
 
+ARCHITECTURE DIRECTORY FILES
+M:	Prarit Bhargava <prarit@redhat.com>
+M:	David Arcari <darcari@redhat.com>
+M:	Mark Salter <msalter@redhat.com>
+M:	Steve Best <sbest@redhat.com>
+F:	arch/Kconfig
+
 ARM64 PORT (AARCH64 ARCHITECTURE)
 M:	Mark Salter <msalter@redhat.com>
 S:	Maintained
@@ -1315,6 +1322,17 @@ NFS SERVER (nfsd)
 L:	Red Hat NFS Team <nfs-team@redhat.com>
 S:	Maintained
 F:	fs/nfsd/
+
+NITRO ENCLAVES (NE)
+M:	Cathy Avery <cavery@redhat.com>
+M:	Mohammed Gamal <mgamal@redhat.com>
+M:	Vitaly Kuznetsov <vkuznets@redhat.com>
+S:	Maintained
+F:	Documentation/virt/ne_overview.rst
+F:	drivers/virt/nitro_enclaves/
+F:	include/linux/nitro_enclaves.h
+F:	include/uapi/linux/nitro_enclaves.h
+F:	samples/nitro_enclaves/
 
 NON-MASKABLE INTERRUPT (NMI)
 M:	Don Zickus <dzickus@redhat.com>
