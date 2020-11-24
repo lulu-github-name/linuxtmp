@@ -171,6 +171,7 @@ enum cpuhp_state {
 	CPUHP_AP_PERF_POWERPC_THREAD_IMC_ONLINE,
 	/* kABI: CPUHP_AP_PERF_POWERPC_TRACE_IMC_ONLINE, */
 	/* kABI: CPUHP_AP_PERF_POWERPC_HV_24x7_ONLINE, */
+	/* kABI: CPUHP_AP_PERF_POWERPC_HV_GPCI_ONLINE, */
 	CPUHP_AP_WORKQUEUE_ONLINE,
 	CPUHP_AP_RCUTREE_ONLINE,
 	CPUHP_AP_ONLINE_DYN,
@@ -199,6 +200,9 @@ enum cpuhp_state {
 
 #define	CPUHP_AP_PERF_POWERPC_HV_24x7_ONLINE \
 		CPUHP_AP_ARM_SDEI_STARTING
+
+#define CPUHP_AP_PERF_POWERPC_HV_GPCI_ONLINE \
+		CPUHP_AP_ARM_VFP_STARTING
 
 int __cpuhp_setup_state(enum cpuhp_state state,	const char *name, bool invoke,
 			int (*startup)(unsigned int cpu),
