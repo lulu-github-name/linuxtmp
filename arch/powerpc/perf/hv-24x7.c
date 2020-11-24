@@ -1132,6 +1132,15 @@ static struct bin_attribute *if_bin_attrs[] = {
 	NULL,
 };
 
+static struct attribute *cpumask_attrs[] = {
+	&dev_attr_cpumask.attr,
+	NULL,
+};
+
+static struct attribute_group cpumask_attr_group = {
+	.attrs = cpumask_attrs,
+};
+
 static struct attribute *if_attrs[] = {
 	&dev_attr_catalog_len.attr,
 	&dev_attr_catalog_version.attr,
@@ -1139,7 +1148,6 @@ static struct attribute *if_attrs[] = {
 	&dev_attr_sockets.attr,
 	&dev_attr_chipspersocket.attr,
 	&dev_attr_coresperchip.attr,
-	&dev_attr_cpumask.attr,
 	NULL,
 };
 
@@ -1155,6 +1163,7 @@ static const struct attribute_group *attr_groups[] = {
 	&event_desc_group,
 	&event_long_desc_group,
 	&if_group,
+	&cpumask_attr_group,
 	NULL,
 };
 
