@@ -15,64 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <linux/irqflags.h>
-
 #include <asm/kvm_hyp.h>
 #include <asm/kvm_mmu.h>
 #include <asm/tlbflush.h>
 
 struct tlb_inv_context {
-	unsigned long	flags;
 	u64		tcr;
-	u64		sctlr;
 };
 
-static void __hyp_text __tlb_switch_to_guest_vhe(struct kvm *kvm,
-						 struct tlb_inv_context *cxt)
-{
-	u64 val;
-
-	local_irq_save(cxt->flags);
-
-	if (cpus_have_final_cap(ARM64_WORKAROUND_SPECULATIVE_AT)) {
-		/*
-		 * For CPUs that are affected by ARM errata 1165522 or 1530923,
-		 * we cannot trust stage-1 to be in a correct state at that
-		 * point. Since we do not want to force a full load of the
-		 * vcpu state, we prevent the EL1 page-table walker to
-		 * allocate new TLBs. This is done by setting the EPD bits
-		 * in the TCR_EL1 register. We also need to prevent it to
-		 * allocate IPA->PA walks, so we enable the S1 MMU...
-		 */
-		val = cxt->tcr = read_sysreg_el1(SYS_TCR);
-		val |= TCR_EPD1_MASK | TCR_EPD0_MASK;
-		write_sysreg_el1(val, SYS_TCR);
-		val = cxt->sctlr = read_sysreg_el1(SYS_SCTLR);
-		val |= SCTLR_ELx_M;
-		write_sysreg_el1(val, SYS_SCTLR);
-	}
-
-	/*
-	 * With VHE enabled, we have HCR_EL2.{E2H,TGE} = {1,1}, and
-	 * most TLB operations target EL2/EL0. In order to affect the
-	 * guest TLBs (EL1/EL0), we need to change one of these two
-	 * bits. Changing E2H is impossible (goodbye TTBR1_EL2), so
-	 * let's flip TGE before executing the TLB operation.
-	 *
-	 * ARM erratum 1165522 requires some special handling (again),
-	 * as we need to make sure both stages of translation are in
-	 * place before clearing TGE. __load_guest_stage2() already
-	 * has an ISB in order to deal with this.
-	 */
-	__load_guest_stage2(kvm);
-	val = read_sysreg(hcr_el2);
-	val &= ~HCR_TGE;
-	write_sysreg(val, hcr_el2);
-	isb();
-}
-
-static void __hyp_text __tlb_switch_to_guest_nvhe(struct kvm *kvm,
-						  struct tlb_inv_context *cxt)
+static void __hyp_text __tlb_switch_to_guest(struct kvm *kvm,
+					     struct tlb_inv_context *cxt)
 {
 	if (cpus_have_final_cap(ARM64_WORKAROUND_SPECULATIVE_AT)) {
 		u64 val;
@@ -95,37 +47,8 @@ static void __hyp_text __tlb_switch_to_guest_nvhe(struct kvm *kvm,
 	asm(ALTERNATIVE("isb", "nop", ARM64_WORKAROUND_SPECULATIVE_AT));
 }
 
-static void __hyp_text __tlb_switch_to_guest(struct kvm *kvm,
-					     struct tlb_inv_context *cxt)
-{
-	if (has_vhe())
-		__tlb_switch_to_guest_vhe(kvm, cxt);
-	else
-		__tlb_switch_to_guest_nvhe(kvm, cxt);
-}
-
-static void __hyp_text __tlb_switch_to_host_vhe(struct kvm *kvm,
-						struct tlb_inv_context *cxt)
-{
-	/*
-	 * We're done with the TLB operation, let's restore the host's
-	 * view of HCR_EL2.
-	 */
-	write_sysreg(0, vttbr_el2);
-	write_sysreg(HCR_HOST_VHE_FLAGS, hcr_el2);
-	isb();
-
-	if (cpus_have_final_cap(ARM64_WORKAROUND_SPECULATIVE_AT)) {
-		/* Restore the registers to what they were */
-		write_sysreg_el1(cxt->tcr, SYS_TCR);
-		write_sysreg_el1(cxt->sctlr, SYS_SCTLR);
-	}
-
-	local_irq_restore(cxt->flags);
-}
-
-static void __hyp_text __tlb_switch_to_host_nvhe(struct kvm *kvm,
-						 struct tlb_inv_context *cxt)
+static void __hyp_text __tlb_switch_to_host(struct kvm *kvm,
+					    struct tlb_inv_context *cxt)
 {
 	write_sysreg(0, vttbr_el2);
 
@@ -135,15 +58,6 @@ static void __hyp_text __tlb_switch_to_host_nvhe(struct kvm *kvm,
 		/* Restore the host's TCR_EL1 */
 		write_sysreg_el1(cxt->tcr, SYS_TCR);
 	}
-}
-
-static void __hyp_text __tlb_switch_to_host(struct kvm *kvm,
-					    struct tlb_inv_context *cxt)
-{
-	if (has_vhe())
-		__tlb_switch_to_host_vhe(kvm, cxt);
-	else
-		__tlb_switch_to_host_nvhe(kvm, cxt);
 }
 
 void __hyp_text __kvm_tlb_flush_vmid_ipa(struct kvm *kvm, phys_addr_t ipa)
@@ -194,7 +108,7 @@ void __hyp_text __kvm_tlb_flush_vmid_ipa(struct kvm *kvm, phys_addr_t ipa)
 	 * The moral of this story is: if you have a VPIPT I-cache, then
 	 * you should be running with VHE enabled.
 	 */
-	if (!has_vhe() && icache_is_vpipt())
+	if (icache_is_vpipt())
 		__flush_icache_all();
 
 	__tlb_switch_to_host(kvm, &cxt);
