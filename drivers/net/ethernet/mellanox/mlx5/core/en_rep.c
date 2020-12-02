@@ -866,6 +866,7 @@ static void rep_vport_rx_rule_destroy(struct mlx5e_priv *priv)
 
 int mlx5e_rep_bond_update(struct mlx5e_priv *priv, bool cleanup)
 {
+	mlx5e_ethtool_cleanup_steering(priv);
 	rep_vport_rx_rule_destroy(priv);
 
 	return cleanup ? 0 : mlx5e_create_rep_vport_rx_rule(priv);
