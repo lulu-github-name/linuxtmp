@@ -823,6 +823,8 @@ static int mlx5_pci_init(struct mlx5_core_dev *dev, struct pci_dev *pdev,
 		goto err_clr_master;
 	}
 
+	mlx5_pci_vsc_init(dev);
+	dev->caps.embedded_cpu = mlx5_read_embedded_cpu(dev);
 	mlx5_check_hw_unsupp_status(pdev);
 	return 0;
 
@@ -1061,8 +1063,6 @@ static int mlx5_function_setup(struct mlx5_core_dev *dev, bool boot)
 		goto stop_health;
 	}
 
-	mlx5_pci_vsc_init(dev);
-
 	return 0;
 
 stop_health:
@@ -1228,7 +1228,6 @@ int mlx5_load_one(struct mlx5_core_dev *dev, bool boot)
 {
 	int err = 0;
 
-	dev->caps.embedded_cpu = mlx5_read_embedded_cpu(dev);
 	mutex_lock(&dev->intf_state_mutex);
 	if (test_bit(MLX5_INTERFACE_STATE_UP, &dev->intf_state)) {
 		mlx5_core_warn(dev, "interface is up, NOP\n");
