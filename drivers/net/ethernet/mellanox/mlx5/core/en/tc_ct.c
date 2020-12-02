@@ -279,7 +279,7 @@ mlx5_tc_ct_rule_to_tuple_nat(struct mlx5_ct_tuple *tuple,
 }
 
 static int
-mlx5_tc_ct_set_tuple_match(struct mlx5_flow_spec *spec,
+mlx5_tc_ct_set_tuple_match(struct mlx5e_priv *priv, struct mlx5_flow_spec *spec,
 			   struct flow_rule *rule)
 {
 	void *headers_c = MLX5_ADDR_OF(fte_match_param, spec->match_criteria,
@@ -294,7 +294,8 @@ mlx5_tc_ct_set_tuple_match(struct mlx5_flow_spec *spec,
 
 		flow_rule_match_basic(rule, &match);
 
-		mlx5e_tc_set_ethertype(headers_c, headers_v, &match);
+		mlx5e_tc_set_ethertype(priv->mdev, &match, true, headers_c,
+				       headers_v);
 		MLX5_SET(fte_match_set_lyr_2_4, headers_c, ip_protocol,
 			 match.mask->ip_proto);
 		MLX5_SET(fte_match_set_lyr_2_4, headers_v, ip_protocol,
@@ -678,7 +679,7 @@ mlx5_tc_ct_entry_add_rule(struct mlx5_tc_ct_priv *ct_priv,
 	attr->counter = entry->counter;
 	attr->flags |= MLX5_ESW_ATTR_FLAG_NO_IN_PORT;
 
-	mlx5_tc_ct_set_tuple_match(spec, flow_rule);
+	mlx5_tc_ct_set_tuple_match(netdev_priv(ct_priv->netdev), spec, flow_rule);
 	mlx5e_tc_match_to_reg_match(spec, ZONE_TO_REG,
 				    entry->tuple.zone & MLX5_CT_ZONE_MASK,
 				    MLX5_CT_ZONE_MASK);
