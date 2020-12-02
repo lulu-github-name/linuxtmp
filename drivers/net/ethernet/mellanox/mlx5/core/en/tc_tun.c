@@ -98,9 +98,8 @@ static int mlx5e_route_lookup_ipv4(struct mlx5e_priv *priv,
 	}
 
 	rt = ip_route_output_key(dev_net(mirred_dev), fl4);
-	ret = PTR_ERR_OR_ZERO(rt);
-	if (ret)
-		return ret;
+	if (IS_ERR(rt))
+		return PTR_ERR(rt);
 
 	if (mlx5_lag_is_multipath(mdev) && !rt->rt_gateway) {
 		ip_rt_put(rt);
@@ -178,7 +177,7 @@ int mlx5e_tc_tun_create_header_ipv4(struct mlx5e_priv *priv,
 	const struct ip_tunnel_key *tun_key = &e->tun_info->key;
 	struct net_device *out_dev, *route_dev;
 	struct flowi4 fl4 = {};
-	struct neighbour *n;
+	struct neighbour *n = NULL;
 	int ipv4_encap_size;
 	char *encap_header;
 	u8 nud_state, ttl;
