@@ -32,6 +32,7 @@ struct arch_hw_breakpoint {
 	u16		type;
 	u16		len; /* length of the target data symbol */
 	RH_KABI_EXTEND(u16		hw_len) /* length programmed in hw */
+	RH_KABI_EXTEND(u8		flags)
 };
 
 /* Note: Don't change the first 6 bits below as they are in the same order
@@ -50,6 +51,8 @@ struct arch_hw_breakpoint {
 #define HW_BRK_TYPE_DABR	(HW_BRK_TYPE_RDWR | HW_BRK_TYPE_TRANSLATE)
 #define HW_BRK_TYPE_PRIV_ALL	(HW_BRK_TYPE_USER | HW_BRK_TYPE_KERNEL | \
 				 HW_BRK_TYPE_HYP)
+
+#define HW_BRK_FLAG_DISABLED	0x1
 
 /* Minimum granularity */
 #ifdef CONFIG_PPC_8xx
