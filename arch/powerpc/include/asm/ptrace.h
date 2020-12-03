@@ -54,6 +54,7 @@ struct pt_regs
 
 #ifdef __powerpc64__
 	RH_KABI_EXTEND(unsigned long ppr)
+	RH_KABI_EXTEND(unsigned long __pad)	/* Maintain 16 byte interrupt stack alignment */
 #endif
 };
 #endif
