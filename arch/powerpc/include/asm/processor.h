@@ -183,7 +183,10 @@ struct thread_struct {
 	 */
 	struct perf_event *last_hit_ubp;
 #endif /* CONFIG_HAVE_HW_BREAKPOINT */
-	struct arch_hw_breakpoint hw_brk; /* info on the hardware breakpoint */
+	RH_KABI_BROKEN_REPLACE(
+		struct arch_hw_breakpoint hw_brk,
+		struct arch_hw_breakpoint hw_brk[HBP_NUM_MAX]
+	)				/* hardware breakpoint info */
 	unsigned long	trap_nr;	/* last trap # on this thread */
 	u8 load_fp;
 #ifdef CONFIG_ALTIVEC
