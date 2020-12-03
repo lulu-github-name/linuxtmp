@@ -181,7 +181,10 @@ struct thread_struct {
 	 * Helps identify source of single-step exception and subsequent
 	 * hw-breakpoint enablement
 	 */
-	struct perf_event *last_hit_ubp;
+	RH_KABI_BROKEN_REPLACE(
+		struct perf_event *last_hit_ubp,
+		struct perf_event *last_hit_ubp[HBP_NUM_MAX]
+	)
 #endif /* CONFIG_HAVE_HW_BREAKPOINT */
 	RH_KABI_BROKEN_REPLACE(
 		struct arch_hw_breakpoint hw_brk,
