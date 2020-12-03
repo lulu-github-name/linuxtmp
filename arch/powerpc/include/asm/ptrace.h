@@ -24,6 +24,7 @@
 #define _ASM_POWERPC_PTRACE_H
 
 #include <uapi/asm/ptrace.h>
+#include <linux/rh_kabi.h>
 
 #if !defined(__ASSEMBLY__) && !defined(__GENKSYMS__)
 struct pt_regs
@@ -50,6 +51,10 @@ struct pt_regs
 			unsigned long result;
 		};
 	};
+
+#ifdef __powerpc64__
+	RH_KABI_EXTEND(unsigned long ppr)
+#endif
 };
 #endif
 
