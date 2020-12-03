@@ -301,7 +301,7 @@ int ptrace_get_reg(struct task_struct *task, int regno, unsigned long *data)
 	}
 #endif
 
-	regs_max = sizeof(struct pt_regs) / sizeof(unsigned long);
+	regs_max = sizeof(struct user_pt_regs) / sizeof(unsigned long);
 	if (regno < regs_max) {
 		regno = array_index_nospec(regno, regs_max);
 		*data = ((unsigned long *)task->thread.regs)[regno];
@@ -367,10 +367,10 @@ static int gpr_get(struct task_struct *target, const struct user_regset *regset,
 		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
 					  &target->thread.regs->orig_gpr3,
 					  offsetof(struct pt_regs, orig_gpr3),
-					  sizeof(struct pt_regs));
+					  sizeof(struct user_pt_regs));
 	if (!ret)
 		ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
-					       sizeof(struct pt_regs), -1);
+					       sizeof(struct user_pt_regs), -1);
 
 	return ret;
 }
@@ -860,10 +860,10 @@ static int tm_cgpr_get(struct task_struct *target,
 		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
 					  &target->thread.ckpt_regs.orig_gpr3,
 					  offsetof(struct pt_regs, orig_gpr3),
-					  sizeof(struct pt_regs));
+					  sizeof(struct user_pt_regs));
 	if (!ret)
 		ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
-					       sizeof(struct pt_regs), -1);
+					       sizeof(struct user_pt_regs), -1);
 
 	return ret;
 }
@@ -3136,7 +3136,7 @@ long arch_ptrace(struct task_struct *child, long request,
 	case PTRACE_GETREGS:	/* Get all pt_regs from the child. */
 		return copy_regset_to_user(child, &user_ppc_native_view,
 					   REGSET_GPR,
-					   0, sizeof(struct pt_regs),
+					   0, sizeof(struct user_pt_regs),
 					   datavp);
 
 #ifdef CONFIG_PPC64
@@ -3145,7 +3145,7 @@ long arch_ptrace(struct task_struct *child, long request,
 	case PTRACE_SETREGS:	/* Set all gp regs in the child. */
 		return copy_regset_from_user(child, &user_ppc_native_view,
 					     REGSET_GPR,
-					     0, sizeof(struct pt_regs),
+					     0, sizeof(struct user_pt_regs),
 					     datavp);
 
 	case PTRACE_GETFPREGS: /* Get the child FPU state (FPR0...31 + FPSCR) */
