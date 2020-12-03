@@ -108,7 +108,8 @@ void show_opcodes(struct pt_regs *regs, const char *loglvl)
 
 	if (bad_ip || probe_kernel_read(opcodes, (u8 *)prologue,
 					OPCODE_BUFSIZE)) {
-		printk("%sCode: Bad RIP value.\n", loglvl);
+		printk("%sCode: Unable to access opcode bytes at RIP 0x%lx.\n",
+		       loglvl, prologue);
 	} else {
 		printk("%sCode: %" __stringify(PROLOGUE_SIZE) "ph <%02x> %"
 		       __stringify(EPILOGUE_SIZE) "ph\n", loglvl, opcodes,
