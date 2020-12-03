@@ -31,7 +31,7 @@ struct arch_hw_breakpoint {
 	unsigned long	address;
 	u16		type;
 	u16		len; /* length of the target data symbol */
-	RH_KABI_BROKEN_INSERT(u16		hw_len) /* length programmed in hw */
+	RH_KABI_EXTEND(u16		hw_len) /* length programmed in hw */
 };
 
 /* Note: Don't change the first 6 bits below as they are in the same order
