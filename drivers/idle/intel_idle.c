@@ -122,7 +122,7 @@ static __cpuidle int intel_idle(struct cpuidle_device *dev,
 	struct cpuidle_state *state = &drv->states[index];
 	unsigned long eax = flg2MWAIT(state->flags);
 	unsigned long ecx = 1; /* break on interrupt flag */
-	bool uninitialized_var(tick);
+	bool tick;
 
 	if (!static_cpu_has(X86_FEATURE_ARAT)) {
 		/*
