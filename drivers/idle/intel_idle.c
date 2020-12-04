@@ -1139,11 +1139,8 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
 	{}
 };
 
-#define INTEL_CPU_FAM6_MWAIT \
-	{ X86_VENDOR_INTEL, 6, X86_MODEL_ANY, X86_FEATURE_MWAIT, 0 }
-
 static const struct x86_cpu_id intel_mwait_ids[] __initconst = {
-	INTEL_CPU_FAM6_MWAIT,
+	X86_MATCH_VENDOR_FAM_FEATURE(INTEL, 6, X86_FEATURE_MWAIT, NULL),
 	{}
 };
 
