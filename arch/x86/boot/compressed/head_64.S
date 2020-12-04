@@ -520,6 +520,9 @@ ENDPROC(efi64_stub_entry)
 	pushq	%rsi
 	call	set_sev_encryption_mask
 	call	load_stage2_idt
+
+	/* Pass boot_params to initialize_identity_maps() */
+	movq	(%rsp), %rdi
 	call	initialize_identity_maps
 	popq	%rsi
 
