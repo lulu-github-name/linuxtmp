@@ -44,6 +44,7 @@
 #include <linux/jump_label.h>
 #include <linux/set_memory.h>
 #include <linux/sync_core.h>
+#include <linux/hardirq.h>
 
 #include <asm/intel-family.h>
 #include <asm/processor.h>
@@ -1224,7 +1225,7 @@ void do_machine_check(struct pt_regs *regs, long error_code)
 	if (__mc_check_crashing_cpu(cpu))
 		return;
 
-	ist_enter(regs);
+	nmi_enter();
 
 	this_cpu_inc(mce_exception_count);
 
@@ -1330,7 +1331,7 @@ void do_machine_check(struct pt_regs *regs, long error_code)
 	}
 
 out_ist:
-	ist_exit(regs);
+	nmi_exit();
 }
 EXPORT_SYMBOL_GPL(do_machine_check);
 
