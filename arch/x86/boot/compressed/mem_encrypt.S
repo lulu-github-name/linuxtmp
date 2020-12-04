@@ -71,6 +71,9 @@ ENTRY(get_sev_encryption_bit)
 ENDPROC(get_sev_encryption_bit)
 
 	.code64
+
+#include "../../kernel/sev_verify_cbit.S"
+
 ENTRY(set_sev_encryption_mask)
 #ifdef CONFIG_AMD_MEM_ENCRYPT
 	push	%rbp
@@ -115,4 +118,5 @@ ENDPROC(set_sev_encryption_mask)
 GLOBAL(sme_me_mask)
 	.quad	0
 SYM_DATA(sev_status,		.quad 0)
+SYM_DATA(sev_check_data,	.quad 0)
 #endif
