@@ -37,6 +37,9 @@ asmlinkage void alignment_check(void);
 asmlinkage void machine_check(void);
 #endif /* CONFIG_X86_MCE */
 asmlinkage void simd_coprocessor_error(void);
+#ifdef CONFIG_AMD_MEM_ENCRYPT
+asmlinkage void vmm_communication(void);
+#endif
 
 #if defined(CONFIG_X86_64) && defined(CONFIG_XEN_PV)
 asmlinkage void xen_divide_error(void);
@@ -96,6 +99,9 @@ dotraplinkage void do_simd_coprocessor_error(struct pt_regs *regs, long error_co
 dotraplinkage void do_iret_error(struct pt_regs *regs, long error_code);
 #endif
 dotraplinkage void do_mce(struct pt_regs *regs, long error_code);
+#ifdef CONFIG_AMD_MEM_ENCRYPT
+dotraplinkage void do_vmm_communication(struct pt_regs *, long);
+#endif
 
 static inline int get_si_code(unsigned long condition)
 {

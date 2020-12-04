@@ -1668,6 +1668,14 @@ ENTRY(general_protection)
 	jmp	common_exception
 END(general_protection)
 
+#ifdef CONFIG_AMD_MEM_ENCRYPT
+ENTRY(vmm_communication)
+	ASM_CLAC
+	pushl	$do_vmm_communication
+	jmp	common_exception
+END(vmm_communication)
+#endif
+
 ENTRY(rewind_stack_do_exit)
 	/* Prevent any naive code from trying to unwind to our caller. */
 	xorl	%ebp, %ebp
