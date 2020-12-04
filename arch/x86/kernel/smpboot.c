@@ -239,7 +239,7 @@ static void notrace start_secondary(void *unused)
 	cr4_init_shadow();
 	__flush_tlb_all();
 #endif
-	load_current_idt();
+	cpu_init_exception_handling();
 	cpu_init();
 	x86_cpuinit.early_percpu_clock_init();
 	preempt_disable();
