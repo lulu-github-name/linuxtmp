@@ -1165,7 +1165,7 @@ apicinterrupt3 HYPERV_STIMER0_VECTOR \
 	hv_stimer0_callback_vector hv_stimer0_vector_handler
 #endif /* CONFIG_HYPERV */
 
-idtentry debug			do_debug		has_error_code=0	paranoid=1 shift_ist=IST_INDEX_DB ist_offset=DB_STACK_OFFSET
+idtentry debug			do_debug		has_error_code=0	paranoid=1
 
 #ifdef CONFIG_KVM_GUEST
 apicinterrupt3 HYPERVISOR_CALLBACK_VECTOR \
