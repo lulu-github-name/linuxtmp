@@ -35,11 +35,11 @@
 #include <linux/ipv6.h>
 #include <linux/tcp.h>
 #include <net/busy_poll.h>
-#include <linux/indirect_call_wrapper.h>
 #include <net/ip6_checksum.h>
 #include <net/page_pool.h>
 #include <net/inet_ecn.h>
 #include "en.h"
+#include "en/txrx.h"
 #include "en_tc.h"
 #include "eswitch.h"
 #include "en_rep.h"
@@ -562,7 +562,7 @@ static void mlx5e_dealloc_rx_mpwqe(struct mlx5e_rq *rq, u16 ix)
 	mlx5e_free_rx_mpwqe(rq, wi, false);
 }
 
-bool mlx5e_post_rx_wqes(struct mlx5e_rq *rq)
+INDIRECT_CALLABLE_SCOPE bool mlx5e_post_rx_wqes(struct mlx5e_rq *rq)
 {
 	struct mlx5_wq_cyc *wq = &rq->wqe.wq;
 	u8 wqe_bulk;
@@ -697,7 +697,7 @@ int mlx5e_poll_ico_cq(struct mlx5e_cq *cq)
 	return i;
 }
 
-bool mlx5e_post_rx_mpwqes(struct mlx5e_rq *rq)
+INDIRECT_CALLABLE_SCOPE bool mlx5e_post_rx_mpwqes(struct mlx5e_rq *rq)
 {
 	struct mlx5e_icosq *sq = &rq->channel->icosq;
 	struct mlx5_wq_ll *wq = &rq->mpwqe.wq;
