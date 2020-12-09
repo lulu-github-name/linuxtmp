@@ -232,6 +232,16 @@ void mlx5e_ktls_handle_ctx_completion(struct mlx5e_icosq_wqe_info *wi)
 	queue_work(rule->priv->tls->rx_wq, &rule->work);
 }
 
+static int mlx5e_ktls_sk_get_rxq(struct sock *sk)
+{
+	int rxq = sk_rx_queue_get(sk);
+
+	if (unlikely(rxq == -1))
+		rxq = 0;
+
+	return rxq;
+}
+
 int mlx5e_ktls_add_rx(struct net_device *netdev, struct sock *sk,
 		      struct tls_crypto_info *crypto_info,
 		      u32 start_offload_tcp_sn)
@@ -257,7 +267,7 @@ int mlx5e_ktls_add_rx(struct net_device *netdev, struct sock *sk,
 	priv_rx->crypto_info  =
 		*(struct tls12_crypto_info_aes_gcm_128 *)crypto_info;
 	priv_rx->sk = sk;
-	priv_rx->rxq = mlx5e_accel_sk_get_rxq(sk);
+	priv_rx->rxq = mlx5e_ktls_sk_get_rxq(sk);
 
 	mlx5e_set_ktls_rx_priv_ctx(tls_ctx, priv_rx);
 
