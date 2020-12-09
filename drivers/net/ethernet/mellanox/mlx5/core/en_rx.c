@@ -615,6 +615,9 @@ void mlx5e_free_icosq_descs(struct mlx5e_icosq *sq)
 		case MLX5E_ICOSQ_WQE_SET_PSV_TLS:
 			mlx5e_ktls_handle_ctx_completion(wi);
 			break;
+		case MLX5E_ICOSQ_WQE_GET_PSV_TLS:
+			mlx5e_ktls_handle_get_psv_completion(wi, sq);
+			break;
 		}
 #endif
 	}
@@ -681,6 +684,9 @@ int mlx5e_poll_ico_cq(struct mlx5e_cq *cq)
 				break;
 			case MLX5E_ICOSQ_WQE_SET_PSV_TLS:
 				mlx5e_ktls_handle_ctx_completion(wi);
+				break;
+			case MLX5E_ICOSQ_WQE_GET_PSV_TLS:
+				mlx5e_ktls_handle_get_psv_completion(wi, sq);
 				break;
 #endif
 			default:
