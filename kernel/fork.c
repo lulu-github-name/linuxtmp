@@ -843,6 +843,25 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 	*stackend = STACK_END_MAGIC;	/* for overflow detection */
 }
 
+/*
+ * RHEL: dup_rh_task_struct() allocates a new task_struct_rh object for
+ * the recently cloned task and mimics the initialization steps done at
+ * arch_dup_task_struct(), so we set up dst->task_struct_rh accordingly.
+ */
+bool dup_rh_task_struct(struct task_struct *dst, struct task_struct *src, int node)
+{
+	dst->task_struct_rh = kmalloc_node(sizeof(struct task_struct_rh),
+					   GFP_KERNEL, node);
+	if (!dst->task_struct_rh)
+		return false;
+
+	memcpy(dst->task_struct_rh,
+	       src->task_struct_rh,
+	       sizeof(struct task_struct_rh));
+
+	return true;
+}
+
 static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 {
 	struct task_struct *tsk;
@@ -887,13 +906,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	atomic_set(&tsk->stack_refcount, 1);
 #endif
 
-	/* RHEL: allocate the extended task_struct on the same node */
-	tsk->task_struct_rh = kmalloc_node(sizeof(struct task_struct_rh),
-					   GFP_KERNEL, node);
-	if (!tsk->task_struct_rh)
-		goto free_stack;
-
-	if (err)
+	if (err || !dup_rh_task_struct(tsk, orig, node))
 		goto free_stack;
 
 #ifdef CONFIG_SECCOMP
