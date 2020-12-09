@@ -2245,6 +2245,7 @@ struct rdma_netdev_alloc_params {
 struct ib_odp_counters {
 	atomic64_t faults;
 	atomic64_t invalidations;
+	atomic64_t prefetch;
 };
 
 struct ib_counters {
