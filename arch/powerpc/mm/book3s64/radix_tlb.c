@@ -69,7 +69,7 @@ static void tlbiel_all_isa300(unsigned int num_sets, unsigned int is)
 	for (set = 1; set < num_sets; set++)
 		tlbiel_radix_set_isa300(set, is, 0, RIC_FLUSH_TLB, 1);
 
-	asm volatile("ptesync": : :"memory");
+	ppc_after_tlbiel_barrier();
 }
 
 void radix__tlbiel_all(unsigned int action)
@@ -300,7 +300,7 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
 
 	/* For PWC, only one flush is needed */
 	if (ric == RIC_FLUSH_PWC) {
-		asm volatile("ptesync": : :"memory");
+		ppc_after_tlbiel_barrier();
 		return;
 	}
 
@@ -308,7 +308,7 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
 	for (set = 1; set < POWER9_TLB_SETS_RADIX ; set++)
 		__tlbiel_pid(pid, set, RIC_FLUSH_TLB);
 
-	asm volatile("ptesync": : :"memory");
+	ppc_after_tlbiel_barrier();
 	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
 }
 
@@ -435,7 +435,7 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
 
 	asm volatile("ptesync": : :"memory");
 	__tlbiel_va(va, pid, ap, ric);
-	asm volatile("ptesync": : :"memory");
+	ppc_after_tlbiel_barrier();
 }
 
 static inline void _tlbiel_va_range(unsigned long start, unsigned long end,
@@ -446,7 +446,7 @@ static inline void _tlbiel_va_range(unsigned long start, unsigned long end,
 	if (also_pwc)
 		__tlbiel_pid(pid, 0, RIC_FLUSH_PWC);
 	__tlbiel_va_range(start, end, pid, page_size, psize);
-	asm volatile("ptesync": : :"memory");
+	ppc_after_tlbiel_barrier();
 }
 
 static inline void __tlbie_va_range(unsigned long start, unsigned long end,
@@ -960,7 +960,7 @@ is_local:
 			if (gflush)
 				__tlbiel_va_range(gstart, gend, pid,
 						PUD_SIZE, MMU_PAGE_1G);
-			asm volatile("ptesync": : :"memory");
+			ppc_after_tlbiel_barrier();
 		} else if (cputlb_use_tlbie()) {
 			asm volatile("ptesync": : :"memory");
 			__tlbie_va_range(start, end, pid, page_size, mmu_virtual_psize);
