@@ -384,7 +384,7 @@ BuildRequires: python3-docutils
 BuildRequires: zlib-devel binutils-devel
 %endif
 %if %{with_selftests}
-BuildRequires: libcap-devel libcap-ng-devel clang llvm numactl-devel rsync
+BuildRequires: libcap-devel libcap-ng-devel clang llvm numactl-devel rsync libmnl-devel
 %endif
 BuildConflicts: rhbuildsys(DiskFree) < 500Mb
 %if %{with_debuginfo}
