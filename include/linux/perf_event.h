@@ -433,6 +433,11 @@ struct pmu {
 	size_t				task_ctx_size;
 
 	/*
+	 * Kmem cache of PMU specific data
+	 */
+	RH_KABI_BROKEN_INSERT(struct kmem_cache		*task_ctx_cache)
+
+	/*
 	 * PMU specific parts of task perf event context (i.e. ctx->task_ctx_data)
 	 * can be synchronized using this function. See Intel LBR callstack support
 	 * implementation and Perf core context switch handling callbacks for usage
