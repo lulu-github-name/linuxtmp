@@ -427,10 +427,7 @@ struct pmu {
 	 */
 	void (*sched_task)		(struct perf_event_context *ctx,
 					bool sched_in);
-	/*
-	 * PMU specific data size
-	 */
-	size_t				task_ctx_size;
+	RH_KABI_BROKEN_REMOVE(size_t				task_ctx_size)
 
 	/*
 	 * Kmem cache of PMU specific data
