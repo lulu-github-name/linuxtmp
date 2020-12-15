@@ -28,6 +28,7 @@ Core utilities
    errseq
    printk-formats
    circular-buffers
+   pin_user_pages
    gfp_mask-from-fs-io
    padata
 
