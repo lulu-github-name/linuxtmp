@@ -617,6 +617,8 @@ static int sock_bindtoindex_locked(struct sock *sk, int ifindex)
 		goto out;
 
 	sk->sk_bound_dev_if = ifindex;
+	if (sk->sk_prot->rehash)
+		sk->sk_prot->rehash(sk);
 	sk_dst_reset(sk);
 
 	ret = 0;
