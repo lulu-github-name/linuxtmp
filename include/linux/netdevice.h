@@ -1936,6 +1936,7 @@ struct net_device_extended_rh {
  *	@udp_tunnel_nic_info:	static structure describing the UDP tunnel
  *				offload capabilities of the device
  *	@udp_tunnel_nic:	UDP tunnel offload state
+ *	@xdp_state:		stores info on attached XDP BPF programs
  *
  *	FIXME: cleanup struct net_device such that network protocol info
  *	moves out.
