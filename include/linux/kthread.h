@@ -9,6 +9,8 @@
 #include <linux/sched.h>
 #include RH_KABI_FAKE_INCLUDE(<linux/cgroup.h>)
 
+struct mm_struct;
+
 __printf(4, 5)
 struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 					   void *data,
