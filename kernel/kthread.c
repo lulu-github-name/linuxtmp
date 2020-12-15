@@ -1252,56 +1252,41 @@ void kthread_destroy_worker(struct kthread_worker *worker)
 }
 EXPORT_SYMBOL(kthread_destroy_worker);
 
-/*
- * use_mm
- *	Makes the calling kernel thread take on the specified
- *	mm context.
- *	(Note: this routine is intended to be called only
- *	from a kernel thread context)
+/**
+ * kthread_use_mm - make the calling kthread operate on an address space
+ * @mm: address space to operate on
  */
-void rh_breaks_kabi_use_mm(struct mm_struct *mm)
-{
-	struct mm_struct *active_mm;
-	struct task_struct *tsk = current;
-
-	task_lock(tsk);
-	active_mm = tsk->active_mm;
-	if (active_mm != mm) {
-		mmgrab(mm);
-		tsk->active_mm = mm;
-	}
-	tsk->mm = mm;
-	switch_mm(active_mm, mm, tsk);
-	task_unlock(tsk);
-#ifdef finish_arch_post_lock_switch
-	finish_arch_post_lock_switch();
-#endif
-
-	if (active_mm != mm)
-		mmdrop(active_mm);
-}
-EXPORT_SYMBOL_GPL(rh_breaks_kabi_use_mm);
-
-/*
- * unuse_mm
- *	Reverses the effect of use_mm, i.e. releases the
- *	specified mm context which was earlier taken on
- *	by the calling kernel thread
- *	(Note: this routine is intended to be called only
- *	from a kernel thread context)
- */
-void rh_breaks_kabi_unuse_mm(struct mm_struct *mm)
+void kthread_use_mm(struct mm_struct *mm)
 {
 	struct task_struct *tsk = current;
 
-	task_lock(tsk);
-	sync_mm_rss(mm);
-	tsk->mm = NULL;
-	/* active_mm is still 'mm' */
-	enter_lazy_tlb(mm, tsk);
-	task_unlock(tsk);
+	WARN_ON_ONCE(!(tsk->flags & PF_KTHREAD));
+	WARN_ON_ONCE(tsk->mm);
+
+	use_mm(mm);
 }
-EXPORT_SYMBOL_GPL(rh_breaks_kabi_unuse_mm);
+EXPORT_SYMBOL_GPL(kthread_use_mm);
+
+/*
+ * RHEL note - any updates to kthread_use_mm() or kthread_unuse_mm() need
+ * to go into mm/mmu_context.c due to kabi workarounds for the implementations
+ * of these functions.
+ */
+
+/**
+ * kthread_unuse_mm - reverse the effect of kthread_use_mm()
+ * @mm: address space to operate on
+ */
+void kthread_unuse_mm(struct mm_struct *mm)
+{
+	struct task_struct *tsk = current;
+
+	WARN_ON_ONCE(!(tsk->flags & PF_KTHREAD));
+	WARN_ON_ONCE(!tsk->mm);
+
+	unuse_mm(mm);
+}
+EXPORT_SYMBOL_GPL(kthread_unuse_mm);
 
 #ifdef CONFIG_BLK_CGROUP
 /**

@@ -55,7 +55,6 @@
 #include <linux/fdtable.h>
 #include <linux/mm.h>
 #include <linux/mman.h>
-#include <linux/mmu_context.h>
 #include <linux/percpu.h>
 #include <linux/slab.h>
 #include <linux/kthread.h>
@@ -4330,7 +4329,7 @@ static void io_sq_thread_drop_mm(struct io_ring_ctx *ctx)
 	struct mm_struct *mm = current->mm;
 
 	if (mm) {
-		unuse_mm(mm);
+		kthread_unuse_mm(mm);
 		mmput(mm);
 	}
 }
