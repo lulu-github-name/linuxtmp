@@ -248,15 +248,24 @@ struct mem_cgroup {
 	struct mem_cgroup_id id;
 
 	/* Accounted resources */
-	struct page_counter memory;
-	struct page_counter swap;
+	struct page_counter memory;		/* Both v1 & v2 */
 
-	/* Legacy consumer-oriented counters */
+#ifdef __GENKSYMS__
+	struct page_counter swap;
 	struct page_counter memsw;
 	struct page_counter kmem;
 	struct page_counter tcpmem;
-
 	RH_KABI_DEPRECATE(unsigned long, high)
+#else
+	union {
+		struct page_counter swap;	/* v2 only */
+		struct page_counter memsw;	/* v1 only */
+	};
+
+	/* Legacy consumer-oriented counters */
+	struct page_counter kmem;		/* v1 only */
+	struct page_counter tcpmem;		/* v1 only */
+#endif
 
 	/* Range enforcement for interrupt charges */
 	struct work_struct high_work;
