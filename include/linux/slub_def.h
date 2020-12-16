@@ -8,6 +8,7 @@
  * (C) 2007 SGI, Christoph Lameter
  */
 #include <linux/kobject.h>
+#include <linux/reciprocal_div.h>
 
 enum stat_item {
 	ALLOC_FASTPATH,		/* Allocation from cpu slab */
@@ -139,6 +140,15 @@ struct kmem_cache {
 	unsigned int useroffset;	/* Usercopy region offset */
 	unsigned int usersize;		/* Usercopy region size */
 
+	/*
+	 * RHEL Note:
+	 * All kmem_cache's are allocated dynamically at run time.
+	 * The kmem_cache_node pointers are for SLUB internal use and
+	 * should not be accessed by others. So it is safe to extend
+	 * kmem_cache here by adding additional fields.
+	 */
+	RH_KABI_EXTEND(struct reciprocal_value reciprocal_size)
+
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 
@@ -180,6 +190,20 @@ static inline void *nearest_obj(struct kmem_cache *cache, struct page *page,
 
 	result = fixup_red_left(cache, result);
 	return result;
+}
+
+/* Determine object index from a given position */
+static inline unsigned int __obj_to_index(const struct kmem_cache *cache,
+					  void *addr, void *obj)
+{
+	return reciprocal_divide(kasan_reset_tag(obj) - addr,
+				 cache->reciprocal_size);
+}
+
+static inline unsigned int obj_to_index(const struct kmem_cache *cache,
+					const struct page *page, void *obj)
+{
+	return __obj_to_index(cache, page_address(page), obj);
 }
 
 #endif /* _LINUX_SLUB_DEF_H */
