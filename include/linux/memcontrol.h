@@ -38,14 +38,14 @@ struct kmem_cache;
 
 /* Cgroup-specific page state, on top of universal node page state */
 enum memcg_stat_item {
-	MEMCG_RSS_HUGE = NR_VM_NODE_STAT_ITEMS,
-	MEMCG_SWAP,
+	MEMCG_SWAP = NR_VM_NODE_STAT_ITEMS,
 	MEMCG_SOCK,
 	/* XXX: why are these zone and not node counters? */
 	MEMCG_KERNEL_STACK_KB,
 #ifdef __GENKSYMS__
 	_RH_KABI_MEMCG_STAT_RESERVED1,
 	_RH_KABI_MEMCG_STAT_RESERVED2,
+	_RH_KABI_MEMCG_STAT_RESERVED3,
 #endif
 	MEMCG_NR_STAT,
 };
