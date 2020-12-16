@@ -236,8 +236,7 @@ struct mem_cgroup {
 	struct page_counter kmem;
 	struct page_counter tcpmem;
 
-	/* Upper bound of normal memory consumption range */
-	unsigned long high;
+	RH_KABI_DEPRECATE(unsigned long, high)
 
 	/* Range enforcement for interrupt charges */
 	struct work_struct high_work;
