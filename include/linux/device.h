@@ -1105,6 +1105,7 @@ enum dl_dev_state {
  * struct dev_links_info - Device data related to device links.
  * @suppliers: List of links to supplier devices.
  * @consumers: List of links to consumer devices.
+ * @needs_suppliers: Hook to global list of devices waiting for suppliers.
  * @status: Driver status information.
  */
 struct dev_links_info {
@@ -1112,6 +1113,17 @@ struct dev_links_info {
 	struct list_head consumers;
 	enum dl_dev_state status;
 };
+
+/** RHEL NOTE:
+ * upstream commit e2ae9bcc4aaa (driver core: Add support for linking devices
+ * during device addition) added 'struct list_head needs_suppliers' to the
+ * dev_links_info struct.  It has not been added here but is instead in one
+ * of the RH_KABI fields of struct device.  If it had been added to
+ * dev_links_info, its use in struct device as an entry (vs a pointer to an
+ * entry) would break kABI.  A shadow struct could have been used instead,
+ * however for just the one entry it seemed overkill; should there be a need
+ * for additional entries to struct dev_links_info, that should be revisited.
+ */
 
 struct device_extended_rh {
 };
@@ -1291,8 +1303,10 @@ struct device {
 	 */
 	RH_KABI_USE(1, bool iommu_bypass : 1)
 	RH_KABI_USE(2, struct dev_iommu *iommu)
-	RH_KABI_RESERVE(3)
-	RH_KABI_RESERVE(4)
+
+	/* NB: See the note for struct dev_links_info: */
+	RH_KABI_USE(3, 4, struct list_head links_needs_suppliers)
+
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
 	RH_KABI_RESERVE(7)
