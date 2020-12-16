@@ -1017,7 +1017,6 @@ struct device_dma_parameters {
  * @fwnode: The device node of the connected device
  * @endpoint: The names of the two devices connected together
  * @id: Unique identifier for the connection
- * @list: List head, private, for internal use only
  *
  * NOTE: @fwnode is not used together with @endpoint. @fwnode is used when
  * platform firmware defines the connection. When the connection is registered
@@ -1027,7 +1026,6 @@ struct device_connection {
 	struct fwnode_handle	*fwnode;
 	const char		*endpoint[2];
 	const char		*id;
-	struct list_head	list;
 };
 
 typedef void *(*devcon_match_fn_t)(struct device_connection *con, int ep,
@@ -1038,9 +1036,6 @@ void *fwnode_connection_find_match(struct fwnode_handle *fwnode,
 				   devcon_match_fn_t match);
 void *device_connection_find_match(struct device *dev, const char *con_id,
 				   void *data, devcon_match_fn_t match);
-
-void device_connection_add(struct device_connection *con);
-void device_connection_remove(struct device_connection *con);
 
 /**
  * enum device_link_state - Device link states.
