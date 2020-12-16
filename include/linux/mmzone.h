@@ -293,8 +293,9 @@ struct lruvec {
 		unsigned long			anon_cost,
 		unsigned long			file_cost)
 
-	/* Evictions & activations on the inactive file list */
-	atomic_long_t			inactive_age;
+	/* Non-resident age, driven by LRU movement */
+	atomic_long_t			RH_KABI_RENAME(inactive_age,
+						       nonresident_age);
 	/* Refaults at the time of last reclaim cycle */
 	unsigned long			refaults;
 #ifdef CONFIG_MEMCG
