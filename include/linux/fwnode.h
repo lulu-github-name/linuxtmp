@@ -13,6 +13,7 @@
 #define _LINUX_FWNODE_H_
 
 #include <linux/types.h>
+#include <linux/rh_kabi.h>
 
 struct fwnode_operations;
 struct device;
@@ -20,6 +21,7 @@ struct device;
 struct fwnode_handle {
 	struct fwnode_handle *secondary;
 	const struct fwnode_operations *ops;
+	RH_KABI_EXTEND(struct device *dev)
 };
 
 /**
@@ -125,5 +127,6 @@ struct fwnode_operations {
 		if (fwnode_has_op(fwnode, op))				\
 			(fwnode)->ops->op(fwnode, ## __VA_ARGS__);	\
 	} while (false)
+#define get_dev_from_fwnode(fwnode)	get_device((fwnode)->dev)
 
 #endif
