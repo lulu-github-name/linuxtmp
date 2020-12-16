@@ -43,6 +43,8 @@ struct vdpa_vq_state {
  * @index: device index
  * @features_valid: were features initialized? for legacy guests
  * @nvqs: the number of virtqueues
+ * @ngroups: the number of virtqueue groups
+ * @nas: the number of address spaces
  */
 struct vdpa_device {
 	struct device dev;
@@ -52,6 +54,7 @@ struct vdpa_device {
 	bool features_valid;
 	int nvqs;
 	unsigned int ngroups;
+	unsigned int nas;
 };
 
 /**
@@ -175,6 +178,7 @@ struct vdpa_iova_range {
  *				Needed for device that using device
  *				specific DMA translation (on-chip IOMMU)
  *				@vdev: vdpa device
+ *				@asid: address space identifier
  *				@iotlb: vhost memory mapping to be
  *				used by the vDPA
  *				Returns integer: success (0) or error (< 0)
@@ -183,6 +187,7 @@ struct vdpa_iova_range {
  *				specific DMA translation (on-chip IOMMU)
  *				and preferring incremental map.
  *				@vdev: vdpa device
+ *				@asid: address space identifier
  *				@iova: iova to be mapped
  *				@size: size of the area
  *				@pa: physical address for the map
@@ -194,6 +199,7 @@ struct vdpa_iova_range {
  *				specific DMA translation (on-chip IOMMU)
  *				and preferring incremental unmap.
  *				@vdev: vdpa device
+ *				@asid: address space identifier
  *				@iova: iova to be unmapped
  *				@size: size of the area
  *				Returns integer: success (0) or error (< 0)
@@ -240,10 +246,12 @@ struct vdpa_config_ops {
 	struct vdpa_iova_range (*get_iova_range)(struct vdpa_device *vdev);
 
 	/* DMA ops */
-	int (*set_map)(struct vdpa_device *vdev, struct vhost_iotlb *iotlb);
-	int (*dma_map)(struct vdpa_device *vdev, u64 iova, u64 size,
-		       u64 pa, u32 perm);
-	int (*dma_unmap)(struct vdpa_device *vdev, u64 iova, u64 size);
+	int (*set_map)(struct vdpa_device *vdev, unsigned int asid,
+		       struct vhost_iotlb *iotlb);
+	int (*dma_map)(struct vdpa_device *vdev, unsigned int asid,
+		       u64 iova, u64 size, u64 pa, u32 perm);
+	int (*dma_unmap)(struct vdpa_device *vdev, unsigned int asid,
+			 u64 iova, u64 size);
 
 	/* Free device resources */
 	void (*free)(struct vdpa_device *vdev);
@@ -252,11 +260,12 @@ struct vdpa_config_ops {
 struct vdpa_device *__vdpa_alloc_device(struct device *parent,
 					const struct vdpa_config_ops *config,
 					int nvqs, unsigned int ngroups,
-					size_t size);
+					unsigned int nas, size_t size);
 
-#define vdpa_alloc_device(dev_struct, member, parent, config, nvqs, ngroups) \
+#define vdpa_alloc_device(dev_struct, member, parent, config, nvqs, \
+			  ngroups, nas)				    \
 			  container_of(__vdpa_alloc_device( \
-				       parent, config, nvqs, ngroups, \
+				       parent, config, nvqs, ngroups, nas,  \
 				       sizeof(dev_struct) + \
 				       BUILD_BUG_ON_ZERO(offsetof( \
 				       dev_struct, member))), \
