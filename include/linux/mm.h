@@ -2894,6 +2894,13 @@ void __init setup_nr_node_ids(void);
 static inline void setup_nr_node_ids(void) {}
 #endif
 
+extern int memcmp_pages(struct page *page1, struct page *page2);
+
+static inline int pages_identical(struct page *page1, struct page *page2)
+{
+	return !memcmp_pages(page1, page2);
+}
+
 #ifdef CONFIG_MAPPING_DIRTY_HELPERS
 unsigned long clean_record_shared_mapping_range(struct address_space *mapping,
 						pgoff_t first_index, pgoff_t nr,
