@@ -1893,7 +1893,8 @@ struct xhci_hcd {
 	/* platform-specific data -- must come last */
 	unsigned long		priv[0] __aligned(sizeof(s64));
 	/* Broken Suspend flag for SNPS Suspend resume issue */
-	u8			broken_suspend;
+	RH_KABI_DEPRECATE(u8, broken_suspend)
+	RH_KABI_EXTEND(unsigned			broken_suspend:1)
 };
 
 /* Platform specific overrides to generic XHCI hc_driver ops */
