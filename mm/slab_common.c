@@ -1731,17 +1731,17 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
 EXPORT_SYMBOL(krealloc);
 
 /**
- * kzfree - like kfree but zero memory
+ * kfree_sensitive - Clear sensitive information in memory before freeing
  * @p: object to free memory of
  *
  * The memory of the object @p points to is zeroed before freed.
- * If @p is %NULL, kzfree() does nothing.
+ * If @p is %NULL, kfree_sensitive() does nothing.
  *
  * Note: this function zeroes the whole allocated buffer which can be a good
  * deal bigger than the requested buffer size passed to kmalloc(). So be
  * careful when using this function in performance sensitive code.
  */
-void kzfree(const void *p)
+void kfree_sensitive(const void *p)
 {
 	size_t ks;
 	void *mem = (void *)p;
@@ -1752,7 +1752,7 @@ void kzfree(const void *p)
 	memzero_explicit(mem, ks);
 	kfree(mem);
 }
-EXPORT_SYMBOL(kzfree);
+EXPORT_SYMBOL(kfree_sensitive);
 
 /**
  * ksize - get the actual amount of memory allocated for a given object
@@ -1815,3 +1815,11 @@ int should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 	return 0;
 }
 ALLOW_ERROR_INJECTION(should_failslab, ERRNO);
+
+/* For backward kABI compatibility */
+#undef kzfree
+void kzfree(const void *p)
+{
+	kfree_sensitive(p);
+}
+EXPORT_SYMBOL(kzfree);

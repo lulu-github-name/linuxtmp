@@ -9838,7 +9838,7 @@ static int nl80211_join_ibss(struct sk_buff *skb, struct genl_info *info)
 
 		if ((ibss.chandef.width != NL80211_CHAN_WIDTH_20_NOHT) &&
 		    no_ht) {
-			kzfree(connkeys);
+			kfree_sensitive(connkeys);
 			return -EINVAL;
 		}
 	}
@@ -9850,7 +9850,7 @@ static int nl80211_join_ibss(struct sk_buff *skb, struct genl_info *info)
 		int r = validate_pae_over_nl80211(rdev, info);
 
 		if (r < 0) {
-			kzfree(connkeys);
+			kfree_sensitive(connkeys);
 			return r;
 		}
 
@@ -9863,7 +9863,7 @@ static int nl80211_join_ibss(struct sk_buff *skb, struct genl_info *info)
 	wdev_lock(dev->ieee80211_ptr);
 	err = __cfg80211_join_ibss(rdev, dev, &ibss, connkeys);
 	if (err)
-		kzfree(connkeys);
+		kfree_sensitive(connkeys);
 	else if (info->attrs[NL80211_ATTR_SOCKET_OWNER])
 		dev->ieee80211_ptr->conn_owner_nlportid = info->snd_portid;
 	wdev_unlock(dev->ieee80211_ptr);
@@ -10291,7 +10291,7 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 
 	if (info->attrs[NL80211_ATTR_HT_CAPABILITY]) {
 		if (!info->attrs[NL80211_ATTR_HT_CAPABILITY_MASK]) {
-			kzfree(connkeys);
+			kfree_sensitive(connkeys);
 			return -EINVAL;
 		}
 		memcpy(&connect.ht_capa,
@@ -10309,7 +10309,7 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 
 	if (info->attrs[NL80211_ATTR_VHT_CAPABILITY]) {
 		if (!info->attrs[NL80211_ATTR_VHT_CAPABILITY_MASK]) {
-			kzfree(connkeys);
+			kfree_sensitive(connkeys);
 			return -EINVAL;
 		}
 		memcpy(&connect.vht_capa,
@@ -10323,7 +10323,7 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 		       (rdev->wiphy.features & NL80211_FEATURE_QUIET)) &&
 		    !wiphy_ext_feature_isset(&rdev->wiphy,
 					     NL80211_EXT_FEATURE_RRM)) {
-			kzfree(connkeys);
+			kfree_sensitive(connkeys);
 			return -EINVAL;
 		}
 		connect.flags |= ASSOC_REQ_USE_RRM;
@@ -10331,21 +10331,21 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 
 	connect.pbss = nla_get_flag(info->attrs[NL80211_ATTR_PBSS]);
 	if (connect.pbss && !rdev->wiphy.bands[NL80211_BAND_60GHZ]) {
-		kzfree(connkeys);
+		kfree_sensitive(connkeys);
 		return -EOPNOTSUPP;
 	}
 
 	if (info->attrs[NL80211_ATTR_BSS_SELECT]) {
 		/* bss selection makes no sense if bssid is set */
 		if (connect.bssid) {
-			kzfree(connkeys);
+			kfree_sensitive(connkeys);
 			return -EINVAL;
 		}
 
 		err = parse_bss_select(info->attrs[NL80211_ATTR_BSS_SELECT],
 				       wiphy, &connect.bss_select);
 		if (err) {
-			kzfree(connkeys);
+			kfree_sensitive(connkeys);
 			return err;
 		}
 	}
@@ -10375,13 +10375,13 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 		   info->attrs[NL80211_ATTR_FILS_ERP_REALM] ||
 		   info->attrs[NL80211_ATTR_FILS_ERP_NEXT_SEQ_NUM] ||
 		   info->attrs[NL80211_ATTR_FILS_ERP_RRK]) {
-		kzfree(connkeys);
+		kfree_sensitive(connkeys);
 		return -EINVAL;
 	}
 
 	if (nla_get_flag(info->attrs[NL80211_ATTR_EXTERNAL_AUTH_SUPPORT])) {
 		if (!info->attrs[NL80211_ATTR_SOCKET_OWNER]) {
-			kzfree(connkeys);
+			kfree_sensitive(connkeys);
 			GENL_SET_ERR_MSG(info,
 					 "external auth requires connection ownership");
 			return -EINVAL;
@@ -10394,7 +10394,7 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 	err = cfg80211_connect(rdev, dev, &connect, connkeys,
 			       connect.prev_bssid);
 	if (err)
-		kzfree(connkeys);
+		kfree_sensitive(connkeys);
 
 	if (!err && info->attrs[NL80211_ATTR_SOCKET_OWNER]) {
 		dev->ieee80211_ptr->conn_owner_nlportid = info->snd_portid;
