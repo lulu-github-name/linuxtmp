@@ -178,9 +178,15 @@ enum node_stat_item {
 	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
 	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
 	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_NODES)
-	WORKINGSET_REFAULT,
-	WORKINGSET_ACTIVATE,
-	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_RESTORE)
+	WORKINGSET_REFAULT_BASE,
+	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_REFAULT_ANON = WORKINGSET_REFAULT_BASE)
+	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_REFAULT_FILE)
+	WORKINGSET_ACTIVATE_BASE,
+	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_ACTIVATE_ANON = WORKINGSET_ACTIVATE_BASE)
+	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_ACTIVATE_FILE)
+	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_RESTORE_BASE)
+	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_RESTORE_ANON = WORKINGSET_RESTORE_BASE)
+	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_RESTORE_FILE)
 	WORKINGSET_NODERECLAIM,
 	NR_ANON_MAPPED,	/* Mapped anonymous pages */
 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
@@ -291,18 +297,19 @@ struct lruvec {
 	RH_KABI_REPLACE_SPLIT(
 		struct zone_reclaim_stat	reclaim_stat,
 		unsigned long			anon_cost,
-		unsigned long			file_cost)
+		unsigned long			file_cost,
+		/* Refaults at the time of last reclaim cycle, anon=0, file=1 */
+		unsigned long			refaults[2])
 
 	/* Non-resident age, driven by LRU movement */
 	atomic_long_t			RH_KABI_RENAME(inactive_age,
 						       nonresident_age);
-	/* Refaults at the time of last reclaim cycle */
-	unsigned long			refaults;
+	/* Various lruvec state flags (enum lruvec_flags) */
+	RH_KABI_REPLACE(unsigned long		refaults,
+			unsigned long		flags)
 #ifdef CONFIG_MEMCG
 	struct pglist_data *pgdat;
 #endif
-	/* Various lruvec state flags (enum lruvec_flags) */
-	RH_KABI_BROKEN_INSERT(unsigned long	flags)
 };
 
 /* Isolate unmapped file */
