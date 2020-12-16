@@ -107,16 +107,13 @@ struct kmem_cache {
 	struct list_head list;	/* List of slab caches */
 #ifdef CONFIG_SYSFS
 	struct kobject kobj;	/* For sysfs */
-	struct work_struct kobj_remove_work;
 #endif
-#ifdef CONFIG_MEMCG
-	struct memcg_cache_params memcg_params;
-	/* for propagation, maximum size of a stored attr */
-	unsigned int max_attr_size;
-#ifdef CONFIG_SYSFS
-	struct kset *memcg_kset;
-#endif
-#endif
+
+	RH_KABI_REPLACE(struct work_struct kobj_remove_work,
+			struct reciprocal_value reciprocal_size)
+	RH_KABI_DEPRECATE(struct memcg_cache_params, memcg_params)
+	RH_KABI_DEPRECATE(unsigned int, max_attr_size)
+	RH_KABI_DEPRECATE(struct kset *, memcg_kset)
 
 #ifdef CONFIG_SLAB_FREELIST_HARDENED
 	unsigned long random;
@@ -139,15 +136,6 @@ struct kmem_cache {
 
 	unsigned int useroffset;	/* Usercopy region offset */
 	unsigned int usersize;		/* Usercopy region size */
-
-	/*
-	 * RHEL Note:
-	 * All kmem_cache's are allocated dynamically at run time.
-	 * The kmem_cache_node pointers are for SLUB internal use and
-	 * should not be accessed by others. So it is safe to extend
-	 * kmem_cache here by adding additional fields.
-	 */
-	RH_KABI_EXTEND(struct reciprocal_value reciprocal_size)
 
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
