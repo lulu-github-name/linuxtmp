@@ -80,6 +80,7 @@ struct vdpasim {
 	u32 status;
 	u32 generation;
 	u64 features;
+	u32 groups;
 	/* spinlock to synchronize iommu table */
 	spinlock_t iommu_lock;
 };
@@ -357,7 +358,8 @@ static struct vdpasim *vdpasim_create(void)
 	else
 		ops = &vdpasim_net_config_ops;
 
-	vdpasim = vdpa_alloc_device(struct vdpasim, vdpa, NULL, ops, VDPASIM_VQ_NUM);
+	vdpasim = vdpa_alloc_device(struct vdpasim, vdpa, NULL, ops,
+				    VDPASIM_VQ_NUM, 1);
 	if (!vdpasim)
 		goto err_alloc;
 
@@ -494,6 +496,11 @@ static int vdpasim_get_vq_state(struct vdpa_device *vdpa, u16 idx,
 static u32 vdpasim_get_vq_align(struct vdpa_device *vdpa)
 {
 	return VDPASIM_QUEUE_ALIGN;
+}
+
+static u32 vdpasim_get_vq_group(struct vdpa_device *vdpa, u16 idx)
+{
+	return 0;
 }
 
 static u64 vdpasim_get_features(struct vdpa_device *vdpa)
@@ -671,6 +678,7 @@ static const struct vdpa_config_ops vdpasim_net_config_ops = {
 	.set_vq_state           = vdpasim_set_vq_state,
 	.get_vq_state           = vdpasim_get_vq_state,
 	.get_vq_align           = vdpasim_get_vq_align,
+	.get_vq_group           = vdpasim_get_vq_group,
 	.get_features           = vdpasim_get_features,
 	.set_features           = vdpasim_set_features,
 	.set_config_cb          = vdpasim_set_config_cb,
@@ -698,6 +706,7 @@ static const struct vdpa_config_ops vdpasim_net_batch_config_ops = {
 	.set_vq_state           = vdpasim_set_vq_state,
 	.get_vq_state           = vdpasim_get_vq_state,
 	.get_vq_align           = vdpasim_get_vq_align,
+	.get_vq_group           = vdpasim_get_vq_group,
 	.get_features           = vdpasim_get_features,
 	.set_features           = vdpasim_set_features,
 	.set_config_cb          = vdpasim_set_config_cb,
