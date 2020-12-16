@@ -1123,6 +1123,10 @@ struct dev_links_info {
  * entry) would break kABI.  A shadow struct could have been used instead,
  * however for just the one entry it seemed overkill; should there be a need
  * for additional entries to struct dev_links_info, that should be revisited.
+ *
+ * upstream commit bcbbcfd57247 (driver core: Allow a device to wait on optional
+ * suppliers) adds another entry: bool need_for_probe.  Use the same technique
+ * as above for the same reasons.
  */
 
 struct device_extended_rh {
@@ -1306,8 +1310,8 @@ struct device {
 
 	/* NB: See the note for struct dev_links_info: */
 	RH_KABI_USE(3, 4, struct list_head links_needs_suppliers)
+	RH_KABI_USE(5, bool links_need_for_probe)
 
-	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)
 	RH_KABI_RESERVE(7)
 	RH_KABI_RESERVE(8)
