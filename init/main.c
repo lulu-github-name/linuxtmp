@@ -525,6 +525,7 @@ static void __init mm_init(void)
 	 * bigger than MAX_ORDER unless SPARSEMEM.
 	 */
 	page_ext_init_flatmem();
+	init_debug_pagealloc();
 	mem_init();
 	kmem_cache_init();
 	pgtable_init();
