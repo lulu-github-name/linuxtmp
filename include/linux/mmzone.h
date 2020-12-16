@@ -179,6 +179,7 @@ enum node_stat_item {
 	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
 	WORKINGSET_REFAULT,
 	WORKINGSET_ACTIVATE,
+	RH_KABI_BROKEN_INSERT_ENUM(WORKINGSET_RESTORE)
 	WORKINGSET_NODERECLAIM,
 	NR_ANON_MAPPED,	/* Mapped anonymous pages */
 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
@@ -191,7 +192,7 @@ enum node_stat_item {
 	NR_SHMEM_THPS,
 	NR_SHMEM_PMDMAPPED,
 	NR_ANON_THPS,
-	RH_KABI_RENAME(NR_UNSTABLE_NFS,	RH_DEPRECATED_NR_UNSTABLE_NFS),
+	RH_KABI_BROKEN_REMOVE_ENUM(NR_UNSTABLE_NFS)
 	NR_VMSCAN_WRITE,
 	NR_VMSCAN_IMMEDIATE,	/* Prioritise for reclaim when writeback ends */
 	NR_DIRTIED,		/* page dirtyings since bootup */
@@ -199,27 +200,6 @@ enum node_stat_item {
 	RH_KABI_RENAME(NR_INDIRECTLY_RECLAIMABLE_BYTES,
 		       NR_KERNEL_MISC_RECLAIMABLE),
 				/* reclaimable non-slab kernel pages */
-#ifndef __GENKSYMS__
-	/*
-	 * RHEL8:
-	 * New node stat item should be put here to avoid changing kABI
-	 * signature of pg_data_t. The size of vm_stat[] of pg_data_t and
-	 * vm_node_stat_diff[] of per_cpu_nodestat will change. However,
-	 * they are the the last field of their respective structures
-	 * and so it won't affect offsets of existing fields. These two
-	 * structures are all allocated dynamically and so increasing their
-	 * array size won't affect kABI.
-	 *
-	 * However, NR_VM_NODE_STAT_ITEMS does get used in lruvec_stat[] of
-	 * mem_cgroup_per_node (memcontrol.h) and lumped into MEMCG_NR_STAT.
-	 * The change in MEMCG_NR_STAT does increase the size of stat[] of
-	 * memcg_vmstats_percpu and vmstats[] of mem_cgroup structures.
-	 * These arrays are not at the end of the structure and so changing
-	 * the array size will break offsets of existing fields that
-	 * follows the arrays.
-	 */
-	WORKINGSET_RESTORE,
-#endif
 	NR_VM_NODE_STAT_ITEMS
 };
 

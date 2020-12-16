@@ -197,6 +197,29 @@ struct memcg_padding {
  * page cache and RSS per cgroup. We would eventually like to provide
  * statistics based on the statistics developed by Rik Van Riel for clock-pro,
  * to help the administrator determine what knobs to tune.
+ *
+ * RHEL8 Warning
+ * -------------
+ * The mem_cgroup structure is allocated dynamically and is not embedded in
+ * other data structures. To support new features, mem_cgroup structure can
+ * change quite a lot over time. The kABI signature of mem_cgroup structure
+ * will be maintained, but we will not guarantee field offsets will remain
+ * stable. Therefore, third-party kernel modules should not access mem_cgroup
+ * or mem_cgroup_per_node directly or use inlined functions that access them
+ * directly.
+ *
+ * In addition, the following enum types will have new upstream fields added
+ * in a way that may break kABI if they are used or referenced by 3rd party
+ * drivers.
+ *  - memcg_memory_event: affect MEMCG_NR_MEMORY_EVENTS
+ *  - node_stat_item: NR_VM_NODE_STAT_ITEMS does get used in lruvec_stat[] of
+ *    mem_cgroup_per_node (memcontrol.h) and lumped into MEMCG_NR_STAT.
+ *    The change in MEMCG_NR_STAT does increase the size of stat[] of
+ *    memcg_vmstats_percpu and vmstats[] of mem_cgroup structures.
+ *    These arrays are not at the end of the structure and so changing
+ *    the array size will break offsets of existing fields that
+ *    follows the arrays.
+ *  - vm_event_item: NR_VM_EVENT_ITEMS used in vmevents[] of memcg.
  */
 struct mem_cgroup {
 	struct cgroup_subsys_state css;
@@ -321,17 +344,6 @@ struct mem_cgroup {
 	struct list_head event_list;
 	spinlock_t event_list_lock;
 
-	/*
-	 * RHEL8 Warning:
-	 * The offsets of the nodeinfo[] array entries are subject to change.
-	 * Third-party kernel modules should NOT try to access its content.
-	 * In addition, the following inline functions should not be used.
-	 *  - mem_cgroup_nodeinfo()
-	 *  - mem_cgroup_lruvec()
-	 *  - mod_lruvec_page_state(), __mod_lruvec_page_state()
-	 *  - inc_lruvec_page_state(), __inc_lruvec_page_state()
-	 *  - dec_lruvec_page_state(), __dec_lruvec_page_state()
-	 */
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 	RH_KABI_BROKEN_INSERT(struct deferred_split deferred_split_queue)
 #endif
