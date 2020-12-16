@@ -263,7 +263,16 @@ enum lruvec_flags {
 
 struct lruvec {
 	struct list_head		lists[NR_LRU_LISTS];
-	struct zone_reclaim_stat	reclaim_stat;
+	/*
+	 * These track the cost of reclaiming one LRU - file or anon -
+	 * over the other. As the observed cost of reclaiming one LRU
+	 * increases, the reclaim scan balance tips toward the other.
+	 */
+	RH_KABI_REPLACE_SPLIT(
+		struct zone_reclaim_stat	reclaim_stat,
+		unsigned long			anon_cost,
+		unsigned long			file_cost)
+
 	/* Evictions & activations on the inactive file list */
 	atomic_long_t			inactive_age;
 	/* Refaults at the time of last reclaim cycle */
