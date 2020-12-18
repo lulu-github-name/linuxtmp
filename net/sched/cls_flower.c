@@ -21,6 +21,8 @@
 #include <linux/ip.h>
 #include <linux/mpls.h>
 
+#include <linux/rh_features.h>
+
 #include <net/sch_generic.h>
 #include <net/pkt_cls.h>
 #include <net/ip.h>
@@ -933,6 +935,8 @@ static int fl_set_key_mpls(struct nlattr **tb,
 					    "MPLS label, Traffic Class, Bottom Of Stack and Time To Live must be encapsulated in the MPLS options attribute");
 			return -EBADMSG;
 		}
+
+		rh_mark_used_feature("flower/mpls_multilabel");
 
 		return fl_set_key_mpls_opts(tb[TCA_FLOWER_KEY_MPLS_OPTS],
 					    key_val, key_mask, extack);
