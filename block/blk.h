@@ -29,6 +29,8 @@ struct blk_flush_queue {
 	RH_KABI_DEPRECATE(struct request		*, orig_rq)
 	spinlock_t		mq_flush_lock;
 	RH_KABI_EXTEND(blk_status_t 		rq_status)
+
+	/* key is obsolete already, just don't know how to mark it */
 	RH_KABI_EXTEND(struct lock_class_key	key)
 };
 
