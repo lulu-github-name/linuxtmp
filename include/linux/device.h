@@ -83,6 +83,13 @@ extern void bus_remove_file(struct bus_type *, struct bus_attribute *);
  *		that generate uevents to add the environment variables.
  * @probe:	Called when a new device or driver add to this bus, and callback
  *		the specific driver's probe to initial the matched device.
+ * @sync_state:	Called to sync device state to software state after all the
+ *		state tracking consumers linked to this device (present at
+ *		the time of late_initcall) have successfully bound to a
+ *		driver. If the device has no consumers, this function will
+ *		be called at late_initcall_sync level. If the device has
+ *		consumers that are never bound to a driver, this function
+ *		will never get called until they do.
  * @remove:	Called when a device removed from this bus.
  * @shutdown:	Called at shut-down time to quiesce the device.
  *
@@ -147,6 +154,8 @@ struct bus_type {
 	struct lock_class_key lock_key;
 
 	bool need_parent_lock;
+
+	RH_KABI_EXTEND(void (*sync_state)(struct device *dev))
 };
 
 extern int __must_check bus_register(struct bus_type *bus);
@@ -336,6 +345,13 @@ struct device_driver_rh {
  * @probe:	Called to query the existence of a specific device,
  *		whether this driver can work with it, and bind the driver
  *		to a specific device.
+ * @sync_state:	Called to sync device state to software state after all the
+ *		state tracking consumers linked to this device (present at
+ *		the time of late_initcall) have successfully bound to a
+ *		driver. If the device has no consumers, this function will
+ *		be called at late_initcall_sync level. If the device has
+ *		consumers that are never bound to a driver, this function
+ *		will never get called until they do.
  * @remove:	Called when the device is removed from the system to
  *		unbind a device from this driver.
  * @shutdown:	Called at shut-down time to quiesce the device.
@@ -386,7 +402,7 @@ struct device_driver {
 
 	struct driver_private *p;
 	RH_KABI_USE(1, const struct attribute_group **dev_groups)
-	RH_KABI_RESERVE(2)
+	RH_KABI_USE(2, void (*sync_state)(struct device *dev))
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 	RH_KABI_AUX_PTR(device_driver);
@@ -1135,6 +1151,9 @@ struct dev_links_info {
  * upstream commit bcbbcfd57247 (driver core: Allow a device to wait on optional
  * suppliers) adds another entry: bool need_for_probe.  Use the same technique
  * as above for the same reasons.
+ *
+ * upstream commit fc5a251d0fd7 (driver core: Add sync_state driver/bus
+ * callback) * adds yet another entry: defer_sync.  Rinse and repeat.
  */
 
 struct device_extended_rh {
@@ -1209,6 +1228,9 @@ struct device_extended_rh {
  * @offline:	Set after successful invocation of bus type's .offline().
  * @of_node_reused: Set if the device-tree node is shared with an ancestor
  *              device.
+ * @state_synced: The hardware state of this device has been synced to match
+ *		  the software state of this device by calling the driver/bus
+ *		  sync_state() callback.
  * @dma_coherent: this particular device is dma coherent, even if the
  *		architecture supports non-coherent devices.
  *
@@ -1302,6 +1324,7 @@ struct device {
 	bool			offline_disabled:1;
 	bool			offline:1;
 	bool			of_node_reused:1;
+	RH_KABI_FILL_HOLE(bool state_synced:1)
 #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
@@ -1319,9 +1342,8 @@ struct device {
 	/* NB: See the note for struct dev_links_info: */
 	RH_KABI_USE(3, 4, struct list_head links_needs_suppliers)
 	RH_KABI_USE(5, bool links_need_for_probe)
+	RH_KABI_USE(6, 7, struct list_head links_defer_sync)
 
-	RH_KABI_RESERVE(6)
-	RH_KABI_RESERVE(7)
 	RH_KABI_RESERVE(8)
 	RH_KABI_RESERVE(9)
 	RH_KABI_RESERVE(10)
@@ -1663,6 +1685,8 @@ struct device_link *device_link_add(struct device *consumer,
 				    struct device *supplier, u32 flags);
 void device_link_del(struct device_link *link);
 void device_link_remove(void *consumer, struct device *supplier);
+void device_links_supplier_sync_state_pause(void);
+void device_links_supplier_sync_state_resume(void);
 
 #ifdef CONFIG_PRINTK
 
