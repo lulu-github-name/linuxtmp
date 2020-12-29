@@ -50,9 +50,15 @@ LOCVERFILE:=../localversion
 # concatenation adds 29 characters at the time of this comment.
 BUILDIDBOUND=35
 
+# if this is devtest, then add a .dtN from the most recent tag
+DEVTEST:=$(shell echo -n "."; git describe --abbrev=0 --tags | awk -F "." '{print $$NF}' | grep dt)
+ifeq ($(DEVTEST),.)
+  DEVTEST:=
+endif
+
 # create an empty localversion file if you don't want a local buildid
 ifneq ($(wildcard $(LOCVERFILE)),)
-  BUILDID:=$(shell cat $(LOCVERFILE))
+  BUILDID:=$(shell cat $(LOCVERFILE))$(DEVTEST)
 
   ifeq ("$(shell [ $(shell echo -n $(BUILDID) | wc -c) -gt $(BUILDIDBOUND) ] && echo "Y" )", "Y")
     $(error BUILDID "$(BUILDID)" exceeds limit of $(BUILDIDBOUND) characters)
@@ -61,7 +67,7 @@ ifneq ($(wildcard $(LOCVERFILE)),)
   $(info BUILDID is "$(BUILDID)". Update '$(shell dirname $(REDHAT))/localversion' to change.)
 else
   ifeq ($(BUILDID),)
-    BUILDID:=.test
+    BUILDID:=.test$(DEVTEST)
   endif
   $(info BUILDID is "$(BUILDID)".)
 endif
