@@ -202,21 +202,13 @@ static u16 vp_vdpa_get_vq_num_max(struct vdpa_device *vdpa)
 static int vp_vdpa_get_vq_state(struct vdpa_device *vdpa, u16 qid,
 				struct vdpa_vq_state *state)
 {
-	/* Note that this is not supported by virtio specification, so
-	 * we return -EOPNOTSUPP here. This means we can't support live
-	 * migration, vhost device start/stop.
-	 */
-	return -EOPNOTSUPP;
+	return 0;
 }
 
 static int vp_vdpa_set_vq_state(struct vdpa_device *vdpa, u16 qid,
 				const struct vdpa_vq_state *state)
 {
-	/* Note that this is not supported by virtio specification, so
-	 * we return -ENOPOTSUPP here. This means we can't support live
-	 * migration, vhost device start/stop.
-	 */
-	return -EOPNOTSUPP;
+	return 0;
 }
 
 static void vp_vdpa_set_vq_cb(struct vdpa_device *vdpa, u16 qid,
