@@ -197,14 +197,14 @@ void radix__change_memory_range(unsigned long start, unsigned long end,
 		pudp = pud_alloc(&init_mm, pgdp, idx);
 		if (!pudp)
 			continue;
-		if (pud_huge(*pudp)) {
+		if (pud_is_leaf(*pudp)) {
 			ptep = (pte_t *)pudp;
 			goto update_the_pte;
 		}
 		pmdp = pmd_alloc(&init_mm, pudp, idx);
 		if (!pmdp)
 			continue;
-		if (pmd_huge(*pmdp)) {
+		if (pmd_is_leaf(*pmdp)) {
 			ptep = pmdp_ptep(pmdp);
 			goto update_the_pte;
 		}
@@ -795,7 +795,7 @@ static void remove_pmd_table(pmd_t *pmd_start, unsigned long addr,
 		if (!pmd_present(*pmd))
 			continue;
 
-		if (pmd_huge(*pmd)) {
+		if (pmd_is_leaf(*pmd)) {
 			if (!IS_ALIGNED(addr, PMD_SIZE) ||
 			    !IS_ALIGNED(next, PMD_SIZE)) {
 				WARN_ONCE(1, "%s: unaligned range\n", __func__);
@@ -825,7 +825,7 @@ static void remove_pud_table(pud_t *pud_start, unsigned long addr,
 		if (!pud_present(*pud))
 			continue;
 
-		if (pud_huge(*pud)) {
+		if (pud_is_leaf(*pud)) {
 			if (!IS_ALIGNED(addr, PUD_SIZE) ||
 			    !IS_ALIGNED(next, PUD_SIZE)) {
 				WARN_ONCE(1, "%s: unaligned range\n", __func__);
@@ -856,7 +856,7 @@ static void __meminit remove_pagetable(unsigned long start, unsigned long end)
 		if (!pgd_present(*pgd))
 			continue;
 
-		if (pgd_huge(*pgd)) {
+		if (pgd_is_leaf(*pgd)) {
 			if (!IS_ALIGNED(addr, PGDIR_SIZE) ||
 			    !IS_ALIGNED(next, PGDIR_SIZE)) {
 				WARN_ONCE(1, "%s: unaligned range\n", __func__);
