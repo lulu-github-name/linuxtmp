@@ -1329,18 +1329,21 @@ static inline const int pud_pfn(pud_t pud)
  * Like pmd_huge() and pmd_large(), but works regardless of config options
  */
 #define pmd_is_leaf pmd_is_leaf
+#define pmd_leaf pmd_is_leaf
 static inline bool pmd_is_leaf(pmd_t pmd)
 {
 	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
 }
 
 #define pud_is_leaf pud_is_leaf
+#define pud_leaf pud_is_leaf
 static inline bool pud_is_leaf(pud_t pud)
 {
 	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
 }
 
 #define pgd_is_leaf pgd_is_leaf
+#define pgd_leaf pgd_is_leaf
 static inline bool pgd_is_leaf(pgd_t pgd)
 {
 	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
