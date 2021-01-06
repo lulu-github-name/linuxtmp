@@ -157,7 +157,7 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry,
 					*shadowp = old;
 			}
 			set_page_private(page + i, entry.val + i);
-			xas_store(&xas, page + i);
+			xas_store(&xas, page);
 			xas_next(&xas);
 		}
 		address_space->nrexceptional -= nr_shadows;
@@ -194,7 +194,7 @@ void __delete_from_swap_cache(struct page *page,
 
 	for (i = 0; i < nr; i++) {
 		void *entry = xas_store(&xas, shadow);
-		VM_BUG_ON_PAGE(entry != page + i, entry);
+		VM_BUG_ON_PAGE(entry != page, entry);
 		set_page_private(page + i, 0);
 		xas_next(&xas);
 	}
