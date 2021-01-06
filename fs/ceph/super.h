@@ -109,7 +109,6 @@ struct ceph_fs_client {
 
 	int mount_state;
 
-	unsigned long last_auto_reconnect;
 	bool blocklisted;
 
 	bool have_copy_from2;
