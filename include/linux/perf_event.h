@@ -220,6 +220,28 @@ struct hw_perf_event {
 	 */
 	u64				sample_period;
 
+#ifndef __GENKSYMS__
+	union {
+		struct { /* Sampling */
+			/*
+			 * The period we started this sample with.
+			 */
+			u64				last_period;
+
+			/*
+			 * However much is left of the current period;
+			 * note that this is a full 64bit value and
+			 * allows for generation of periods longer
+			 * than hardware might allow.
+			 */
+			local64_t			period_left;
+		};
+		struct { /* Topdown events counting for context switch */
+			u64				saved_metric;
+			u64				saved_slots;
+		};
+	};
+#else
 	/*
 	 * The period we started this sample with.
 	 */
@@ -231,6 +253,7 @@ struct hw_perf_event {
 	 * than hardware might allow.
 	 */
 	local64_t			period_left;
+#endif /* __GENKSYMS__ */
 
 	/*
 	 * State for throttling the event, see __perf_event_overflow() and
