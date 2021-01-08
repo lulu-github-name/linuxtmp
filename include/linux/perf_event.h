@@ -893,7 +893,7 @@ struct perf_cpu_context {
 	struct list_head		cgrp_cpuctx_entry;
 #endif
 
-	struct list_head		sched_cb_entry;
+	RH_KABI_BROKEN_REMOVE(struct list_head sched_cb_entry)
 	int				sched_cb_usage;
 
 	int				online;
