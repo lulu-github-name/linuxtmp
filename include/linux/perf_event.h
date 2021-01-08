@@ -1046,13 +1046,8 @@ struct perf_sample_data {
 	struct perf_callchain_entry	*callchain;
 	RH_KABI_BROKEN_INSERT(u64				aux_size)
 
-	/*
-	 * regs_user may point to task_pt_regs or to regs_user_copy, depending
-	 * on arch details.
-	 */
 	struct perf_regs		regs_user;
-	struct pt_regs			regs_user_copy;
-
+	RH_KABI_BROKEN_REMOVE(struct pt_regs          regs_user_copy)
 	struct perf_regs		regs_intr;
 	u64				stack_user_size;
 
