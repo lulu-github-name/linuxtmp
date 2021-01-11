@@ -308,6 +308,15 @@ struct mii_bus {
 	/* RESET GPIO descriptor pointer */
 	struct gpio_desc *reset_gpiod;
 
+#ifndef __GENKSYMS__
+	/* bus capabilities, used for probing */
+	enum {
+		MDIOBUS_NO_CAP = 0,
+		MDIOBUS_C22,
+		MDIOBUS_C45,
+		MDIOBUS_C22_C45,
+	} probe_capabilities;
+#endif
 	/* protect access to the shared element */
 	RH_KABI_BROKEN_INSERT(struct mutex shared_lock)
 
