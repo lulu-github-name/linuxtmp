@@ -599,7 +599,8 @@ struct phy_device {
 	__ETHTOOL_DECLARE_LINK_MODE_MASK(adv_old);
 	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 
-	void (*phy_link_change)(struct phy_device *, bool up, bool do_carrier);
+	RH_KABI_REPLACE(void (*phy_link_change)(struct phy_device *, bool up, bool do_carrier),
+			void (*phy_link_change)(struct phy_device *phydev, bool up))
 	void (*adjust_link)(struct net_device *dev);
 };
 #define to_phy_device(d) container_of(to_mdio_device(d), \
