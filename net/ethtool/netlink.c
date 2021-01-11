@@ -850,6 +850,11 @@ static const struct genl_ops ethtool_genl_ops[] = {
 		.done	= ethnl_default_done,
 	},
 	{
+		.cmd	= ETHTOOL_MSG_CABLE_TEST_ACT,
+		.flags	= GENL_UNS_ADMIN_PERM,
+		.doit	= ethnl_act_cable_test,
+	},
+	{
 		.cmd	= ETHTOOL_MSG_TUNNEL_INFO_GET,
 		.doit	= ethnl_tunnel_info_doit,
 		.start	= ethnl_tunnel_info_start,
