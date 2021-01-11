@@ -411,6 +411,7 @@ struct phy_c45_device_ids {
  * suspended_by_mdio_bus: Set to true if this phy was suspended by MDIO bus.
  * sysfs_links: Internal boolean tracking sysfs symbolic links setup/removal.
  * loopback_enabled: Set true if this phy has been loopbacked successfully.
+ * downshifted_rate: Set true if link speed has been downshifted.
  * state: state of the PHY for management purposes
  * dev_flags: Device-specific flags used by the PHY driver.
  * irq: IRQ number of the PHY's interrupt (-1 if none)
@@ -458,8 +459,9 @@ struct phy_device {
 	/* Interrupts are enabled */
 	RH_KABI_FILL_HOLE(unsigned interrupts:1)
 	RH_KABI_FILL_HOLE(unsigned suspended_by_mdio_bus:1)
+	RH_KABI_FILL_HOLE(unsigned downshifted_rate:1)
 
-	/* 19 bits hole remain */
+	/* 18 bits hole remain */
 
 	enum phy_state state;
 
@@ -783,6 +785,7 @@ static inline bool phy_is_started(struct phy_device *phydev)
 
 void phy_resolve_aneg_pause(struct phy_device *phydev);
 void phy_resolve_aneg_linkmode(struct phy_device *phydev);
+void phy_check_downshift(struct phy_device *phydev);
 
 /**
  * phy_read - Convenience function for reading a given PHY register
