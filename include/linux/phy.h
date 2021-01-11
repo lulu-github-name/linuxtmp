@@ -477,6 +477,11 @@ struct phy_device {
 	int duplex;
 	int pause;
 	int asym_pause;
+	RH_KABI_BROKEN_INSERT_BLOCK(
+	u8 master_slave_get;
+	u8 master_slave_set;
+	u8 master_slave_state;
+	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 
 	/* RHEL: changed to a bit flag with the same name */
 	RH_KABI_DEPRECATE(u32, interrupts)

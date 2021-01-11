@@ -594,6 +594,8 @@ static int ethtool_get_link_ksettings(struct net_device *dev,
 	link_ksettings.base.cmd = ETHTOOL_GLINKSETTINGS;
 	link_ksettings.base.link_mode_masks_nwords
 		= __ETHTOOL_LINK_MODE_MASK_NU32;
+	link_ksettings.base.master_slave_cfg = MASTER_SLAVE_CFG_UNSUPPORTED;
+	link_ksettings.base.master_slave_state = MASTER_SLAVE_STATE_UNSUPPORTED;
 
 	return store_link_ksettings_for_user(useraddr, &link_ksettings);
 }
@@ -638,6 +640,10 @@ static int ethtool_set_link_ksettings(struct net_device *dev,
 	/* re-check nwords field, just in case */
 	if (__ETHTOOL_LINK_MODE_MASK_NU32
 	    != link_ksettings.base.link_mode_masks_nwords)
+		return -EINVAL;
+
+	if (link_ksettings.base.master_slave_cfg ||
+	    link_ksettings.base.master_slave_state)
 		return -EINVAL;
 
 	err = __rh_call_set_link_ksettings(dev, &link_ksettings);
