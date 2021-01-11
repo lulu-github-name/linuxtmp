@@ -558,6 +558,13 @@ struct phy_device {
 	/* For use by PHYs inside the same package that need a shared state. */
 	RH_KABI_BROKEN_INSERT(struct phy_package_shared *shared)
 
+	RH_KABI_BROKEN_INSERT_BLOCK(
+	/* Reporting cable test results */
+	struct sk_buff *skb;
+	void *ehdr;
+	struct nlattr *nest;
+	) /* RH_KABI_BROKEN_INSERT_BLOCK */
+
 	/* Interrupt and Polling infrastructure */
 	RH_KABI_DEPRECATE(struct work_struct, phy_queue)
 	struct delayed_work state_queue;
