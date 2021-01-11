@@ -28,6 +28,7 @@
 #include <linux/workqueue.h>
 #include <linux/mod_devicetable.h>
 #include <linux/u64_stats_sync.h>
+#include <linux/irqreturn.h>
 #include <linux/iopoll.h>
 
 #include <linux/atomic.h>
@@ -726,7 +727,7 @@ struct phy_driver {
 	RH_KABI_BROKEN_INSERT(int (*get_features)(struct phy_device *phydev))
 
 	/* Override default interrupt handling */
-        RH_KABI_BROKEN_INSERT(int (*handle_interrupt)(struct phy_device *phydev))
+        RH_KABI_BROKEN_INSERT(irqreturn_t (*handle_interrupt)(struct phy_device *phydev))
 
 	RH_KABI_BROKEN_INSERT(int (*get_sqi)(struct phy_device *dev))
 	RH_KABI_BROKEN_INSERT(int (*get_sqi_max)(struct phy_device *dev))
@@ -1352,9 +1353,9 @@ void phy_drivers_unregister(struct phy_driver *drv, int n);
  * hide checksum change and old driver loaded with new kernel will crash. We
  * need change phy_driver{s}_register
  */
-RH_KABI_FORCE_CHANGE(4)
+RH_KABI_FORCE_CHANGE(5)
 int phy_driver_register(struct phy_driver *new_driver, struct module *owner);
-RH_KABI_FORCE_CHANGE(4)
+RH_KABI_FORCE_CHANGE(5)
 int phy_drivers_register(struct phy_driver *new_driver, int n,
 			 struct module *owner);
 void phy_state_machine(struct work_struct *work);
