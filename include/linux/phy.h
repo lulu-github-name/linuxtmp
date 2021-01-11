@@ -430,7 +430,7 @@ enum phy_state {
 struct phy_c45_device_ids {
 	u32 devices_in_package;
 	RH_KABI_BROKEN_INSERT(u32 mmds_present)
-	u32 device_ids[8];
+	RH_KABI_BROKEN_REPLACE(u32 device_ids[8], u32 device_ids[MDIO_MMD_NUM])
 };
 
 /* phy_device: An instance of a PHY
