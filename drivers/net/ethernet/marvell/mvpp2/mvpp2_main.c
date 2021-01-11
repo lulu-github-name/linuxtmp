@@ -61,8 +61,11 @@ static struct {
  */
 static void mvpp2_mac_config(struct phylink_config *config, unsigned int mode,
 			     const struct phylink_link_state *state);
-static void mvpp2_mac_link_up(struct phylink_config *config, unsigned int mode,
-			      phy_interface_t interface, struct phy_device *phy);
+static void mvpp2_mac_link_up(struct phylink_config *config,
+			      struct phy_device *phy,
+			      unsigned int mode, phy_interface_t interface,
+			      int speed, int duplex,
+			      bool tx_pause, bool rx_pause);
 
 /* Queue modes */
 #define MVPP2_QDIST_SINGLE_MODE	0
@@ -3155,6 +3158,9 @@ static void mvpp2_start_dev(struct mvpp2_port *port)
 			.link = 1,
 		};
 		mvpp2_mac_config(&port->phylink_config, MLO_AN_INBAND, &state);
+		mvpp2_mac_link_up(&port->phylink_config, NULL,
+				  MLO_AN_INBAND, port->phy_interface,
+				  SPEED_UNKNOWN, DUPLEX_UNKNOWN, false, false);
 	}
 
 	netif_tx_start_all_queues(port->dev);
@@ -4435,8 +4441,11 @@ static void mvpp2_mac_config(struct phylink_config *config, unsigned int mode,
 	}
 }
 
-static void mvpp2_mac_link_up(struct phylink_config *config, unsigned int mode,
-			      phy_interface_t interface, struct phy_device *phy)
+static void mvpp2_mac_link_up(struct phylink_config *config,
+			      struct phy_device *phy,
+			      unsigned int mode, phy_interface_t interface,
+			      int speed, int duplex,
+			      bool tx_pause, bool rx_pause)
 {
 	struct net_device *dev = to_net_dev(config->dev);
 	struct mvpp2_port *port = netdev_priv(dev);
