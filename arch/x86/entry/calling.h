@@ -334,6 +334,12 @@ For 32-bit we have the following conventions - kernel is built with
 	ALTERNATIVE "", "lfence", X86_FEATURE_FENCE_SWAPGS_KERNEL
 .endm
 
+.macro SAVE_AND_SET_GSBASE scratch_reg:req save_reg:req
+	rdgsbase \save_reg
+	GET_PERCPU_BASE \scratch_reg
+	wrgsbase \scratch_reg
+.endm
+
 #endif /* CONFIG_X86_64 */
 
 /*
