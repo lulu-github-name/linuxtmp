@@ -4197,7 +4197,7 @@ err_type:
 static bool may_update_sockmap(struct bpf_verifier_env *env, int func_id)
 {
 	enum bpf_attach_type eatype = env->prog->expected_attach_type;
-	enum bpf_prog_type type = env->prog->type;
+	enum bpf_prog_type type = resolve_prog_type(env->prog);
 
 	if (func_id != BPF_FUNC_map_update_elem)
 		return false;
