@@ -388,7 +388,7 @@ int __trace_graph_entry(struct trace_array *tr,
 {
 	struct trace_event_call *call = &event_funcgraph_entry;
 	struct ring_buffer_event *event;
-	struct ring_buffer *buffer = tr->array_buffer.buffer;
+	struct trace_buffer *buffer = tr->array_buffer.buffer;
 	struct ftrace_graph_ent_entry *entry;
 
 	event = trace_buffer_lock_reserve(buffer, TRACE_GRAPH_ENT,
@@ -499,7 +499,7 @@ void __trace_graph_return(struct trace_array *tr,
 {
 	struct trace_event_call *call = &event_funcgraph_exit;
 	struct ring_buffer_event *event;
-	struct ring_buffer *buffer = tr->array_buffer.buffer;
+	struct trace_buffer *buffer = tr->array_buffer.buffer;
 	struct ftrace_graph_ret_entry *entry;
 
 	event = trace_buffer_lock_reserve(buffer, TRACE_GRAPH_RET,

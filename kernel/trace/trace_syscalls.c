@@ -312,7 +312,7 @@ static void ftrace_syscall_enter(void *data, struct pt_regs *regs, long id)
 	struct syscall_trace_enter *entry;
 	struct syscall_metadata *sys_data;
 	struct ring_buffer_event *event;
-	struct ring_buffer *buffer;
+	struct trace_buffer *buffer;
 	unsigned long irq_flags;
 	int pc;
 	int syscall_nr;
@@ -360,7 +360,7 @@ static void ftrace_syscall_exit(void *data, struct pt_regs *regs, long ret)
 	struct syscall_trace_exit *entry;
 	struct syscall_metadata *sys_data;
 	struct ring_buffer_event *event;
-	struct ring_buffer *buffer;
+	struct trace_buffer *buffer;
 	unsigned long irq_flags;
 	int pc;
 	int syscall_nr;
