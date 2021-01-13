@@ -58,6 +58,14 @@ Testing and debugging BPF
    s390
 
 
+Other
+=====
+
+.. toctree::
+   :maxdepth: 1
+
+   ringbuf
+
 .. Links:
 .. _networking-filter: ../networking/filter.rst
 .. _man-pages: https://www.kernel.org/doc/man-pages/
