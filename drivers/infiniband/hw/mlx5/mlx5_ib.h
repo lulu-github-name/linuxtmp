@@ -586,7 +586,6 @@ struct mlx5_ib_mr {
 	struct list_head	list;
 	unsigned int		order;
 	struct mlx5_cache_ent  *cache_ent;
-	int			npages;
 	struct mlx5_ib_dev     *dev;
 	u32 out[MLX5_ST_SZ_DW(create_mkey_out)];
 	struct mlx5_core_sig_ctx    *sig;
