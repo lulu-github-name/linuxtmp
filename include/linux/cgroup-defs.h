@@ -372,7 +372,7 @@ struct cgroup {
 	 *
 	 * Allocating/Removing ID must be protected by cgroup_mutex.
 	 */
-	int id;
+	RH_KABI_DEPRECATE(int, id)
 
 	/*
 	 * The depth this cgroup is at.  The root is at depth zero and each
@@ -518,7 +518,8 @@ struct cgroup {
 	 */
 
 	/* ids of the ancestors at each level including self */
-	int ancestor_ids[];
+	RH_KABI_BROKEN_REPLACE(int ancestor_ids[],
+			       u64 ancestor_ids[])
 };
 
 /*
@@ -538,8 +539,15 @@ struct cgroup_root {
 	/* The root cgroup.  Root is destroyed on its release. */
 	struct cgroup cgrp;
 
+	/*
+	 * RHEL8:
+	 * The cgroup structures are all allocated by the core kernel,
+	 * see comment above
+	 */
+
 	/* for cgrp->ancestor_ids[0] */
-	int cgrp_ancestor_id_storage;
+	RH_KABI_BROKEN_REPLACE(int cgrp_ancestor_id_storage,
+			       u64 cgrp_ancestor_id_storage)
 
 	/* Number of cgroups in the hierarchy, used only for /proc/cgroups */
 	atomic_t nr_cgrps;
@@ -551,7 +559,7 @@ struct cgroup_root {
 	unsigned int flags;
 
 	/* IDs for cgroups in this hierarchy */
-	struct idr cgroup_idr;
+	RH_KABI_DEPRECATE(struct idr, cgroup_idr)
 
 	/* The path to use for release notifications. */
 	char release_agent_path[PATH_MAX];

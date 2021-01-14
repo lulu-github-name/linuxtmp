@@ -351,7 +351,7 @@ BPF_CALL_0(bpf_get_current_cgroup_id)
 {
 	struct cgroup *cgrp = task_dfl_cgroup(current);
 
-	return cgrp->kn->id;
+	return cgroup_id(cgrp);
 }
 
 const struct bpf_func_proto bpf_get_current_cgroup_id_proto = {
@@ -368,7 +368,7 @@ BPF_CALL_1(bpf_get_current_ancestor_cgroup_id, int, ancestor_level)
 	ancestor = cgroup_ancestor(cgrp, ancestor_level);
 	if (!ancestor)
 		return 0;
-	return ancestor->kn->id;
+	return cgroup_id(ancestor);
 }
 
 const struct bpf_func_proto bpf_get_current_ancestor_cgroup_id_proto = {
