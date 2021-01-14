@@ -4076,7 +4076,7 @@ static inline u64 __bpf_sk_cgroup_id(struct sock *sk)
 	struct cgroup *cgrp;
 
 	cgrp = sock_cgroup_ptr(&sk->sk_cgrp_data);
-	return cgrp->kn->id.id;
+	return cgrp->kn->id;
 }
 
 BPF_CALL_1(bpf_skb_cgroup_id, const struct sk_buff *, skb)
@@ -4107,7 +4107,7 @@ static inline u64 __bpf_sk_ancestor_cgroup_id(struct sock *sk,
 	if (!ancestor)
 		return 0;
 
-	return ancestor->kn->id.id;
+	return ancestor->kn->id;
 }
 
 BPF_CALL_2(bpf_skb_ancestor_cgroup_id, const struct sk_buff *, skb, int,

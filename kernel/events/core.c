@@ -1627,7 +1627,7 @@ perf_event_groups_less(struct perf_event *left, struct perf_event *right)
 			return false;
 		}
 		/* Two dissimilar cgroups, order by id. */
-		if (left->cgrp->css.cgroup->kn->id.id < right->cgrp->css.cgroup->kn->id.id)
+		if (left->cgrp->css.cgroup->kn->id < right->cgrp->css.cgroup->kn->id)
 			return true;
 
 		return false;
@@ -1725,7 +1725,7 @@ perf_event_groups_first(struct perf_event_groups *groups, int cpu,
 	u64 node_cgrp_id, cgrp_id = 0;
 
 	if (cgrp)
-		cgrp_id = cgrp->kn->id.id;
+		cgrp_id = cgrp->kn->id;
 #endif
 
 	while (node) {
@@ -1742,7 +1742,7 @@ perf_event_groups_first(struct perf_event_groups *groups, int cpu,
 #ifdef CONFIG_CGROUP_PERF
 		node_cgrp_id = 0;
 		if (node_event->cgrp && node_event->cgrp->css.cgroup)
-			node_cgrp_id = node_event->cgrp->css.cgroup->kn->id.id;
+			node_cgrp_id = node_event->cgrp->css.cgroup->kn->id;
 
 		if (cgrp_id < node_cgrp_id) {
 			node = node->rb_left;
@@ -1778,10 +1778,10 @@ perf_event_groups_next(struct perf_event *event)
 
 #ifdef CONFIG_CGROUP_PERF
 	if (event->cgrp && event->cgrp->css.cgroup)
-		curr_cgrp_id = event->cgrp->css.cgroup->kn->id.id;
+		curr_cgrp_id = event->cgrp->css.cgroup->kn->id;
 
 	if (next->cgrp && next->cgrp->css.cgroup)
-		next_cgrp_id = next->cgrp->css.cgroup->kn->id.id;
+		next_cgrp_id = next->cgrp->css.cgroup->kn->id;
 
 	if (curr_cgrp_id != next_cgrp_id)
 		return NULL;
@@ -7148,7 +7148,7 @@ void perf_prepare_sample(struct perf_event_header *header,
 
 		/* protected by RCU */
 		cgrp = task_css_check(current, perf_event_cgrp_id, 1)->cgroup;
-		data->cgroup = cgrp->kn->id.id;
+		data->cgroup = cgrp->kn->id;
 	}
 #endif
 
@@ -7897,7 +7897,7 @@ static void perf_event_cgroup(struct cgroup *cgrp)
 				.misc = 0,
 				.size = sizeof(cgroup_event.event_id),
 			},
-			.id = cgrp->kn->id.id,
+			.id = cgrp->kn->id,
 		},
 	};
 

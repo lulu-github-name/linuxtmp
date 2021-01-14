@@ -846,7 +846,7 @@ static void bpf_cgroup_link_show_fdinfo(const struct bpf_link *link,
 
 	mutex_lock(&cgroup_mutex);
 	if (cg_link->cgroup)
-		cg_id = cg_link->cgroup->kn->id.id;
+		cg_id = cg_link->cgroup->kn->id;
 	mutex_unlock(&cgroup_mutex);
 
 	seq_printf(seq,
@@ -865,7 +865,7 @@ static int bpf_cgroup_link_fill_link_info(const struct bpf_link *link,
 
 	mutex_lock(&cgroup_mutex);
 	if (cg_link->cgroup)
-		cg_id = cg_link->cgroup->kn->id.id;
+		cg_id = cg_link->cgroup->kn->id;
 	mutex_unlock(&cgroup_mutex);
 
 	info->cgroup.cgroup_id = cg_id;
