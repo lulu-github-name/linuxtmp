@@ -428,7 +428,7 @@ static struct sk_buff *fq_dequeue(struct Qdisc *sch)
 	if (skb)
 		goto out;
 
-	now = ktime_get_tai_ns();
+	now = ktime_get_ns();
 	fq_check_throttled(q, now);
 begin:
 	head = &q->new_flows;
@@ -811,7 +811,7 @@ static int fq_init(struct Qdisc *sch, struct nlattr *opt,
 	/* Default ce_threshold of 4294 seconds */
 	q->ce_threshold		= (u64)NSEC_PER_USEC * ~0U;
 
-	qdisc_watchdog_init_clockid(&q->watchdog, sch, CLOCK_TAI);
+	qdisc_watchdog_init_clockid(&q->watchdog, sch, CLOCK_MONOTONIC);
 
 	if (opt)
 		err = fq_change(sch, opt, extack);
@@ -872,7 +872,7 @@ static int fq_dump_stats(struct Qdisc *sch, struct gnet_dump *d)
 	st.pkts_too_long	  = q->stat_pkts_too_long;
 	st.allocation_errors	  = q->stat_allocation_errors;
 	st.time_next_delayed_flow = q->time_next_delayed_flow + q->timer_slack -
-				    ktime_get_tai_ns();
+				    ktime_get_ns();
 	st.flows		  = q->flows;
 	st.inactive_flows	  = q->inactive_flows;
 	st.throttled_flows	  = q->throttled_flows;
