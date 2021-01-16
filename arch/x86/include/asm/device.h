@@ -4,7 +4,7 @@
 
 struct dev_archdata {
 #ifdef CONFIG_IOMMU_API
-	void *iommu; /* hook for IOMMU specific extension */
+	RH_KABI_DEPRECATE(void *, iommu) /* hook for IOMMU specific extension */
 #endif
 #ifdef CONFIG_STA2X11
 	bool is_sta2x11;
