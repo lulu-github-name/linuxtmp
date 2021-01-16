@@ -24,6 +24,10 @@ Core utilities
    xarray
    flexible-arrays
    librs
+   dma-api
+   dma-api-howto
+   dma-attributes
+   dma-isa-lpc
    genalloc
    errseq
    printk-formats
