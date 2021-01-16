@@ -55,7 +55,7 @@
 #include <asm/dma.h>
 
 #include "amd_iommu.h"
-#include "irq_remapping.h"
+#include "../irq_remapping.h"
 
 #define CMD_SET_TYPE(cmd, t) ((cmd)->data[1] |= ((t) << 28))
 
