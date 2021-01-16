@@ -414,7 +414,7 @@ struct device_domain_info *get_domain_info(struct device *dev)
 	return info;
 }
 
-static DEFINE_SPINLOCK(device_domain_lock);
+DEFINE_SPINLOCK(device_domain_lock);
 static LIST_HEAD(device_domain_list);
 
 #define device_needs_bounce(d) (!intel_no_bounce && dev_is_pci(d) &&	\
@@ -2475,7 +2475,7 @@ static void domain_remove_dev_info(struct dmar_domain *domain)
 	spin_unlock_irqrestore(&device_domain_lock, flags);
 }
 
-static struct dmar_domain *find_domain(struct device *dev)
+struct dmar_domain *find_domain(struct device *dev)
 {
 	struct device_domain_info *info;
 
