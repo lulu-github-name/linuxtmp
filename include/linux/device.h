@@ -1291,12 +1291,8 @@ struct device {
 #endif
 	/* Use device_extended after all RESERVE fields used */
 
-	/*
-	 * Set to %true if the dma_iommu_ops are requested to use a direct
-	 * window instead of dynamically mapping memory.
-	 */
-	RH_KABI_USE(1, bool iommu_bypass : 1)
-	RH_KABI_USE(2, struct dev_iommu *iommu)
+	RH_KABI_USE(1, struct dev_iommu *iommu)
+	RH_KABI_RESERVE(2)
 
 	/* NB: See the note for struct dev_links_info: */
 	RH_KABI_USE(3, 4, struct list_head links_needs_suppliers)
