@@ -403,7 +403,7 @@ int idxd_register_driver(void)
 	return 0;
 
 drv_fail:
-	for (; i > 0; i--)
+	while (--i >= 0)
 		driver_unregister(&idxd_drvs[i]->drv);
 	return rc;
 }
@@ -1766,7 +1766,7 @@ int idxd_register_bus_type(void)
 	return 0;
 
 bus_err:
-	for (; i > 0; i--)
+	while (--i >= 0)
 		bus_unregister(idxd_bus_types[i]);
 	return rc;
 }
