@@ -544,7 +544,11 @@ struct mm_struct {
 #endif
 	} __randomize_layout;
 
+#if defined(CONFIG_IOMMU_SUPPORT)
+	RH_KABI_USE(1, u32 pasid)
+#else
 	RH_KABI_RESERVE(1)
+#endif
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
