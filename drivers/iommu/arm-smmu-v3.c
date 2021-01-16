@@ -3701,6 +3701,4 @@ static struct platform_driver arm_smmu_driver = {
 	.probe	= arm_smmu_device_probe,
 	.shutdown = arm_smmu_device_shutdown,
 };
-
-IOMMU_OF_DECLARE(arm_smmuv3, "arm,smmu-v3");
 builtin_platform_driver(arm_smmu_driver);

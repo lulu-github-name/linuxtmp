@@ -2441,11 +2441,4 @@ static struct platform_driver arm_smmu_driver = {
 	.probe	= arm_smmu_device_probe,
 	.shutdown = arm_smmu_device_shutdown,
 };
-
-IOMMU_OF_DECLARE(arm_smmuv1, "arm,smmu-v1");
-IOMMU_OF_DECLARE(arm_smmuv2, "arm,smmu-v2");
-IOMMU_OF_DECLARE(arm_mmu400, "arm,mmu-400");
-IOMMU_OF_DECLARE(arm_mmu401, "arm,mmu-401");
-IOMMU_OF_DECLARE(arm_mmu500, "arm,mmu-500");
-IOMMU_OF_DECLARE(cavium_smmuv2, "cavium,smmu-v2");
 builtin_platform_driver(arm_smmu_driver);
