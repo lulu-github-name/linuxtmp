@@ -379,6 +379,12 @@ struct pci_dev {
 						   Retrain Link bit manually */
 	RH_KABI_FILL_HOLE(unsigned int  skip_bus_pm:1)  /* Internal: Skip
 								bus-level PM */
+	/*
+	 * Info from the platform, e.g., ACPI or device tree, may mark a
+	 * device as "external-facing".  An external-facing device is
+	 * itself internal but devices downstream from it are external.
+	 */
+	RH_KABI_FILL_HOLE(unsigned int	external_facing:1)
 	unsigned int	d3_delay;	/* D3->D0 transition time in ms */
 	unsigned int	d3cold_delay;	/* D3cold->D0 transition time in ms */
 
