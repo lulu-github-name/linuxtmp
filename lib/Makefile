@@ -291,3 +291,6 @@ obj-$(CONFIG_OBJAGG) += objagg.o
 
 # pldmfw library
 obj-$(CONFIG_PLDMFW) += pldmfw/
+
+# KUnit tests
+obj-$(CONFIG_LIST_KUNIT_TEST) += list-test.o
