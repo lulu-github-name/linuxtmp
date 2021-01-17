@@ -1,4 +1,11 @@
 dmatest
+kunit
+kunit-test
+ext4-inode-test
+list-test
+sysctl-test
+mptcp_crypto_test
+mptcp_token_test
 locktorture
 mac80211_hwsim
 netdevsim
