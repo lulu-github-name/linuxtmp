@@ -150,4 +150,4 @@ void exit_bios_attr_pass_interface(void)
 	wmi_driver_unregister(&bios_attr_pass_interface_driver);
 }
 
-MODULE_DEVICE_TABLE(wmi, bios_attr_pass_interface_id_table);
+MODULE_ALIAS("wmi:" DELL_WMI_BIOS_PASSWORD_INTERFACE_GUID);

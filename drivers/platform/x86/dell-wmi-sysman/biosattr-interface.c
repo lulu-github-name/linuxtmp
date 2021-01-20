@@ -183,4 +183,4 @@ void exit_bios_attr_set_interface(void)
 	wmi_driver_unregister(&bios_attr_set_interface_driver);
 }
 
-MODULE_DEVICE_TABLE(wmi, bios_attr_set_interface_id_table);
+MODULE_ALIAS("wmi:" DELL_WMI_BIOS_ATTRIBUTES_INTERFACE_GUID);
