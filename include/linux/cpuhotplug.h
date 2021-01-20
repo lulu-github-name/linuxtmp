@@ -199,10 +199,10 @@ enum cpuhp_state {
 		CPUHP_AP_MIPS_OP_LOONGSON3_STARTING
 
 #define	CPUHP_AP_PERF_POWERPC_HV_24x7_ONLINE \
-		CPUHP_AP_ARM_SDEI_STARTING
+		CPUHP_AP_PERF_ARM_HISI_DDRC_ONLINE
 
 #define CPUHP_AP_PERF_POWERPC_HV_GPCI_ONLINE \
-		CPUHP_AP_ARM_VFP_STARTING
+		CPUHP_AP_PERF_ARM_HISI_HHA_ONLINE
 
 int __cpuhp_setup_state(enum cpuhp_state state,	const char *name, bool invoke,
 			int (*startup)(unsigned int cpu),
