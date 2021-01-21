@@ -483,13 +483,19 @@ struct scsi_host_template {
 	 */
 	RH_KABI_USE(1, void (*commit_rqs)(struct Scsi_Host *, u16))
 
+	/*
+	 * Optional routine that allows the transport to decide if a cmd
+	 * is retryable. Return true if the transport is in a state the
+	 * cmd should be retried on.
+	 */
+	RH_KABI_USE(2, bool (*eh_should_retry_cmd)(struct scsi_cmnd *scmd))
+
 	/* FOR RH USE ONLY
 	 *
 	 * The following padding has been inserted before ABI freeze to
 	 * allow extending the structure while preserving ABI.
 	 */
 
-	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 };
