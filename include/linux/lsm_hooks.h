@@ -1732,7 +1732,7 @@ union security_list_options {
 	void (*sk_clone_security)(const struct sock *sk, struct sock *newsk);
 	void (*sk_getsecid)(struct sock *sk, u32 *secid);
 	void (*sock_graft)(struct sock *sk, struct socket *parent);
-	int (*inet_conn_request)(struct sock *sk, struct sk_buff *skb,
+	int (*inet_conn_request)(const struct sock *sk, struct sk_buff *skb,
 					struct request_sock *req);
 	void (*inet_csk_clone)(struct sock *newsk,
 				const struct request_sock *req);
