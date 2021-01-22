@@ -158,6 +158,13 @@ static struct mcfg_fixup mcfg_quirks[] = {
 	{"BRCM  ", "BRCM-SRX", rev, seg, MCFG_BUS_ANY, \
 		&iproc_pcie_paxcv2_ecam_ops }
 	BCM_ECAM_MCFG(1, 8),
+
+	{ "NVIDIA", "TEGRA194", 1, 0, MCFG_BUS_ANY, &tegra194_pcie_ops},
+	{ "NVIDIA", "TEGRA194", 1, 1, MCFG_BUS_ANY, &tegra194_pcie_ops},
+	{ "NVIDIA", "TEGRA194", 1, 2, MCFG_BUS_ANY, &tegra194_pcie_ops},
+	{ "NVIDIA", "TEGRA194", 1, 3, MCFG_BUS_ANY, &tegra194_pcie_ops},
+	{ "NVIDIA", "TEGRA194", 1, 4, MCFG_BUS_ANY, &tegra194_pcie_ops},
+	{ "NVIDIA", "TEGRA194", 1, 5, MCFG_BUS_ANY, &tegra194_pcie_ops},
 };
 
 static char mcfg_oem_id[ACPI_OEM_ID_SIZE];

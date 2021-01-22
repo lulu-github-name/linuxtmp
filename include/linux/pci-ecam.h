@@ -58,6 +58,7 @@ extern struct pci_ecam_ops xgene_v1_pcie_ecam_ops; /* APM X-Gene PCIe v1 */
 extern struct pci_ecam_ops xgene_v2_pcie_ecam_ops; /* APM X-Gene PCIe v2.x */
 extern struct pci_ecam_ops al_pcie_ops; /* Amazon Annapurna Labs PCIe */
 extern struct pci_ecam_ops iproc_pcie_paxcv2_ecam_ops; /* iProc PAXCv2 */
+extern struct pci_ecam_ops tegra194_pcie_ops; /* Tegra194 PCIe */
 #endif
 
 #ifdef CONFIG_PCI_HOST_COMMON
