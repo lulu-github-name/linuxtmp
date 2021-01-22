@@ -4938,6 +4938,14 @@ int stmmac_dvr_probe(struct device *device,
 		goto error_netdev_register;
 	}
 
+	if (priv->plat->serdes_powerup) {
+		ret = priv->plat->serdes_powerup(ndev,
+						 priv->plat->bsp_priv);
+
+		if (ret < 0)
+			return ret;
+	}
+
 #ifdef CONFIG_DEBUG_FS
 	stmmac_init_fs(ndev);
 #endif
@@ -4980,6 +4988,9 @@ int stmmac_dvr_remove(struct device *dev)
 	netdev_info(priv->dev, "%s: removing driver", __func__);
 
 	stmmac_stop_all_dma(priv);
+
+	if (priv->plat->serdes_powerdown)
+		priv->plat->serdes_powerdown(ndev, priv->plat->bsp_priv);
 
 	stmmac_mac_set(priv, priv->ioaddr, false);
 	netif_carrier_off(ndev);
@@ -5032,6 +5043,9 @@ int stmmac_suspend(struct device *dev)
 
 	/* Stop TX/RX DMA */
 	stmmac_stop_all_dma(priv);
+
+	if (priv->plat->serdes_powerdown)
+		priv->plat->serdes_powerdown(ndev, priv->plat->bsp_priv);
 
 	/* Enable Power down mode by programming the PMT regs */
 	if (device_may_wakeup(priv->device)) {
@@ -5095,6 +5109,7 @@ int stmmac_resume(struct device *dev)
 {
 	struct net_device *ndev = dev_get_drvdata(dev);
 	struct stmmac_priv *priv = netdev_priv(ndev);
+	int ret;
 
 	if (!netif_running(ndev))
 		return 0;
@@ -5120,6 +5135,14 @@ int stmmac_resume(struct device *dev)
 		/* reset the phy so that it's ready */
 		if (priv->mii)
 			stmmac_mdio_reset(priv->mii);
+	}
+
+	if (priv->plat->serdes_powerup) {
+		ret = priv->plat->serdes_powerup(ndev,
+						 priv->plat->bsp_priv);
+
+		if (ret < 0)
+			return ret;
 	}
 
 	netif_device_attach(ndev);
