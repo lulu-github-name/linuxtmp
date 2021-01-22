@@ -322,6 +322,8 @@ struct tcp_splice_state {
 unsigned long tcp_memory_pressure __read_mostly;
 EXPORT_SYMBOL_GPL(tcp_memory_pressure);
 
+DEFINE_STATIC_KEY_FALSE(tcp_tx_skb_cache_key);
+
 void tcp_enter_memory_pressure(struct sock *sk)
 {
 	unsigned long val;
