@@ -4727,9 +4727,9 @@ int stmmac_suspend(struct device *dev)
 	if (!ndev || !netif_running(ndev))
 		return 0;
 
-	mutex_lock(&priv->lock);
-
 	phylink_mac_change(priv->phylink, false);
+
+	mutex_lock(&priv->lock);
 
 	netif_device_detach(ndev);
 	stmmac_stop_all_queues(priv);
@@ -4744,9 +4744,11 @@ int stmmac_suspend(struct device *dev)
 		stmmac_pmt(priv, priv->hw, priv->wolopts);
 		priv->irq_wake = 1;
 	} else {
+		mutex_unlock(&priv->lock);
 		rtnl_lock();
 		phylink_stop(priv->phylink);
 		rtnl_unlock();
+		mutex_lock(&priv->lock);
 
 		stmmac_mac_set(priv, priv->ioaddr, false);
 		pinctrl_pm_select_sleep_state(priv->device);
@@ -4838,6 +4840,8 @@ int stmmac_resume(struct device *dev)
 
 	stmmac_start_all_queues(priv);
 
+	mutex_unlock(&priv->lock);
+
 	if (!device_may_wakeup(priv->device)) {
 		rtnl_lock();
 		phylink_start(priv->phylink);
@@ -4845,8 +4849,6 @@ int stmmac_resume(struct device *dev)
 	}
 
 	phylink_mac_change(priv->phylink, true);
-
-	mutex_unlock(&priv->lock);
 
 	return 0;
 }
