@@ -123,6 +123,8 @@ typedef enum {
 #ifndef __GENKSYMS__
 	PHY_INTERFACE_MODE_USXGMII,
 	PHY_INTERFACE_MODE_XLGMII,
+	/* 10GBASE-R, XFI, SFI - single lane 10G Serdes */
+	PHY_INTERFACE_MODE_10GBASER,
 #endif
 	PHY_INTERFACE_MODE_MAX,
 } phy_interface_t;
@@ -199,10 +201,12 @@ static inline const char *phy_modes(phy_interface_t interface)
 		return "rxaui";
 	case PHY_INTERFACE_MODE_XAUI:
 		return "xaui";
-	case PHY_INTERFACE_MODE_10GKR:
-		return "10gbase-kr";
+	case PHY_INTERFACE_MODE_10GBASER:
+		return "10gbase-r";
 	case PHY_INTERFACE_MODE_USXGMII:
 		return "usxgmii";
+	case PHY_INTERFACE_MODE_10GKR:
+		return "10gbase-kr";
 	default:
 		return "unknown";
 	}
