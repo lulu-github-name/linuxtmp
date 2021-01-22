@@ -511,7 +511,7 @@ struct sock {
 	struct rcu_head		sk_rcu;
 
 	RH_KABI_USE(1, struct bpf_sk_storage __rcu     *sk_bpf_storage)
-	RH_KABI_RESERVE(2)
+	RH_KABI_USE(2, struct sk_buff                  *sk_tx_skb_cache)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
@@ -1540,6 +1540,10 @@ static inline void sk_mem_uncharge(struct sock *sk, int size)
 
 static inline void sk_wmem_free_skb(struct sock *sk, struct sk_buff *skb)
 {
+	if (!sk->sk_tx_skb_cache) {
+		sk->sk_tx_skb_cache = skb;
+		return;
+	}
 	sk_wmem_queued_add(sk, -skb->truesize);
 	sk_mem_uncharge(sk, skb->truesize);
 	__kfree_skb(skb);
