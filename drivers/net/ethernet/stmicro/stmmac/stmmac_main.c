@@ -3785,6 +3785,8 @@ static int stmmac_setup_tc(struct net_device *ndev, enum tc_setup_type type,
 						  &stmmac_block_cb_list,
 						  stmmac_setup_tc_block_cb,
 						  priv, priv, true);
+	case TC_SETUP_QDISC_CBS:
+		return stmmac_tc_setup_cbs(priv, priv, type_data);
 	default:
 		return -EOPNOTSUPP;
 	}
