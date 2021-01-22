@@ -51,6 +51,8 @@ static int comp_sack_nr_max = 255;
 static u32 u32_max_div_HZ = UINT_MAX / HZ;
 static int one_day_secs = 24 * 3600;
 
+DEFINE_STATIC_KEY_FALSE(tcp_tx_skb_cache_key);
+
 /* obsolete */
 static int sysctl_tcp_low_latency __read_mostly;
 
@@ -549,6 +551,12 @@ static struct ctl_table ipv4_table[] = {
 		.maxlen		= sizeof(sysctl_udp_mem),
 		.mode		= 0644,
 		.proc_handler	= proc_doulongvec_minmax,
+	},
+	{
+		.procname	= "tcp_tx_skb_cache",
+		.data		= &tcp_tx_skb_cache_key.key,
+		.mode		= 0644,
+		.proc_handler	= proc_do_static_key,
 	},
 	{ }
 };
