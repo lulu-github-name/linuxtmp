@@ -3374,38 +3374,38 @@ union bpf_attr {
  *	Description
  *		Dynamically cast a *sk* pointer to a *tcp6_sock* pointer.
  *	Return
- *		*sk* if casting is valid, or NULL otherwise.
+ *		*sk* if casting is valid, or **NULL** otherwise.
  *
  * struct tcp_sock *bpf_skc_to_tcp_sock(void *sk)
  *	Description
  *		Dynamically cast a *sk* pointer to a *tcp_sock* pointer.
  *	Return
- *		*sk* if casting is valid, or NULL otherwise.
+ *		*sk* if casting is valid, or **NULL** otherwise.
  *
  * struct tcp_timewait_sock *bpf_skc_to_tcp_timewait_sock(void *sk)
  * 	Description
  *		Dynamically cast a *sk* pointer to a *tcp_timewait_sock* pointer.
  *	Return
- *		*sk* if casting is valid, or NULL otherwise.
+ *		*sk* if casting is valid, or **NULL** otherwise.
  *
  * struct tcp_request_sock *bpf_skc_to_tcp_request_sock(void *sk)
  * 	Description
  *		Dynamically cast a *sk* pointer to a *tcp_request_sock* pointer.
  *	Return
- *		*sk* if casting is valid, or NULL otherwise.
+ *		*sk* if casting is valid, or **NULL** otherwise.
  *
  * struct udp6_sock *bpf_skc_to_udp6_sock(void *sk)
  * 	Description
  *		Dynamically cast a *sk* pointer to a *udp6_sock* pointer.
  *	Return
- *		*sk* if casting is valid, or NULL otherwise.
+ *		*sk* if casting is valid, or **NULL** otherwise.
  *
  * long bpf_get_task_stack(struct task_struct *task, void *buf, u32 size, u64 flags)
  *	Description
  *		Return a user or a kernel stack in bpf program provided buffer.
  *		To achieve this, the helper needs *task*, which is a valid
- *		pointer to struct task_struct. To store the stacktrace, the
- *		bpf program provides *buf* with	a nonnegative *size*.
+ *		pointer to **struct task_struct**. To store the stacktrace, the
+ *		bpf program provides *buf* with a nonnegative *size*.
  *
  *		The last argument, *flags*, holds the number of stack frames to
  *		skip (from 0 to 255), masked with
@@ -3470,9 +3470,9 @@ union bpf_attr {
  *
  * long bpf_d_path(struct path *path, char *buf, u32 sz)
  *	Description
- *		Return full path for given 'struct path' object, which
- *		needs to be the kernel BTF 'path' object. The path is
- *		returned in the provided buffer 'buf' of size 'sz' and
+ *		Return full path for given **struct path** object, which
+ *		needs to be the kernel BTF *path* object. The path is
+ *		returned in the provided buffer *buf* of size *sz* and
  *		is zero terminated.
  *
  *	Return
@@ -3483,7 +3483,7 @@ union bpf_attr {
  * long bpf_copy_from_user(void *dst, u32 size, const void *user_ptr)
  * 	Description
  * 		Read *size* bytes from user space address *user_ptr* and store
- * 		the data in *dst*. This is a wrapper of copy_from_user().
+ * 		the data in *dst*. This is a wrapper of **copy_from_user**\ ().
  * 	Return
  * 		0 on success, or a negative error in case of failure.
  */
