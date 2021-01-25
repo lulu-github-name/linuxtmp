@@ -3459,6 +3459,18 @@ union bpf_attr {
  *		0 on success.
  *
  *		**-ENOENT** if the bpf_local_storage cannot be found.
+ *
+ * long bpf_d_path(struct path *path, char *buf, u32 sz)
+ *	Description
+ *		Return full path for given 'struct path' object, which
+ *		needs to be the kernel BTF 'path' object. The path is
+ *		returned in the provided buffer 'buf' of size 'sz' and
+ *		is zero terminated.
+ *
+ *	Return
+ *		On success, the strictly positive length of the string,
+ *		including the trailing NUL character. On error, a negative
+ *		value.
  */
 #define __BPF_FUNC_MAPPER(FN)		\
 	FN(unspec),			\
@@ -3605,6 +3617,7 @@ union bpf_attr {
 	FN(get_task_stack),		\
 	FN(inode_storage_get),		\
 	FN(inode_storage_delete),	\
+	FN(d_path),			\
 	/* */
 
 /* integer value in 'imm' field of BPF_CALL instruction selects which helper
