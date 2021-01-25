@@ -780,6 +780,7 @@ struct bpf_prog_aux {
 	RH_KABI_BROKEN_INSERT(struct bpf_ksym ksym)
 	const struct bpf_prog_ops *ops;
 	struct bpf_map **used_maps;
+	RH_KABI_BROKEN_INSERT(struct mutex used_maps_mutex) /* mutex for used_maps and used_map_cnt */
 	struct bpf_prog *prog;
 	struct user_struct *user;
 	u64 load_time; /* ns since boottime */
