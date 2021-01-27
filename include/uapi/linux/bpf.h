@@ -3758,8 +3758,8 @@ union bpf_attr {
 	FN(snprintf_btf),		\
 	FN(seq_printf_btf),		\
 	FN(skb_cgroup_classid),		\
-	FN(bpf_per_cpu_ptr),            \
-	FN(bpf_this_cpu_ptr),		\
+	FN(per_cpu_ptr),		\
+	FN(this_cpu_ptr),		\
 	/* */
 
 /* integer value in 'imm' field of BPF_CALL instruction selects which helper
