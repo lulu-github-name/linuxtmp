@@ -676,7 +676,7 @@ static int soc_pcm_close(struct snd_pcm_substream *substream)
 	snd_soc_runtime_deactivate(rtd, substream->stream);
 
 	for_each_rtd_dais(rtd, i, dai)
-		snd_soc_dai_shutdown(dai, substream);
+		snd_soc_dai_shutdown(dai, substream, 0);
 
 	snd_soc_link_shutdown(substream);
 
@@ -805,7 +805,7 @@ dynamic:
 
 config_err:
 	for_each_rtd_dais_rollback(rtd, i, dai)
-		snd_soc_dai_shutdown(dai, substream);
+		snd_soc_dai_shutdown(dai, substream, 1);
 
 	snd_soc_link_shutdown(substream);
 rtd_startup_err:
