@@ -356,4 +356,5 @@ LIBBPF_0.2.0 {
 		btf__add_volatile;
 		btf__find_str;
 		btf__new_empty;
+		btf__str_by_offset;
 } LIBBPF_0.1.0;
