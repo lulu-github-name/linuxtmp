@@ -336,4 +336,5 @@ LIBBPF_0.2.0 {
 	global:
 		btf__add_str;
 		btf__find_str;
+		btf__new_empty;
 } LIBBPF_0.1.0;
