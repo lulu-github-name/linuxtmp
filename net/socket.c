@@ -2045,7 +2045,7 @@ static bool sock_use_custom_sol_socket(const struct socket *sock)
 
 	/* Use sock->ops->setsockopt() for MPTCP */
 	return IS_ENABLED(CONFIG_MPTCP) &&
-	       sk->sk_protocol == IPPROTO_MPTCP &&
+	       sk->sk_protocol == IPPROTO_MPTCP_KERN &&
 	       sk->sk_type == SOCK_STREAM &&
 	       (sk->sk_family == AF_INET || sk->sk_family == AF_INET6);
 }
