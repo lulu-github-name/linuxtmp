@@ -312,11 +312,11 @@ endchoice
 
 config LSM
 	string "Ordered list of enabled LSMs"
-	default "yama,loadpin,integrity,smack,selinux,tomoyo,apparmor" if DEFAULT_SECURITY_SMACK
-	default "yama,loadpin,integrity,apparmor,selinux,smack,tomoyo" if DEFAULT_SECURITY_APPARMOR
-	default "yama,loadpin,integrity,tomoyo" if DEFAULT_SECURITY_TOMOYO
-	default "yama,loadpin,integrity" if DEFAULT_SECURITY_DAC
-	default "yama,loadpin,integrity,selinux,smack,tomoyo,apparmor"
+	default "yama,loadpin,integrity,smack,selinux,tomoyo,apparmor,bpf" if DEFAULT_SECURITY_SMACK
+	default "yama,loadpin,integrity,apparmor,selinux,smack,tomoyo,bpf" if DEFAULT_SECURITY_APPARMOR
+	default "yama,loadpin,integrity,tomoyo,bpf" if DEFAULT_SECURITY_TOMOYO
+	default "yama,loadpin,integrity,bpf" if DEFAULT_SECURITY_DAC
+	default "yama,loadpin,integrity,selinux,smack,tomoyo,apparmor,bpf"
 	help
 	  A comma-separated list of LSMs, in initialization order.
 	  Any LSMs left off this list will be ignored. This can be
