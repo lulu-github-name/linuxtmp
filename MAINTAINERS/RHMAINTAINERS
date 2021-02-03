@@ -107,18 +107,6 @@ T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rt.git rhel-rt-8.1.0
 S:	Maintained
 F:	redhat/
 
-RHEL 8.0 Kernel Maintainer
-M:	Brian Masney <bmasney@redhat.com>
-T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rhel.git rhel-8.0.0
-S:	Maintained
-F:	redhat/
-
-RHEL 8.0 Real Time Kernel Maintainer
-M:	Clark Williams <williams@redhat.com>
-T:	git git://git.host.prod.eng.bos.redhat.com/kernel-rt.git rhel-rt-8.0.0
-S:	Maintained
-F:	redhat/
-
 RHEL 7 ALT Kernel Maintainer
 M:	Augusto Caringi <acaringi@redhat.com>
 T:	git git://git.host.prod.eng.bos.redhat.com/rhel-alt-7.6.z.git
