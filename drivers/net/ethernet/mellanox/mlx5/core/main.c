@@ -736,6 +736,7 @@ static int mlx5_core_set_issi(struct mlx5_core_dev *dev)
 /* PCI table of mlx5 devices that are tech preview in RHEL */
 static const struct pci_device_id mlx5_core_hw_unsupp_pci_table[] = {
 	{ PCI_VDEVICE(MELLANOX, 0x1021) },			/* ConnectX-7 */
+	{ PCI_VDEVICE(MELLANOX, 0xa2dc) },			/* BlueField-3 integrated ConnectX-7 network controller */
 	{ 0, }
 };
 
