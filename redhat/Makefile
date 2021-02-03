@@ -74,6 +74,7 @@ rh-kabi: rh-python-check
 			mkdir -p $(REDHAT)/kabi/kabi-rhel$(RHEL_MAJOR)$$i/;\
 			$(REDHAT)/kabi/show-kabi -k $(REDHAT)/kabi/kabi-module/ -s -a $$KABIARCH \
 			-r $(RHEL_MAJOR).$$i > $(REDHAT)/kabi/kabi-rhel$(RHEL_MAJOR)$$i/kabi_stablelist_$$KABIARCH;\
+			( cd $(REDHAT)/kabi/kabi-rhel$(RHEL_MAJOR)$$i/; if [ ! -e "kabi_whitelist_$$KABIARCH" ]; then ln -s kabi_stablelist_$$KABIARCH kabi_whitelist_$$KABIARCH; fi );\
 		done;\
 	done;
 	@(cd $(REDHAT)/kabi/ && ln -Tsf kabi-rhel$(RHEL_MAJOR)$(RHEL_MINOR) kabi-current)
