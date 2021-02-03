@@ -132,9 +132,9 @@ def make_kabi_dir(dirname, symvers, whitelist):
 
 def usage():
     print("""make-kabi: process Module.symvers into reference Module.kabi output file/directory using
-           the kabi whitelist provided as a set of symbols to filer on.
+           the kabi stablelist provided as a set of symbols to filer on.
 
-    make-kabi [ -k Module.kabi or -d (kabi-module dir) ] [ -s Module.symvers ] [ -w kabi_whitelist ]
+    make-kabi [ -k Module.kabi or -d (kabi-module dir) ] [ -s Module.symvers ] [ -w kabi_stablelist ]
 
     examples:
         add checksums to files into kabi-module/kabi_x86_64/

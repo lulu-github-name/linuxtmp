@@ -73,7 +73,7 @@ rh-kabi: rh-python-check
 		for i in {0..$(RHEL_MINOR)}; do \
 			mkdir -p $(REDHAT)/kabi/kabi-rhel$(RHEL_MAJOR)$$i/;\
 			$(REDHAT)/kabi/show-kabi -k $(REDHAT)/kabi/kabi-module/ -s -a $$KABIARCH \
-			-r $(RHEL_MAJOR).$$i > $(REDHAT)/kabi/kabi-rhel$(RHEL_MAJOR)$$i/kabi_whitelist_$$KABIARCH;\
+			-r $(RHEL_MAJOR).$$i > $(REDHAT)/kabi/kabi-rhel$(RHEL_MAJOR)$$i/kabi_stablelist_$$KABIARCH;\
 		done;\
 	done;
 	@(cd $(REDHAT)/kabi/ && ln -Tsf kabi-rhel$(RHEL_MAJOR)$(RHEL_MINOR) kabi-current)
@@ -115,7 +115,7 @@ rh-kabi-dw-base: rh-kabi rh-kabi-dw
 	@echo "Generating baseline dataset for KABI DWARF-based comparison..."
 	@echo "**** GENERATING DWARF-based kABI baseline dataset ****"
 	@$(KABIDW)/run_kabi-dw.sh generate \
-		$(REDHAT)/kabi/kabi-current/kabi_whitelist_$(CURARCH) \
+		$(REDHAT)/kabi/kabi-current/kabi_stablelist_$(CURARCH) \
 		$(_OUTPUT) $(KABIDW)/base/$(CURARCH)/
 
 rh-kabi-dw-check: rh-kabi rh-kabi-dw
@@ -127,7 +127,7 @@ rh-kabi-dw-check: rh-kabi rh-kabi-dw
 	fi
 	@echo "**** GENERATING DWARF-based kABI dataset ****"
 	@$(KABIDW)/run_kabi-dw.sh generate \
-		$(REDHAT)/kabi/kabi-current/kabi_whitelist_$(CURARCH) \
+		$(REDHAT)/kabi/kabi-current/kabi_stablelist_$(CURARCH) \
 		$(_OUTPUT) $(KABIDW)/base/$(CURARCH).tmp/
 	@echo "**** KABI DWARF-based comparison report ****"
 	@$(KABIDW)/run_kabi-dw.sh compare \
@@ -431,14 +431,14 @@ rh-full-help:
 
 	@echo  ''
 	@echo  'kABI targets:'
-	@echo  '  rh-kabi           - Create kABI whitelist files in redhat/kabi/kabi-rhel*/ and'
+	@echo  '  rh-kabi           - Create kABI stablelist files in redhat/kabi/kabi-rhel*/ and'
 	@echo  '                      merge kABI checksums into redhat/kabi/Module.kabi_*.'
-	@echo  '  rh-kabi-dup       - Merge kABI checksums for Driver Update Program (DUP) whitelist'
+	@echo  '  rh-kabi-dup       - Merge kABI checksums for Driver Update Program (DUP) stablelist'
 	@echo  '                      into redhat/kabi/Module.kabi_dup_*.'
-	@echo  '  rh-check-kabi     - Check for changes in kABI whitelisted symbols.'
+	@echo  '  rh-check-kabi     - Check for changes in kABI stablelisted symbols.'
 	@echo  '                      Requires a pre-compiled tree: run `make rh-configs`, copy the'
 	@echo  '                      relevant config file from redhat/configs/ to .config, run `make`.'
-	@echo  '  rh-check-kabi-dup - Like rh-check-kabi but uses a DUP kABI whitelist.'
+	@echo  '  rh-check-kabi-dup - Like rh-check-kabi but uses a DUP kABI stablelist.'
 	@echo  '  rh-kabi-dw        - Build the kabi-dw tool.'
 	@echo  '  rh-kabi-dw-base   - Generate the base dataset for kABI DWARF-based check.'
 	@echo  '  rh-kabi-dw-check  - Run DWARF-based kABI comparison of current binaries with the base'
