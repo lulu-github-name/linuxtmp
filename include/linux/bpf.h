@@ -606,8 +606,8 @@ static __always_inline unsigned int bpf_dispatcher_nop_func(
 	return bpf_func(ctx, insnsi);
 }
 #ifdef CONFIG_BPF_JIT
-int bpf_trampoline_link_prog(struct bpf_prog *prog);
-int bpf_trampoline_unlink_prog(struct bpf_prog *prog);
+int bpf_trampoline_link_prog(struct bpf_prog *prog, struct bpf_trampoline *tr);
+int bpf_trampoline_unlink_prog(struct bpf_prog *prog, struct bpf_trampoline *tr);
 struct bpf_trampoline *bpf_trampoline_get(u64 key,
 					  struct bpf_attach_target_info *tgt_info);
 void bpf_trampoline_put(struct bpf_trampoline *tr);
@@ -654,11 +654,13 @@ void bpf_image_ksym_del(struct bpf_ksym *ksym);
 void bpf_ksym_add(struct bpf_ksym *ksym);
 void bpf_ksym_del(struct bpf_ksym *ksym);
 #else
-static inline int bpf_trampoline_link_prog(struct bpf_prog *prog)
+static inline int bpf_trampoline_link_prog(struct bpf_prog *prog,
+					   struct bpf_trampoline *tr)
 {
 	return -ENOTSUPP;
 }
-static inline int bpf_trampoline_unlink_prog(struct bpf_prog *prog)
+static inline int bpf_trampoline_unlink_prog(struct bpf_prog *prog,
+					     struct bpf_trampoline *tr)
 {
 	return -ENOTSUPP;
 }
@@ -727,13 +729,16 @@ struct bpf_prog_aux {
 	RH_KABI_BROKEN_INSERT(u32 max_rdonly_access)
 	RH_KABI_BROKEN_INSERT(u32 max_rdwr_access)
 	RH_KABI_BROKEN_INSERT(const struct bpf_ctx_arg_aux *ctx_arg_info)
-	RH_KABI_BROKEN_INSERT(struct bpf_prog *linked_prog)
+	RH_KABI_BROKEN_INSERT_BLOCK(
+	struct mutex dst_mutex; /* protects dst_* pointers below, *after* prog becomes visible */
+	struct bpf_prog *dst_prog;
+	struct bpf_trampoline *dst_trampoline;
+	) /* RH_KABI_BROKEN_INSERT_BLOCK */
 	RH_KABI_BROKEN_INSERT(bool verifier_zext) /* Zero extensions has been inserted by verifier. */
 	bool offload_requested;
 	RH_KABI_BROKEN_INSERT(bool attach_btf_trace) /* true if attaching to BTF-enabled raw tp */
 	RH_KABI_BROKEN_INSERT(bool func_proto_unreliable)
 	RH_KABI_BROKEN_INSERT(enum bpf_tramp_prog_type trampoline_prog_type)
-	RH_KABI_BROKEN_INSERT(struct bpf_trampoline *trampoline)
 	RH_KABI_BROKEN_INSERT(struct hlist_node tramp_hlist)
 	/* BTF_KIND_FUNC_PROTO for valid attach_btf_id */
 	RH_KABI_BROKEN_INSERT(const struct btf_type *attach_func_proto)
