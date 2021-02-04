@@ -72,6 +72,7 @@ iforce.ko
 interact.ko
 ipddp.ko
 ipx.ko
+ip_vs_mh.ko
 isdn.ko
 joydump.ko
 kingsun-sir.ko
