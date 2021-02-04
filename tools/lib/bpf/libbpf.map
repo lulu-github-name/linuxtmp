@@ -334,6 +334,7 @@ LIBBPF_0.1.0 {
 
 LIBBPF_0.2.0 {
 	global:
+		bpf_program__attach_freplace;
 		btf__add_array;
 		btf__add_const;
 		btf__add_enum;
