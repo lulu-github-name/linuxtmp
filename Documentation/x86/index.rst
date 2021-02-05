@@ -8,4 +8,5 @@ x86 architecture specifics
    mds
    resctrl_ui
    tsx_async_abort
+   sgx
    sva
