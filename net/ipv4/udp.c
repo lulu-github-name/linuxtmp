@@ -601,6 +601,12 @@ void udp_encap_enable(void)
 }
 EXPORT_SYMBOL(udp_encap_enable);
 
+void udp_encap_disable(void)
+{
+	static_branch_dec(&udp_encap_needed_key);
+}
+EXPORT_SYMBOL(udp_encap_disable);
+
 /* Try to match ICMP errors to UDP tunnels by looking up a socket without
  * reversing source and destination port: this will match tunnels that force the
  * same destination port on both endpoints (e.g. VXLAN, GENEVE). Note that
