@@ -1471,6 +1471,10 @@ const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
 const struct pci_device_id *pci_hw_vendor_status(
 						const struct pci_device_id *ids,
 						struct pci_dev *dev);
+void check_unsupported_pci_hardware(const struct pci_device_id *removed_ids,
+	struct pci_dev *dev);
+
+
 int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
 		    int pass);
 
