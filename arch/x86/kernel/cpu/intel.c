@@ -1115,7 +1115,7 @@ static void __init split_lock_setup(void)
 
 	rdmsrl(MSR_TEST_CTRL, msr_test_ctrl_cache);
 
-	if (!split_lock_verify_msr(sld_state == sld_off)) {
+	if (!split_lock_verify_msr(sld_state != sld_off)) {
 		pr_info("MSR access failed: Disabled\n");
 		return;
 	}
@@ -1141,7 +1141,7 @@ static void sld_update_msr(bool on)
 
 static void split_lock_init(void)
 {
-	split_lock_verify_msr(sld_state == sld_off);
+	split_lock_verify_msr(sld_state != sld_off);
 }
 
 /* RHEL8 only split_lock enable/disable sysfs file */
