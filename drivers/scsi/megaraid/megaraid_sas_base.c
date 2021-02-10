@@ -172,6 +172,20 @@ static struct pci_device_id megasas_pci_table[] = {
 
 MODULE_DEVICE_TABLE(pci, megasas_pci_table);
 
+/*
+ * PCI ID table for all unsupported controllers
+ */
+static struct pci_device_id unsupported_ids_table[] = {
+
+	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0079GEN2)},
+	/* gen2*/
+	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0073SKINNY)},
+	/* skinny*/
+	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0071SKINNY)},
+	/* skinny*/
+	{}
+};
+
 static int megasas_mgmt_majorno;
 struct megasas_mgmt_info megasas_mgmt_info;
 static struct fasync_struct *megasas_async_queue;
@@ -7324,6 +7338,8 @@ static int megasas_probe_one(struct pci_dev *pdev,
 	struct Scsi_Host *host;
 	struct megasas_instance *instance;
 	u16 control = 0;
+
+	check_unsupported_pci_hardware(unsupported_ids_table, pdev);
 
 	switch (pdev->device) {
 	case PCI_DEVICE_ID_LSI_AERO_10E0:
