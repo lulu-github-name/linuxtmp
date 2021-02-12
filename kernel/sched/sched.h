@@ -989,7 +989,11 @@ struct rq {
 	struct cpuidle_state	*idle_state;
 #endif
 
+#if defined(CONFIG_SCHED_HRTICK) && defined(CONFIG_SMP)
+	RH_KABI_USE(1, ktime_t hrtick_time)
+#else
 	RH_KABI_RESERVE(1)
+#endif
 	RH_KABI_RESERVE(2)
 #ifdef CONFIG_NUMA_BALANCING
 	RH_KABI_EXTEND(unsigned int numa_migrate_on)
