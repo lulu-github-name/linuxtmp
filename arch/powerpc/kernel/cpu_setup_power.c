@@ -68,11 +68,6 @@ static void init_FSCR(void)
 
 static void init_FSCR_power9(void)
 {
-	u64 fscr;
-
-	fscr = mfspr(SPRN_FSCR);
-	fscr |= FSCR_SCV;
-	mtspr(SPRN_FSCR, fscr);
 	init_FSCR();
 }
 
