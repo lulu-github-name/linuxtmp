@@ -1924,11 +1924,14 @@ void mlx5e_tc_set_ethertype(struct mlx5_core_dev *mdev,
 {
 	bool ip_version_cap;
 
+#if 0
 	ip_version_cap = outer ?
 		MLX5_CAP_FLOWTABLE_NIC_RX(mdev,
 					  ft_field_support.outer_ip_version) :
 		MLX5_CAP_FLOWTABLE_NIC_RX(mdev,
 					  ft_field_support.inner_ip_version);
+#endif
+	ip_version_cap = false;
 
 	if (ip_version_cap && match->mask->n_proto == htons(0xFFFF) &&
 	    (match->key->n_proto == htons(ETH_P_IP) ||
