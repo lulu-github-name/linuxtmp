@@ -2103,12 +2103,6 @@ mread(unsigned long adrs, void *buf, int size)
 	char *p, *q;
 
 	n = 0;
-
-	if (xmon_is_ro) {
-		printf(xmon_ro_msg);
-		return n;
-	}
-
 	if (setjmp(bus_error_jmp) == 0) {
 		catch_memory_errors = 1;
 		sync();
@@ -2146,6 +2140,12 @@ mwrite(unsigned long adrs, void *buf, int size)
 	char *p, *q;
 
 	n = 0;
+
+	if (xmon_is_ro) {
+		printf(xmon_ro_msg);
+		return n;
+	}
+
 	if (setjmp(bus_error_jmp) == 0) {
 		catch_memory_errors = 1;
 		sync();
