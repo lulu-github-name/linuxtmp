@@ -336,7 +336,7 @@ endif
 
 mock.cfg: mockconf.sh
 	RHEL_MAJOR=$(RHEL_MAJOR) RHEL_MINOR=$(RHEL_MINOR) CURARCH=$(CURARCH) ./mockconf.sh
-	cmp -s mock.cfg.tmp mock.cfg || cp mock.cfg{.tmp,} && mock -r mock.cfg --clean
+	cmp -s mock.cfg.tmp mock.cfg || (cp mock.cfg{.tmp,} && mock -r mock.cfg --clean)
 	rm mock.cfg.tmp
 
 rh-mock: | mock.cfg
