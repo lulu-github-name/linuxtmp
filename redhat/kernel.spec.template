@@ -540,6 +540,7 @@ Source400: mod-kvm.list
 # Sources for kernel-tools
 Source2000: cpupower.service
 Source2001: cpupower.config
+Source2002: kvm_stat.logrotate
 
 ## Patches needed for building this package
 
@@ -2086,9 +2087,11 @@ popd
 pushd tools/gpio
 %{tools_make} DESTDIR=%{buildroot} install
 popd
+install -m644 -D %{SOURCE2002} %{buildroot}%{_sysconfdir}/logrotate.d/kvm_stat
 pushd tools/kvm/kvm_stat
 make INSTALL_ROOT=%{buildroot} install-tools
 make INSTALL_ROOT=%{buildroot} install-man
+install -m644 -D kvm_stat.service %{buildroot}%{_unitdir}/kvm_stat.service
 popd
 # install VM tools
 pushd tools/vm/
@@ -2448,6 +2451,8 @@ fi
 %{_bindir}/gpio-event-mon
 %{_mandir}/man1/kvm_stat*
 %{_bindir}/kvm_stat
+%{_unitdir}/kvm_stat.service
+%config(noreplace) %{_sysconfdir}/logrotate.d/kvm_stat
 %{_bindir}/page_owner_sort
 %{_bindir}/slabinfo
 
