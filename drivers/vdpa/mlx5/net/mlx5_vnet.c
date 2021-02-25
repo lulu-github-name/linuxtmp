@@ -684,7 +684,7 @@ static void umem_destroy(struct mlx5_vdpa_net *ndev, struct mlx5_vdpa_virtqueue 
 	case 2:
 		umem = &mvq->umem2;
 		break;
-	case 3:
+	default:
 		umem = &mvq->umem3;
 		break;
 	}
