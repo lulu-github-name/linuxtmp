@@ -726,6 +726,7 @@ static struct sk_buff *receive_small(struct net_device *dev,
 			bpf_warn_invalid_xdp_action(act);
 		case XDP_ABORTED:
 			trace_xdp_exception(vi->dev, xdp_prog, act);
+			goto err_xdp;
 		case XDP_DROP:
 			goto err_xdp;
 		}

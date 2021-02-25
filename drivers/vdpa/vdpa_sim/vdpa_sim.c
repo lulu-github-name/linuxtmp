@@ -357,7 +357,8 @@ static struct vdpasim *vdpasim_create(void)
 	else
 		ops = &vdpasim_net_config_ops;
 
-	vdpasim = vdpa_alloc_device(struct vdpasim, vdpa, NULL, ops, VDPASIM_VQ_NUM);
+	vdpasim = vdpa_alloc_device(struct vdpasim, vdpa, NULL, ops,
+				    dev_attr->nvqs, dev_attr->name);
 	if (!vdpasim)
 		goto err_alloc;
 
@@ -370,6 +371,7 @@ static struct vdpasim *vdpasim_create(void)
 	if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64)))
 		goto err_iommu;
 	set_dma_ops(dev, &vdpasim_dma_ops);
+	vdpasim->vdpa.mdev = dev_attr->mgmt_dev;
 
 	vdpasim->iommu = vhost_iotlb_alloc(2048, 0);
 	if (!vdpasim->iommu)
