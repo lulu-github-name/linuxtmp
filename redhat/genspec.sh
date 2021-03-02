@@ -14,6 +14,8 @@ ZSTREAM_FLAG=${11}
 BUILDOPTS=${12}
 PACKAGE_NAME=${13}
 MARKER=${14}
+RHEL_MAJOR=${15}
+RHEL_MINOR=${16}
 RPMVERSION=${KVERSION}.${KPATCHLEVEL}.${KSUBLEVEL}
 clogf="$SOURCES/changelog"
 # hide [redhat] entries from changelog
@@ -25,6 +27,13 @@ LC_TIME=
 STAMP=$(echo $MARKER | cut -f 1 -d '-' | sed -e "s/v//");
 RPM_VERSION="$RPMVERSION-$PKGRELEASE";
 
+GIT_FORMAT="--format=- %s (%an)%n%b"
+GIT_NOTES=""
+if [ "$ZSTREAM_FLAG" != "no" ]; then
+       GIT_FORMAT="--format=- %s (%an)%n%N"
+       GIT_NOTES="--notes=refs/notes/${RHEL_MAJOR}.${RHEL_MINOR}*"
+fi
+
 echo >$clogf
 
 lasttag=$(git rev-list --first-parent --grep="^\[redhat\] ${PACKAGE_NAME}-${RPMVERSION}" --max-count=1 HEAD)
@@ -33,7 +42,7 @@ if [ -z "$lasttag" ]; then
 	lasttag=$(git describe --match="$MARKER" --abbrev=0)
 fi
 echo "Gathering new log entries since $lasttag"
-git log --topo-order --reverse --no-merges -z --format="- %s (%an)%n%b" \
+git log --topo-order --reverse --no-merges -z $GIT_NOTES "$GIT_FORMAT" \
 	${lasttag}.. -- ':!/redhat/rhdocs' | ${0%/*}/genlog.py >> "$clogf"
 
 cat $clogf | grep -v "tagging $RPM_VERSION" > $clogf.stripped
