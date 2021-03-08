@@ -24,6 +24,7 @@ filter-s390x.sh
 filter-x86_64.sh
 generate_all_configs.sh
 generate_bls_conf.sh
+kvm_stat.logrotate
 linux-kernel-test.patch
 mod-extra.list
 mod-blacklist.sh

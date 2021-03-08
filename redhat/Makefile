@@ -242,6 +242,7 @@ sources-rh: $(TARBALL)
 	    configs/$(PACKAGE_NAME)-*.config	\
 	    rhpkg/Makefile keys/*.cer		\
 	    filter-*.sh				\
+	    kvm_stat.logrotate			\
 	    mod-extra.list			\
 	    mod-blacklist.sh			\
 	    mod-internal.list			\
