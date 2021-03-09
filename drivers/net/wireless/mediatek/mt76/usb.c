@@ -805,9 +805,10 @@ int mt76u_resume_rx(struct mt76_dev *dev)
 }
 EXPORT_SYMBOL_GPL(mt76u_resume_rx);
 
-static void mt76u_tx_worker(struct mt76_worker *w)
+static void mt76u_status_worker(struct mt76_worker *w)
 {
-	struct mt76_dev *dev = container_of(w, struct mt76_dev, tx_worker);
+	struct mt76_usb *usb = container_of(w, struct mt76_usb, status_worker);
+	struct mt76_dev *dev = container_of(usb, struct mt76_dev, usb);
 	struct mt76_queue_entry entry;
 	struct mt76_queue *q;
 	bool wake;
@@ -833,7 +834,7 @@ static void mt76u_tx_worker(struct mt76_worker *w)
 		if (!q->queued)
 			wake_up(&dev->tx_wait);
 
-		mt76_txq_schedule(&dev->phy, i);
+		mt76_worker_schedule(&dev->tx_worker);
 
 		if (dev->drv->tx_status_data &&
 		    !test_and_set_bit(MT76_READING_STATS, &dev->phy.state))
@@ -877,7 +878,7 @@ static void mt76u_complete_tx(struct urb *urb)
 		dev_err(dev->dev, "tx urb failed: %d\n", urb->status);
 	e->done = true;
 
-	mt76_worker_schedule(&dev->tx_worker);
+	mt76_worker_schedule(&dev->usb.status_worker);
 }
 
 static int
@@ -1016,6 +1017,8 @@ static void mt76u_free_tx(struct mt76_dev *dev)
 {
 	int i;
 
+	mt76_worker_teardown(&dev->usb.status_worker);
+
 	for (i = 0; i < IEEE80211_NUM_ACS; i++) {
 		struct mt76_queue *q;
 		int j;
@@ -1054,6 +1057,7 @@ void mt76u_stop_tx(struct mt76_dev *dev)
 		}
 
 		mt76_worker_disable(&dev->tx_worker);
+		mt76_worker_disable(&dev->usb.status_worker);
 
 		/* On device removal we maight queue skb's, but mt76u_tx_kick()
 		 * will fail to submit urb, cleanup those skb's manually.
@@ -1071,6 +1075,7 @@ void mt76u_stop_tx(struct mt76_dev *dev)
 		}
 
 		mt76_worker_enable(&dev->tx_worker);
+		mt76_worker_enable(&dev->usb.status_worker);
 	}
 
 	cancel_work_sync(&dev->usb.stat_work);
@@ -1125,7 +1130,6 @@ int mt76u_init(struct mt76_dev *dev,
 	mt76u_ops.rmw = ext ? mt76u_rmw_ext : mt76u_rmw;
 	mt76u_ops.write_copy = ext ? mt76u_copy_ext : mt76u_copy;
 
-	dev->tx_worker.fn = mt76u_tx_worker;
 	INIT_WORK(&usb->stat_work, mt76u_tx_status_data);
 
 	usb->data_len = usb_maxpacket(udev, usb_sndctrlpipe(udev, 0), 1);
@@ -1153,7 +1157,13 @@ int mt76u_init(struct mt76_dev *dev,
 	if (err)
 		return err;
 
+	err = mt76_worker_setup(dev->hw, &usb->status_worker,
+				mt76u_status_worker, "usb-status");
+	if (err)
+		return err;
+
 	sched_set_fifo_low(usb->rx_worker.task);
+	sched_set_fifo_low(usb->status_worker.task);
 
 	return 0;
 }
