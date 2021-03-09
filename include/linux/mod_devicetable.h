@@ -794,6 +794,7 @@ struct typec_device_id {
 	kernel_ulong_t driver_data;
 };
 
+#define MHI_DEVICE_MODALIAS_FMT "mhi:%s"
 #define MHI_NAME_SIZE 32
 
 /**
