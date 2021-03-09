@@ -473,9 +473,10 @@ struct ieee80211_sta_s1g_cap {
  *	rates" IE, i.e. CCK rates first, then OFDM.
  * @n_bitrates: Number of bitrates in @bitrates
  * @ht_cap: HT capabilities in this band
+ * @s1g_cap: S1G capabilities in this band
  * @vht_cap: VHT capabilities in this band
- * @edmg_cap: EDMG capabilities in this band
  * @s1g_cap: S1G capabilities in this band (S1B band only, of course)
+ * @edmg_cap: EDMG capabilities in this band
  * @n_iftype_data: number of iftype data entries
  * @iftype_data: interface type data entries.  Note that the bits in
  *	@types_mask inside this structure cannot overlap (i.e. only
