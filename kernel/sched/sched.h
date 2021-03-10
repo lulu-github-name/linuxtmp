@@ -836,7 +836,15 @@ struct root_domain {
 	/* Indicate one or more cpus over-utilized (tipping point) */
 	RH_KABI_USE(2, int overutilized)
 
-	RH_KABI_RESERVE(3)
+	/*
+	 * Indicate whether a root_domain's dl_bw has been checked or
+	 * updated. It's monotonously increasing value.
+	 *
+	 * Also, some corner cases, like 'wrap around' is dangerous, but given
+	 * that u64 is 'big enough'. So that shouldn't be a concern.
+	 */
+	RH_KABI_USE(3, u64 visit_gen)
+
 	RH_KABI_RESERVE(4)
 };
 
