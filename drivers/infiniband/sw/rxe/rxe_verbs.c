@@ -1146,7 +1146,8 @@ int rxe_register_device(struct rxe_dev *rxe, const char *ibdev_name)
 	if (err)
 		return err;
 
-	dev->uverbs_cmd_mask |= BIT_ULL(IB_USER_VERBS_CMD_REQ_NOTIFY_CQ);
+	dev->uverbs_cmd_mask |= BIT_ULL(IB_USER_VERBS_CMD_POST_SEND) |
+				BIT_ULL(IB_USER_VERBS_CMD_REQ_NOTIFY_CQ);
 
 	ib_set_device_ops(dev, &rxe_dev_ops);
 	err = ib_device_set_netdev(&rxe->ib_dev, rxe->ndev, 1);
