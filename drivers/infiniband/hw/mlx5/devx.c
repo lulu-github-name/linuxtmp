@@ -1406,7 +1406,7 @@ static int devx_obj_cleanup(struct ib_uobject *uobject,
 	else
 		ret = mlx5_cmd_exec(obj->ib_dev->mdev, obj->dinbox,
 				    obj->dinlen, out, sizeof(out));
-	if (ib_is_destroy_retryable(ret, why, uobject))
+	if (ret)
 		return ret;
 
 	devx_event_table = &dev->devx_event_table;
@@ -2282,7 +2282,7 @@ static int devx_umem_cleanup(struct ib_uobject *uobject,
 	int err;
 
 	err = mlx5_cmd_exec(obj->mdev, obj->dinbox, obj->dinlen, out, sizeof(out));
-	if (ib_is_destroy_retryable(err, why, uobject))
+	if (err)
 		return err;
 
 	ib_umem_release(obj->umem);
