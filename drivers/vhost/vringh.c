@@ -284,12 +284,9 @@ __vringh_iov(struct vringh *vrh, u16 i,
 	up_next = -1;
 
 	if (riov)
-		riov->i = riov->used = 0;
-	else if (wiov)
-		wiov->i = wiov->used = 0;
-	else
-		/* You must want something! */
-		BUG();
+		riov->i = riov->used = riov->consumed = 0;
+	if (wiov)
+		wiov->i = wiov->used = wiov->consumed = 0;
 
 	for (;;) {
 		void *addr;
