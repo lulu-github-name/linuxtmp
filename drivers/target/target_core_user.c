@@ -1655,6 +1655,8 @@ static void tcmu_dev_kref_release(struct kref *kref)
 	bitmap_free(udev->data_bitmap);
 	mutex_unlock(&udev->cmdr_lock);
 
+	pr_debug("dev_kref_release\n");
+
 	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
 }
 
@@ -1770,6 +1772,25 @@ static struct page *tcmu_try_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
 	return page;
 }
 
+static void tcmu_vma_open(struct vm_area_struct *vma)
+{
+	struct tcmu_dev *udev = vma->vm_private_data;
+
+	pr_debug("vma_open\n");
+
+	kref_get(&udev->kref);
+}
+
+static void tcmu_vma_close(struct vm_area_struct *vma)
+{
+	struct tcmu_dev *udev = vma->vm_private_data;
+
+	pr_debug("vma_close\n");
+
+	/* release ref from tcmu_vma_open */
+	kref_put(&udev->kref, tcmu_dev_kref_release);
+}
+
 static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
 {
 	struct tcmu_dev *udev = vmf->vma->vm_private_data;
@@ -1808,6 +1829,8 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
 }
 
 static const struct vm_operations_struct tcmu_vm_ops = {
+	.open = tcmu_vma_open,
+	.close = tcmu_vma_close,
 	.fault = tcmu_vma_fault,
 };
 
@@ -1824,6 +1847,8 @@ static int tcmu_mmap(struct uio_info *info, struct vm_area_struct *vma)
 	if (vma_pages(vma) != (udev->ring_size >> PAGE_SHIFT))
 		return -EINVAL;
 
+	tcmu_vma_open(vma);
+
 	return 0;
 }
 
@@ -1836,7 +1861,6 @@ static int tcmu_open(struct uio_info *info, struct inode *inode)
 		return -EBUSY;
 
 	udev->inode = inode;
-	kref_get(&udev->kref);
 
 	pr_debug("open\n");
 
@@ -1850,8 +1874,7 @@ static int tcmu_release(struct uio_info *info, struct inode *inode)
 	clear_bit(TCMU_DEV_BIT_OPEN, &udev->flags);
 
 	pr_debug("close\n");
-	/* release ref from open */
-	kref_put(&udev->kref, tcmu_dev_kref_release);
+
 	return 0;
 }
 
