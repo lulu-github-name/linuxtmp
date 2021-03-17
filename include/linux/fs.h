@@ -484,7 +484,8 @@ struct block_device {
 	/* Mutex for freeze */
 	struct mutex		bd_fsfreeze_mutex;
 
-	RH_KABI_RESERVE(1)
+	RH_KABI_USE(1, spinlock_t bd_size_lock) /* for bd_inode->i_size updates */
+
 	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
