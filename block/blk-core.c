@@ -711,7 +711,7 @@ static inline bool bio_check_ro(struct bio *bio, struct hd_struct *part)
 {
 	const int op = bio_op(bio);
 
-	if ((part->policy || get_disk_ro_state(bio->bi_disk)) && op_is_write(op)) {
+	if ((part->policy || get_disk_ro(bio->bi_disk)) && op_is_write(op)) {
 		char b[BDEVNAME_SIZE];
 
 		if (op_is_flush(bio->bi_opf) && !bio_sectors(bio))
