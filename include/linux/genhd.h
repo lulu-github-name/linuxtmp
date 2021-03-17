@@ -505,7 +505,7 @@ int revalidate_disk(struct gendisk *disk);
 int check_disk_change(struct block_device *bdev);
 int __invalidate_device(struct block_device *bdev, bool kill_dirty);
 int invalidate_partition(struct gendisk *disk, int partno);
-void bd_set_size(struct block_device *bdev, loff_t size);
+void bd_set_nr_sectors(struct block_device *bdev, sector_t sectors);
 
 int ioctl_by_bdev(struct block_device *bdev, unsigned cmd, unsigned long arg);
 
