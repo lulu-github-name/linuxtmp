@@ -224,6 +224,7 @@ struct gendisk {
 	RH_KABI_USE(1, struct cdrom_device_info *cdi)
 	RH_KABI_USE(2, unsigned long state)
 #define GD_NEED_PART_SCAN		0
+#define GD_READ_ONLY			1
 
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
@@ -434,9 +435,14 @@ extern struct block_device *bdget_disk(struct gendisk *disk, int partno);
 extern void set_device_ro(struct block_device *bdev, int flag);
 extern void set_disk_ro(struct gendisk *disk, int flag);
 
+static inline int get_disk_ro_state(struct gendisk *disk)
+{
+	return test_bit(GD_READ_ONLY, &disk->state);
+}
+
 static inline int get_disk_ro(struct gendisk *disk)
 {
-	return disk->part0.policy;
+	return disk->part0.policy || get_disk_ro_state(disk);
 }
 
 extern void disk_block_events(struct gendisk *disk);

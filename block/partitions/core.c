@@ -192,7 +192,8 @@ static ssize_t part_ro_show(struct device *dev,
 			    struct device_attribute *attr, char *buf)
 {
 	struct hd_struct *p = dev_to_part(dev);
-	return sprintf(buf, "%d\n", p->policy ? 1 : 0);
+	struct gendisk *d = part_to_disk(p);
+	return sprintf(buf, "%d\n", (p->policy || get_disk_ro_state(d)) ? 1 : 0);
 }
 
 static ssize_t part_alignment_offset_show(struct device *dev,
@@ -407,7 +408,6 @@ static struct hd_struct *add_partition(struct gendisk *disk, int partno,
 		queue_limit_discard_alignment(&disk->queue->limits, start);
 	p->nr_sects = len;
 	p->partno = partno;
-	p->policy = get_disk_ro(disk);
 
 	if (info) {
 		struct partition_meta_info *pinfo;
