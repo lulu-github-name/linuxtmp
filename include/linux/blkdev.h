@@ -1318,6 +1318,11 @@ static inline int sb_issue_zeroout(struct super_block *sb, sector_t block,
 extern int blk_verify_command(struct request_queue *q, unsigned char *cmd,
 			      fmode_t mode);
 
+static inline bool bdev_is_partition(struct block_device *bdev)
+{
+	return bdev->bd_partno;
+}
+
 enum blk_default_limits {
 	BLK_MAX_SEGMENTS	= 128,
 	BLK_SAFE_MAX_SECTORS	= 255,
@@ -1435,7 +1440,7 @@ static inline int bdev_alignment_offset(struct block_device *bdev)
 	if (q->limits.misaligned)
 		return -1;
 
-	if (bdev != bdev->bd_contains)
+	if (bdev_is_partition(bdev))
 		return bdev->bd_part->alignment_offset;
 
 	return q->limits.alignment_offset;
@@ -1476,7 +1481,7 @@ static inline int bdev_discard_alignment(struct block_device *bdev)
 {
 	struct request_queue *q = bdev_get_queue(bdev);
 
-	if (bdev != bdev->bd_contains)
+	if (bdev_is_partition(bdev))
 		return bdev->bd_part->discard_alignment;
 
 	return q->limits.discard_alignment;
