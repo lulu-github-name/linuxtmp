@@ -447,6 +447,8 @@ struct address_space {
 	 */
 struct request_queue;
 
+#define BDEV_NEED_PART_SCAN		0
+
 struct block_device {
 	dev_t			bd_dev;  /* not a kdev_t - it's a search key */
 	int			bd_openers;
@@ -466,6 +468,11 @@ struct block_device {
 	struct hd_struct *	bd_part;
 	/* number of times partitions within this device have been opened. */
 	unsigned		bd_part_count;
+
+	/*
+	 * obsolete, keep bd_invalidated sync with BDEV_NEED_PART_SCAN for
+	 * not breaking 3rd party modules.
+	 */
 	int			bd_invalidated;
 	struct gendisk *	bd_disk;
 	struct request_queue *  bd_queue;
@@ -485,8 +492,8 @@ struct block_device {
 	struct mutex		bd_fsfreeze_mutex;
 
 	RH_KABI_USE(1, spinlock_t bd_size_lock) /* for bd_inode->i_size updates */
+	RH_KABI_USE(2, unsigned long bd_flags)
 
-	RH_KABI_RESERVE(2)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 } __randomize_layout;
