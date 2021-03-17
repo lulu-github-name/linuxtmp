@@ -47,7 +47,7 @@ struct sbitmap_word {
 	/**
 	 * @swap_lock: Held while swapping word <-> cleared
 	 */
-	spinlock_t swap_lock;
+	RH_KABI_DEPRECATE(spinlock_t, swap_lock)
 } ____cacheline_aligned_in_smp;
 
 /**
