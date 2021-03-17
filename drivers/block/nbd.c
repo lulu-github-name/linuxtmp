@@ -315,7 +315,7 @@ static void nbd_size_update(struct nbd_device *nbd, bool start)
 				set_blocksize(bdev, config->blksize);
 		} else {
 			bdev->bd_invalidated = 1;
-			set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
+			set_bit(GD_NEED_PART_SCAN, &nbd->disk->state);
 		}
 		bdput(bdev);
 	}
@@ -1339,7 +1339,7 @@ static int nbd_start_device_ioctl(struct nbd_device *nbd, struct block_device *b
 
 	if (max_part) {
 		bdev->bd_invalidated = 1;
-		set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
+		set_bit(GD_NEED_PART_SCAN, &nbd->disk->state);
 	}
 	mutex_unlock(&nbd->config_lock);
 	ret = wait_event_interruptible(config->recv_wq,
@@ -1519,10 +1519,10 @@ static int nbd_open(struct block_device *bdev, fmode_t mode)
 		refcount_inc(&nbd->refs);
 		mutex_unlock(&nbd->config_lock);
 		bdev->bd_invalidated = 1;
-		set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
+		set_bit(GD_NEED_PART_SCAN, &bdev->bd_disk->state);
 	} else if (nbd_disconnected(nbd->config)) {
 		bdev->bd_invalidated = 1;
-		set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
+		set_bit(GD_NEED_PART_SCAN, &bdev->bd_disk->state);
 	}
 out:
 	mutex_unlock(&nbd_index_mutex);

@@ -222,7 +222,9 @@ struct gendisk {
 	struct lockdep_map lockdep_map;
 
 	RH_KABI_USE(1, struct cdrom_device_info *cdi)
-	RH_KABI_RESERVE(2)
+	RH_KABI_USE(2, unsigned long state)
+#define GD_NEED_PART_SCAN		0
+
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 };

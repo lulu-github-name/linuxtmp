@@ -736,7 +736,7 @@ static void register_disk(struct device *parent, struct gendisk *disk,
 		goto exit;
 
 	bdev->bd_invalidated = 1;
-	set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
+	set_bit(GD_NEED_PART_SCAN, &disk->state);
 	err = blkdev_get(bdev, FMODE_READ, NULL);
 	if (err < 0)
 		goto exit;
@@ -2112,7 +2112,7 @@ bool bdev_check_media_change(struct block_device *bdev)
 		pr_warn("VFS: busy inodes on changed media %s\n",
 			bdev->bd_disk->disk_name);
 	bdev->bd_invalidated = 1;
-	set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
+	set_bit(GD_NEED_PART_SCAN, &bdev->bd_disk->state);
 	return true;
 }
 EXPORT_SYMBOL(bdev_check_media_change);
