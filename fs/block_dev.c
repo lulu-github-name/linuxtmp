@@ -1553,7 +1553,7 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
 	int ret;
 	int partno;
 	int perm = 0;
-	bool first_open = false;
+	bool first_open = false, need_restart;
 
 	if (mode & FMODE_READ)
 		perm |= MAY_READ;
@@ -1569,7 +1569,7 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
 	}
 
  restart:
-
+	need_restart = false;
 	ret = -ENXIO;
 	disk = bdev_get_gendisk(bdev, &partno);
 	if (!disk)
@@ -1593,20 +1593,12 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
 			ret = 0;
 			if (disk->fops->open) {
 				ret = disk->fops->open(bdev, mode);
-				if (ret == -ERESTARTSYS) {
-					/* Lost a race with 'disk' being
-					 * deleted, try again.
-					 * See md.c
-					 */
-					disk_put_part(bdev->bd_part);
-					bdev->bd_part = NULL;
-					bdev->bd_disk = NULL;
-					bdev->bd_queue = NULL;
-					mutex_unlock(&bdev->bd_mutex);
-					disk_unblock_events(disk);
-					put_disk_and_module(disk);
-					goto restart;
-				}
+				/*
+				 * If we lost a race with 'disk' being deleted,
+				 * try again.  See md.c
+				 */
+				if (ret == -ERESTARTSYS)
+					need_restart = true;
 			}
 
 			if (!ret) {
@@ -1686,6 +1678,8 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
 	mutex_unlock(&bdev->bd_mutex);
 	disk_unblock_events(disk);
 	put_disk_and_module(disk);
+	if (need_restart)
+		goto restart;
  out:
 
 	return ret;
