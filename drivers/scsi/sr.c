@@ -85,6 +85,7 @@ static int sr_remove(struct device *);
 static blk_status_t sr_init_command(struct scsi_cmnd *SCpnt);
 static int sr_done(struct scsi_cmnd *);
 static int sr_runtime_suspend(struct device *dev);
+static int sr_block_revalidate_disk(struct gendisk *disk);
 
 static const struct dev_pm_ops sr_pm_ops = {
 	.runtime_suspend	= sr_runtime_suspend,
@@ -528,7 +529,8 @@ static int sr_block_open(struct block_device *bdev, fmode_t mode)
 
 	sdev = cd->device;
 	scsi_autopm_get_device(sdev);
-	check_disk_change(bdev);
+	if (bdev_check_media_change(bdev))
+		sr_block_revalidate_disk(bdev->bd_disk);
 
 	mutex_lock(&cd->lock);
 	ret = cdrom_open(&cd->cdi, bdev, mode);
@@ -639,7 +641,6 @@ static const struct block_device_operations sr_bdops =
 	.release	= sr_block_release,
 	.ioctl		= sr_block_ioctl,
 	.check_events	= sr_block_check_events,
-	.revalidate_disk = sr_block_revalidate_disk,
 	/* 
 	 * No compat_ioctl for now because sr_block_ioctl never
 	 * seems to pass arbitrary ioctls down to host drivers.
@@ -756,6 +757,7 @@ static int sr_probe(struct device *dev)
 
 	dev_set_drvdata(dev, cd);
 	disk->flags |= GENHD_FL_REMOVABLE;
+	sr_block_revalidate_disk(disk);
 	device_add_disk(&sdev->sdev_gendev, disk, NULL);
 
 	sdev_printk(KERN_DEBUG, sdev,
