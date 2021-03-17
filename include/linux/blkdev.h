@@ -1782,7 +1782,8 @@ struct block_device_operations {
 	const struct pr_ops *pr_ops;
 
 	RH_KABI_USE(1, char *(*devnode)(struct gendisk *disk, umode_t *mode))
-	RH_KABI_RESERVE(2)
+	RH_KABI_USE(2, int (*set_read_only)(struct block_device *bdev, bool ro))
+
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 };
