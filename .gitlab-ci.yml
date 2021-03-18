@@ -44,7 +44,6 @@ trigger_pipeline:
     architectures: 'x86_64 ppc64le aarch64 s390x'
     kpet_tree_family: rhel8
     native_tools: 'true'
-    ystream_distro: RHEL-8.4.0-20201209.n.0
   trigger:
     project: redhat/red-hat-ci-tools/kernel/cki-internal-pipelines/cki-internal-contributors
     branch: rhel8
