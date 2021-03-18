@@ -1777,6 +1777,8 @@ static void __mcheck_cpu_init_timer(void)
 
 bool filter_mce(struct mce *m)
 {
+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
+		return amd_filter_mce(m);
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL)
 		return intel_filter_mce(m);
 
