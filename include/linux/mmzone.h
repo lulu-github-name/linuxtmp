@@ -319,6 +319,8 @@ struct lruvec {
 #ifdef CONFIG_MEMCG
 	struct pglist_data *pgdat;
 #endif
+	/* per lruvec lru_lock for memcg */
+	RH_KABI_BROKEN_INSERT(spinlock_t	lru_lock)
 };
 
 /* Isolate unmapped file */
@@ -789,7 +791,7 @@ typedef struct pglist_data {
 
 	/* Write-intensive fields used by page reclaim */
 	ZONE_PADDING(_pad1_)
-	spinlock_t		lru_lock;
+	RH_KABI_DEPRECATE(spinlock_t, lru_lock)
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
 	/*
