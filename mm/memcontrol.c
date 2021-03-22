@@ -878,6 +878,7 @@ void __mod_lruvec_page_state(struct page *page, enum node_stat_item idx,
 	lruvec = mem_cgroup_lruvec(memcg, pgdat);
 	__mod_lruvec_state(lruvec, idx, val);
 }
+EXPORT_SYMBOL(__mod_lruvec_page_state);
 
 void __mod_lruvec_kmem_state(void *p, enum node_stat_item idx, int val)
 {
@@ -1502,6 +1503,7 @@ static struct memory_stat memory_stats[] = {
 	{ "anon", PAGE_SIZE, NR_ANON_MAPPED },
 	{ "file", PAGE_SIZE, NR_FILE_PAGES },
 	{ "kernel_stack", 1024, NR_KERNEL_STACK_KB },
+	{ "pagetables", PAGE_SIZE, NR_PAGETABLE },
 	{ "percpu", 1, MEMCG_PERCPU_B },
 	{ "sock", PAGE_SIZE, MEMCG_SOCK },
 	{ "shmem", PAGE_SIZE, NR_SHMEM },

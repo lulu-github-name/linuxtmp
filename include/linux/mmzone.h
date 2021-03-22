@@ -156,7 +156,7 @@ enum zone_stat_item {
 	NR_ZONE_UNEVICTABLE,
 	NR_ZONE_WRITE_PENDING,	/* Count of dirty, writeback and unstable pages */
 	NR_MLOCK,		/* mlock()ed pages found and moved off LRU */
-	NR_PAGETABLE,		/* used for pagetables */
+	RH_KABI_BROKEN_REMOVE_ENUM(NR_PAGETABLE)
 	RH_KABI_BROKEN_REMOVE_ENUM(NR_KERNEL_STACK_KB)
 	/* Second 128 byte cacheline */
 	NR_BOUNCE,
@@ -215,6 +215,7 @@ enum node_stat_item {
 #if IS_ENABLED(CONFIG_SHADOW_CALL_STACK)
 	NR_KERNEL_SCS_KB,	/* measured in KiB */
 #endif
+	RH_KABI_BROKEN_INSERT_ENUM(NR_PAGETABLE) /* used for pagetables */
 	NR_VM_NODE_STAT_ITEMS
 };
 
