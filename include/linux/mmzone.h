@@ -215,6 +215,9 @@ enum node_stat_item {
 	NR_KERNEL_SCS_KB,	/* measured in KiB */
 #endif
 	RH_KABI_BROKEN_INSERT_ENUM(NR_PAGETABLE) /* used for pagetables */
+#ifdef CONFIG_SWAP
+	RH_KABI_BROKEN_INSERT_ENUM(NR_SWAPCACHE)
+#endif
 	NR_VM_NODE_STAT_ITEMS
 };
 
