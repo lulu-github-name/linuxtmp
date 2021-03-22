@@ -157,10 +157,7 @@ enum zone_stat_item {
 	NR_ZONE_WRITE_PENDING,	/* Count of dirty, writeback and unstable pages */
 	NR_MLOCK,		/* mlock()ed pages found and moved off LRU */
 	NR_PAGETABLE,		/* used for pagetables */
-	NR_KERNEL_STACK_KB,	/* measured in KiB */
-#if IS_ENABLED(CONFIG_SHADOW_CALL_STACK)
-	NR_KERNEL_SCS_KB,	/* measured in KiB */
-#endif
+	RH_KABI_BROKEN_REMOVE_ENUM(NR_KERNEL_STACK_KB)
 	/* Second 128 byte cacheline */
 	NR_BOUNCE,
 #if IS_ENABLED(CONFIG_ZSMALLOC)
@@ -214,6 +211,10 @@ enum node_stat_item {
 				/* reclaimable non-slab kernel pages */
 	RH_KABI_BROKEN_INSERT_ENUM(NR_FOLL_PIN_ACQUIRED) /* via: pin_user_page(), gup flag: FOLL_PIN */
 	RH_KABI_BROKEN_INSERT_ENUM(NR_FOLL_PIN_RELEASED) /* pages returned via unpin_user_page() */
+	RH_KABI_BROKEN_INSERT_ENUM(NR_KERNEL_STACK_KB)	/* measured in KiB */
+#if IS_ENABLED(CONFIG_SHADOW_CALL_STACK)
+	NR_KERNEL_SCS_KB,	/* measured in KiB */
+#endif
 	NR_VM_NODE_STAT_ITEMS
 };
 
