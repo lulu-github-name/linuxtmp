@@ -287,6 +287,8 @@ struct zone_reclaim_stat {
 	unsigned long		recent_scanned[2];
 };
 
+#define ANON_AND_FILE 2
+
 enum lruvec_flags {
 	LRUVEC_CONGESTED,		/* lruvec has many dirty pages
 					 * backed by a congested BDI
@@ -304,8 +306,8 @@ struct lruvec {
 		struct zone_reclaim_stat	reclaim_stat,
 		unsigned long			anon_cost,
 		unsigned long			file_cost,
-		/* Refaults at the time of last reclaim cycle, anon=0, file=1 */
-		unsigned long			refaults[2])
+		/* Refaults at the time of last reclaim cycle */
+		unsigned long			refaults[ANON_AND_FILE])
 
 	/* Non-resident age, driven by LRU movement */
 	atomic_long_t			RH_KABI_RENAME(inactive_age,
@@ -424,6 +426,8 @@ enum zone_type {
 };
 
 #ifndef __GENERATING_BOUNDS_H
+
+#define ASYNC_AND_SYNC 2
 
 struct zone {
 	/* Read-mostly fields */
@@ -547,8 +551,8 @@ struct zone {
 #if defined CONFIG_COMPACTION || defined CONFIG_CMA
 	/* pfn where compaction free scanner should start */
 	unsigned long		compact_cached_free_pfn;
-	/* pfn where async and sync compaction migration scanner should start */
-	unsigned long		compact_cached_migrate_pfn[2];
+	/* pfn where compaction migration scanner should start */
+	unsigned long		compact_cached_migrate_pfn[ASYNC_AND_SYNC];
 #endif
 
 #ifdef CONFIG_COMPACTION
