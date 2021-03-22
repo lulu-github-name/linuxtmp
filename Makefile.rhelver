@@ -36,7 +36,7 @@ RHEL_RELEASE = 299
 # Use this spot to avoid future merge conflicts.
 # Do not trim this comment.
 EARLY_YSTREAM ?= yes
-EARLY_YBUILD:=298
+EARLY_YBUILD:=299
 EARLY_YRELEASE:=1
 ifneq ("$(ZSTREAM)", "yes")
   ifeq ("$(EARLY_YSTREAM)","yes")
