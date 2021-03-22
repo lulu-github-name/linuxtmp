@@ -209,6 +209,8 @@ enum node_stat_item {
 	RH_KABI_RENAME(NR_INDIRECTLY_RECLAIMABLE_BYTES,
 		       NR_KERNEL_MISC_RECLAIMABLE),
 				/* reclaimable non-slab kernel pages */
+	RH_KABI_BROKEN_INSERT_ENUM(NR_FOLL_PIN_ACQUIRED) /* via: pin_user_page(), gup flag: FOLL_PIN */
+	RH_KABI_BROKEN_INSERT_ENUM(NR_FOLL_PIN_RELEASED) /* pages returned via unpin_user_page() */
 	NR_VM_NODE_STAT_ITEMS
 };
 

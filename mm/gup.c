@@ -85,6 +85,8 @@ static __maybe_unused struct page *try_grab_compound_head(struct page *page,
 	if (flags & FOLL_GET)
 		return try_get_compound_head(page, refs);
 	else if (flags & FOLL_PIN) {
+		int orig_refs = refs;
+
 		/*
 		 * When pinning a compound page of order > 1 (which is what
 		 * hpage_pincount_available() checks for), use an exact count to
@@ -102,6 +104,9 @@ static __maybe_unused struct page *try_grab_compound_head(struct page *page,
 
 		if (hpage_pincount_available(page))
 			hpage_pincount_add(page, refs);
+
+		mod_node_page_state(page_pgdat(page), NR_FOLL_PIN_ACQUIRED,
+				    orig_refs);
 
 		return page;
 	}
@@ -157,6 +162,8 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 		 * once, so that the page really is pinned.
 		 */
 		page_ref_add(page, refs);
+
+		mod_node_page_state(page_pgdat(page), NR_FOLL_PIN_ACQUIRED, 1);
 	}
 
 	return true;
@@ -177,6 +184,7 @@ static bool __unpin_devmap_managed_user_page(struct page *page)
 
 	count = page_ref_sub_return(page, refs);
 
+	mod_node_page_state(page_pgdat(page), NR_FOLL_PIN_RELEASED, 1);
 	/*
 	 * devmap page refcounts are 1-based, rather than 0-based: if
 	 * refcount is 1, then the page is free and the refcount is
@@ -227,6 +235,8 @@ void unpin_user_page(struct page *page)
 
 	if (page_ref_sub_and_test(page, refs))
 		__put_page(page);
+
+	mod_node_page_state(page_pgdat(page), NR_FOLL_PIN_RELEASED, 1);
 }
 EXPORT_SYMBOL(unpin_user_page);
 
@@ -2059,6 +2069,9 @@ EXPORT_SYMBOL(get_user_pages_unlocked);
 static void put_compound_head(struct page *page, int refs, unsigned int flags)
 {
 	if (flags & FOLL_PIN) {
+		mod_node_page_state(page_pgdat(page), NR_FOLL_PIN_RELEASED,
+				    refs);
+
 		if (hpage_pincount_available(page))
 			hpage_pincount_sub(page, refs);
 		else
