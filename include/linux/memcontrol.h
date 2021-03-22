@@ -289,10 +289,7 @@ struct mem_cgroup {
 	/* vmpressure notifications */
 	struct vmpressure vmpressure;
 
-	/*
-	 * Should the accounting and control be hierarchical, per subtree?
-	 */
-	bool use_hierarchy;
+	RH_KABI_DEPRECATE(bool, use_hierarchy)
 
 	/* protected by memcg_oom_lock */
 	bool		oom_lock;
@@ -791,8 +788,6 @@ static inline bool mem_cgroup_is_descendant(struct mem_cgroup *memcg,
 {
 	if (root == memcg)
 		return true;
-	if (!root->use_hierarchy)
-		return false;
 	return cgroup_is_descendant(memcg->css.cgroup, root->css.cgroup);
 }
 
