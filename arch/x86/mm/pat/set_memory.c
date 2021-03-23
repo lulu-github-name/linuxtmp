@@ -26,7 +26,7 @@
 #include <asm/pat.h>
 #include <asm/set_memory.h>
 
-#include "mm_internal.h"
+#include "../mm_internal.h"
 
 /*
  * The current flushing context - we pass it instead of 5 arguments:
@@ -2388,5 +2388,5 @@ int __init kernel_unmap_pages_in_pgd(pgd_t *pgd, unsigned long address,
  * be exposed to the rest of the kernel. Include these directly here.
  */
 #ifdef CONFIG_CPA_DEBUG
-#include "pageattr-test.c"
+#include "cpa-test.c"
 #endif
