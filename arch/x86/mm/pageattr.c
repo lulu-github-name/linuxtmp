@@ -1925,15 +1925,13 @@ EXPORT_SYMBOL_GPL(set_memory_array_wt);
 int _set_memory_wc(unsigned long addr, int numpages)
 {
 	int ret;
-	unsigned long addr_copy = addr;
 
 	ret = change_page_attr_set(&addr, numpages,
 				   cachemode2pgprot(_PAGE_CACHE_MODE_UC_MINUS),
 				   0);
 	if (!ret) {
-		ret = change_page_attr_set_clr(&addr_copy, numpages,
-					       cachemode2pgprot(
-						_PAGE_CACHE_MODE_WC),
+		ret = change_page_attr_set_clr(&addr, numpages,
+					       cachemode2pgprot(_PAGE_CACHE_MODE_WC),
 					       __pgprot(_PAGE_CACHE_MASK),
 					       0, 0, NULL);
 	}
@@ -2072,7 +2070,6 @@ int set_memory_global(unsigned long addr, int numpages)
 static int __set_memory_enc_dec(unsigned long addr, int numpages, bool enc)
 {
 	struct cpa_data cpa;
-	unsigned long start;
 	int ret;
 
 	/* Nothing to do if memory encryption is not active */
@@ -2082,8 +2079,6 @@ static int __set_memory_enc_dec(unsigned long addr, int numpages, bool enc)
 	/* Should not be working on unaligned addresses */
 	if (WARN_ONCE(addr & ~PAGE_MASK, "misaligned address: %#lx\n", addr))
 		addr &= PAGE_MASK;
-
-	start = addr;
 
 	memset(&cpa, 0, sizeof(cpa));
 	cpa.vaddr = &addr;
@@ -2099,7 +2094,7 @@ static int __set_memory_enc_dec(unsigned long addr, int numpages, bool enc)
 	/*
 	 * Before changing the encryption attribute, we need to flush caches.
 	 */
-	cpa_flush_range(start, numpages, 1);
+	cpa_flush_range(addr, numpages, 1);
 
 	ret = __change_page_attr_set_clr(&cpa, 1);
 
@@ -2110,7 +2105,7 @@ static int __set_memory_enc_dec(unsigned long addr, int numpages, bool enc)
 	 * in case TLB flushing gets optimized in the cpa_flush_range()
 	 * path use the same logic as above.
 	 */
-	cpa_flush_range(start, numpages, 0);
+	cpa_flush_range(addr, numpages, 0);
 
 	return ret;
 }
