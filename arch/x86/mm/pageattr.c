@@ -1645,14 +1645,15 @@ static int cpa_process_alias(struct cpa_data *cpa)
 static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
 {
 	unsigned long numpages = cpa->numpages;
-	int ret;
+	unsigned long rempages = numpages;
+	int ret = 0;
 
-	while (numpages) {
+	while (rempages) {
 		/*
 		 * Store the remaining nr of pages for the large page
 		 * preservation check.
 		 */
-		cpa->numpages = numpages;
+		cpa->numpages = rempages;
 		/* for array changes, we can't use large page */
 		if (cpa->flags & (CPA_ARRAY | CPA_PAGES_ARRAY))
 			cpa->numpages = 1;
@@ -1663,12 +1664,12 @@ static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
 		if (!debug_pagealloc_enabled())
 			spin_unlock(&cpa_lock);
 		if (ret)
-			return ret;
+			goto out;
 
 		if (checkalias) {
 			ret = cpa_process_alias(cpa);
 			if (ret)
-				return ret;
+				goto out;
 		}
 
 		/*
@@ -1676,11 +1677,15 @@ static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
 		 * CPA operation. Either a large page has been
 		 * preserved or a single page update happened.
 		 */
-		BUG_ON(cpa->numpages > numpages || !cpa->numpages);
-		numpages -= cpa->numpages;
+		BUG_ON(cpa->numpages > rempages || !cpa->numpages);
+		rempages -= cpa->numpages;
 		cpa->curpage += cpa->numpages;
 	}
-	return 0;
+
+out:
+	/* Restore the original numpages */
+	cpa->numpages = numpages;
+	return ret;
 }
 
 /*
