@@ -41,8 +41,6 @@ realtime_check:
 trigger_pipeline:
   variables:
     name: kernel-rhel8
-    send_ready_for_test_pre: 'True'
-    send_ready_for_test_post: 'True'
     architectures: 'x86_64 ppc64le aarch64 s390x'
     kpet_tree_family: rhel8
     native_tools: 'true'
