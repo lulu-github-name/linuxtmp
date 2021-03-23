@@ -1103,14 +1103,14 @@ EXPORT_SYMBOL_GPL(add_memory);
 #ifdef CONFIG_MEMORY_HOTREMOVE
 /*
  * A free page on the buddy free lists (not the per-cpu lists) has PageBuddy
- * set and the size of the free page is given by page_order(). Using this,
+ * set and the size of the free page is given by buddy_order(). Using this,
  * the function determines if the pageblock contains only free pages.
  * Due to buddy contraints, a free page at least the size of a pageblock will
  * be located at the start of the pageblock
  */
 static inline int pageblock_free(struct page *page)
 {
-	return PageBuddy(page) && page_order(page) >= pageblock_order;
+	return PageBuddy(page) && buddy_order(page) >= pageblock_order;
 }
 
 /* Return the pfn of the start of the next active pageblock after a given pfn */
@@ -1124,8 +1124,8 @@ static unsigned long next_active_pageblock(unsigned long pfn)
 	/* If the entire pageblock is free, move to the end of free page */
 	if (pageblock_free(page)) {
 		int order;
-		/* be careful. we don't have locks, page_order can be changed.*/
-		order = page_order(page);
+		/* be careful. we don't have locks, buddy_order can be changed.*/
+		order = buddy_order(page);
 		if ((order < MAX_ORDER) && (order >= pageblock_order))
 			return pfn + (1 << order);
 	}
