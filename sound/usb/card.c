@@ -817,7 +817,8 @@ static int usb_audio_probe(struct usb_interface *intf,
 			goto __error;
 	}
 
-	chip->quirk_type = quirk->type;
+	if (quirk)
+		chip->quirk_type = quirk->type;
 
 	usb_chip[chip->index] = chip;
 	chip->intf[chip->num_interfaces] = intf;
