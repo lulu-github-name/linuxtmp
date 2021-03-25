@@ -34,6 +34,13 @@ if [ "$ZSTREAM_FLAG" != "no" ]; then
        GIT_NOTES="--notes=refs/notes/${RHEL_MAJOR}.${RHEL_MINOR}*"
 fi
 
+# We want to exclude changes in redhat/rhdocs tree from the changelog output.
+# Since the redhat/rhdocs is a separate git subtree, we can exclude the full
+# list of commits with "^" specifier against latest child from the subtree.
+# This is done this way to be compatible with old git versions which do not
+# have the pathspec '(exclude)' support
+EXCLUDE=$(git log -1 --format=%P ${0%/*}/rhdocs | cut -d ' ' -f 2)
+
 echo >$clogf
 
 lasttag=$(git rev-list --first-parent --grep="^\[redhat\] ${PACKAGE_NAME}-${RPMVERSION}" --max-count=1 HEAD)
@@ -43,7 +50,7 @@ if [ -z "$lasttag" ]; then
 fi
 echo "Gathering new log entries since $lasttag"
 git log --topo-order --reverse --no-merges -z $GIT_NOTES "$GIT_FORMAT" \
-	${lasttag}.. -- ':!/redhat/rhdocs' | ${0%/*}/genlog.py >> "$clogf"
+	${lasttag}.. ${EXCLUDE:+^$EXCLUDE} | ${0%/*}/genlog.py >> "$clogf"
 
 cat $clogf | grep -v "tagging $RPM_VERSION" > $clogf.stripped
 cp $clogf.stripped $clogf
