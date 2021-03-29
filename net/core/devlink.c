@@ -4472,27 +4472,17 @@ static int devlink_nl_region_read_snapshot_fill(struct sk_buff *skb,
 static int devlink_nl_cmd_region_read_dumpit(struct sk_buff *skb,
 					     struct netlink_callback *cb)
 {
+	const struct genl_dumpit_info *info = genl_dumpit_info(cb);
 	u64 ret_offset, start_offset, end_offset = U64_MAX;
+	struct nlattr **attrs = info->attrs;
 	struct devlink_region *region;
 	struct nlattr *chunks_attr;
 	const char *region_name;
 	struct devlink *devlink;
-	struct nlattr **attrs;
 	void *hdr;
 	int err;
 
 	start_offset = *((u64 *)&cb->args[0]);
-
-	attrs = kmalloc_array(DEVLINK_ATTR_MAX + 1, sizeof(*attrs), GFP_KERNEL);
-	if (!attrs)
-		return -ENOMEM;
-
-	err = nlmsg_parse_deprecated(cb->nlh,
-				     GENL_HDRLEN + devlink_nl_family.hdrsize,
-				     attrs, DEVLINK_ATTR_MAX,
-				     devlink_nl_family.policy, cb->extack);
-	if (err)
-		goto out_free;
 
 	mutex_lock(&devlink_mutex);
 	devlink = devlink_get_from_attrs(sock_net(cb->skb->sk), attrs);
@@ -4577,7 +4567,6 @@ static int devlink_nl_cmd_region_read_dumpit(struct sk_buff *skb,
 	genlmsg_end(skb, hdr);
 	mutex_unlock(&devlink->lock);
 	mutex_unlock(&devlink_mutex);
-	kfree(attrs);
 
 	return skb->len;
 
@@ -4587,8 +4576,6 @@ out_unlock:
 	mutex_unlock(&devlink->lock);
 out_dev:
 	mutex_unlock(&devlink_mutex);
-out_free:
-	kfree(attrs);
 	return err;
 }
 
@@ -5835,21 +5822,10 @@ devlink_health_reporter_get_from_info(struct devlink *devlink,
 static struct devlink_health_reporter *
 devlink_health_reporter_get_from_cb(struct netlink_callback *cb)
 {
+	const struct genl_dumpit_info *info = genl_dumpit_info(cb);
 	struct devlink_health_reporter *reporter;
+	struct nlattr **attrs = info->attrs;
 	struct devlink *devlink;
-	struct nlattr **attrs;
-	int err;
-
-	attrs = kmalloc_array(DEVLINK_ATTR_MAX + 1, sizeof(*attrs), GFP_KERNEL);
-	if (!attrs)
-		return NULL;
-
-	err = nlmsg_parse_deprecated(cb->nlh,
-				     GENL_HDRLEN + devlink_nl_family.hdrsize,
-				     attrs, DEVLINK_ATTR_MAX,
-				     devlink_nl_family.policy, cb->extack);
-	if (err)
-		goto free;
 
 	mutex_lock(&devlink_mutex);
 	devlink = devlink_get_from_attrs(sock_net(cb->skb->sk), attrs);
@@ -5858,12 +5834,9 @@ devlink_health_reporter_get_from_cb(struct netlink_callback *cb)
 
 	reporter = devlink_health_reporter_get_from_attrs(devlink, attrs);
 	mutex_unlock(&devlink_mutex);
-	kfree(attrs);
 	return reporter;
 unlock:
 	mutex_unlock(&devlink_mutex);
-free:
-	kfree(attrs);
 	return NULL;
 }
 
@@ -7334,7 +7307,8 @@ static const struct genl_small_ops devlink_nl_ops[] = {
 	},
 	{
 		.cmd = DEVLINK_CMD_REGION_READ,
-		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+		.validate = GENL_DONT_VALIDATE_STRICT |
+			    GENL_DONT_VALIDATE_DUMP_STRICT,
 		.dumpit = devlink_nl_cmd_region_read_dumpit,
 		.flags = GENL_ADMIN_PERM,
 	},
