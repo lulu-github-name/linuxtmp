@@ -91,6 +91,7 @@ static const struct udp_tunnel_nic_info nsim_udp_tunnel_info = {
 	.set_port	= nsim_udp_tunnel_set_port,
 	.unset_port	= nsim_udp_tunnel_unset_port,
 	.sync_table	= nsim_udp_tunnel_sync_table,
+	.flags		= __RH_UDP_TUNNEL_NIC_INFO_EXTENDED,
 
 	.tables = {
 		{
@@ -103,6 +104,7 @@ static const struct udp_tunnel_nic_info nsim_udp_tunnel_info = {
 					  UDP_TUNNEL_TYPE_VXLAN_GPE,
 		},
 	},
+	RH_KABI_AUX_INIT_SIZE(udp_tunnel_nic_info)
 };
 
 static ssize_t
@@ -112,7 +114,7 @@ nsim_udp_tunnels_info_reset_write(struct file *file, const char __user *data,
 	struct net_device *dev = file->private_data;
 	struct netdevsim *ns = netdev_priv(dev);
 
-	memset(&ns->udp_ports.ports, 0, sizeof(ns->udp_ports.ports));
+	memset(ns->udp_ports.ports, 0, sizeof(ns->udp_ports.__ports));
 	rtnl_lock();
 	udp_tunnel_nic_reset_ntf(dev);
 	rtnl_unlock();
@@ -131,6 +133,17 @@ int nsim_udp_tunnels_info_create(struct nsim_dev *nsim_dev,
 {
 	struct netdevsim *ns = netdev_priv(dev);
 	struct udp_tunnel_nic_info *info;
+
+	if (nsim_dev->udp_ports.shared && nsim_dev->udp_ports.open_only) {
+		dev_err(&nsim_dev->nsim_bus_dev->dev,
+			"shared can't be used in conjunction with open_only\n");
+		return -EINVAL;
+	}
+
+	if (!nsim_dev->udp_ports.shared)
+		ns->udp_ports.ports = ns->udp_ports.__ports;
+	else
+		ns->udp_ports.ports = nsim_dev->udp_ports.__ports;
 
 	debugfs_create_u32("udp_ports_inject_error", 0600,
 			   ns->nsim_dev_port->ddir,
@@ -173,6 +186,8 @@ int nsim_udp_tunnels_info_create(struct nsim_dev *nsim_dev,
 		info->flags |= UDP_TUNNEL_NIC_INFO_OPEN_ONLY;
 	if (nsim_dev->udp_ports.ipv4_only)
 		info->flags |= UDP_TUNNEL_NIC_INFO_IPV4_ONLY;
+	if (nsim_dev->udp_ports.shared)
+		info->_rh.shared = &nsim_dev->udp_ports.utn_shared;
 
 	dev->udp_tunnel_nic_info = info;
 	return 0;
@@ -192,6 +207,8 @@ void nsim_udp_tunnels_debugfs_create(struct nsim_dev *nsim_dev)
 			    &nsim_dev->udp_ports.open_only);
 	debugfs_create_bool("udp_ports_ipv4_only", 0600, nsim_dev->ddir,
 			    &nsim_dev->udp_ports.ipv4_only);
+	debugfs_create_bool("udp_ports_shared", 0600, nsim_dev->ddir,
+			    &nsim_dev->udp_ports.shared);
 	debugfs_create_u32("udp_ports_sleep", 0600, nsim_dev->ddir,
 			   &nsim_dev->udp_ports.sleep);
 }
