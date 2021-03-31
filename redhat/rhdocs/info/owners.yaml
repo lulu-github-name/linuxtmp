@@ -21,12 +21,18 @@ subsystems:
    maintainers:
      - name: Justin Forbes
        email: jforbes@redhat.com
+       # Only unrestricted maintainers show up in the list of required reviewers. The restricted
+       # element is optional and defaults to false if absent.
+       restricted: false
      - name: Patrick Talbert
        email: ptalbert@redhat.com
    # R:
    reviewers:
      - name: Donald Zickus
        email: dzickus@redhat.com
+       # Only unrestricted maintainers show up in the list of required reviewers. The restricted
+       # element is optional and defaults to false if absent.
+       restricted: false
    paths:
        # F:
        includes:
@@ -506,6 +512,7 @@ subsystems:
        email: vkuznets@redhat.com
      - name: Wei Huang
        email: wehuang@redhat.com
+       restricted: true
    paths:
        includes:
           - arch/x86/boot/compressed/sev*.c
@@ -518,6 +525,7 @@ subsystems:
    maintainers:
      - name: Igor Russkikh
        email: irusskik@redhat.com
+       restricted: true
      - name: John W. Linville
        email: linville@redhat.com
    paths:
@@ -558,6 +566,7 @@ subsystems:
        email: mlangsdo@redhat.com
      - name: Jeremy Linton
        email: jlinton@redhat.com
+       restricted: true
    paths:
        includes:
           - arch/arm64/
@@ -572,6 +581,7 @@ subsystems:
        email: mlangsdo@redhat.com
      - name: Jeremy Linton
        email: jlinton@redhat.com
+       restricted: true
    paths:
        includes:
           - arch/arm64/include/asm/arch_timer.h
@@ -585,6 +595,7 @@ subsystems:
        email: msalter@redhat.com
      - name: Jeremy Linton
        email: jlinton@redhat.com
+       restricted: true
    paths:
        includes:
           - drivers/irqchip/irq-gic*
@@ -790,6 +801,7 @@ subsystems:
    maintainers:
      - name: Selvin Xavier
        email: sxavier@redhat.com
+       restricted: true
    paths:
        includes:
           - drivers/infiniband/hw/bnxt_re/
@@ -860,9 +872,6 @@ subsystems:
    labels:
      name: bus
    status: Maintained
-   maintainers:
-     - name: Myron Stowe
-       email: myron.stowe@redhat.com
    paths:
        includes:
           - drivers/bus/
@@ -1075,6 +1084,19 @@ subsystems:
    paths:
        includes:
           - drivers/dax
+ - subsystem: DM and MD build and config files
+   labels:
+     name: dm_and_md
+   status: Maintained
+   maintainers:
+     - name: Mike Snitzer
+       email: snitzer@redhat.com
+     - name: Nigel Croxon
+       email: ncroxon@redhat.com
+   paths:
+       includes:
+          - drivers/md/Kconfig
+          - drivers/md/Makefile
  - subsystem: DEVICE MAPPER SUPPORT
    labels:
      name: dm
@@ -1085,13 +1107,24 @@ subsystems:
    paths:
        includes:
           - Documentation/device-mapper/
-          - drivers/md/Kconfig
-          - drivers/md/Makefile
           - drivers/md/dm*
           - drivers/md/persistent-data/
           - include/linux/device-mapper.h
           - include/linux/dm-*.h
           - include/uapi/linux/dm-*.h
+ - subsystem: SOFTWARE RAID (Multiple Disks, MD) SUPPORT
+   labels:
+     name: md
+   status: Maintained
+   maintainers:
+     - name: Nigel Croxon
+       email: ncroxon@redhat.com
+   paths:
+       includes:
+          - drivers/md/md*
+          - drivers/md/raid*
+          - include/linux/raid/
+          - include/uapi/linux/raid/
  - subsystem: DEVLINK
    labels:
      name: devlink
@@ -1733,6 +1766,7 @@ subsystems:
        email: vkuznets@redhat.com
      - name: Wei Huang
        email: wehuang@redhat.com
+       restricted: true
    paths:
        includes:
           - arch/x86/include/asm/svm.h
@@ -1910,14 +1944,18 @@ subsystems:
        email: joe.lawrence@redhat.com
      - name: Artem Savkov
        email: asavkov@redhat.com
+     - name: Yannick Cote
+       email: ycote@redhat.com
    paths:
        includes:
-          - kernel/livepatch/
-          - include/linux/livepatch.h
+          - Documentation/ABI/testing/sysfs-kernel-livepatch
+          - Documentation/livepatch/
+          - arch/powerpc/include/asm/livepatch.h
           - arch/x86/include/asm/livepatch.h
           - arch/x86/kernel/livepatch.c
-          - Documentation/livepatch/
-          - Documentation/ABI/testing/sysfs-kernel-livepatch
+          - include/linux/livepatch.h
+          - kernel/livepatch/
+          - lib/livepatch/
           - samples/livepatch/
           - tools/testing/selftests/livepatch/
  - subsystem: LOCKING PRIMITIVES
@@ -2100,6 +2138,7 @@ subsystems:
    maintainers:
      - name: Don Brace
        email: dbrace@redhat.com
+       restricted: true
      - name: Tomas Henzl
        email: thenzl@redhat.com
    paths:
@@ -2117,6 +2156,7 @@ subsystems:
    maintainers:
      - name: Alaa Hleihel
        email: ahleihel@redhat.com
+       restricted: true
      - name: Kamal Heib
        email: kheib@redhat.com
    paths:
@@ -2129,6 +2169,7 @@ subsystems:
    maintainers:
      - name: Alaa Hleihel
        email: ahleihel@redhat.com
+       restricted: true
      - name: Kamal Heib
        email: kheib@redhat.com
    paths:
@@ -2143,6 +2184,7 @@ subsystems:
    maintainers:
      - name: Alaa Hleihel
        email: ahleihel@redhat.com
+       restricted: true
      - name: Kamal Heib
        email: kheib@redhat.com
    paths:
@@ -2155,6 +2197,7 @@ subsystems:
    maintainers:
      - name: Alaa Hleihel
        email: ahleihel@redhat.com
+       restricted: true
      - name: Kamal Heib
        email: kheib@redhat.com
    paths:
@@ -2388,6 +2431,7 @@ subsystems:
    maintainers:
      - name: Manish Chopra
        email: mchopra@redhat.com
+       restricted: true
      - name: Tony Camuso
        email: tcamuso@redhat.com
    paths:
@@ -2676,8 +2720,10 @@ subsystems:
    maintainers:
      - name: Nilesh Javali
        email: njavali@redhat.com
+       restricted: true
      - name: Arun Easi
        email: aeasi@redhat.com
+       restricted: true
      - name: Ewan D. Milne
        email: emilne@redhat.com
    paths:
@@ -2690,6 +2736,7 @@ subsystems:
    maintainers:
      - name: Manish Chopra
        email: mchopra@redhat.com
+       restricted: true
      - name: John W. Linville
        email: linville@redhat.com
    paths:
@@ -2703,6 +2750,7 @@ subsystems:
    maintainers:
      - name: Manish Chopra
        email: mchopra@redhat.com
+       restricted: true
      - name: John W. Linville
        email: linville@redhat.com
    paths:
@@ -2715,6 +2763,7 @@ subsystems:
    maintainers:
      - name: Nilesh Javali
        email: njavali@redhat.com
+       restricted: true
      - name: Chris Leech
        email: cleech@redhat.com
    paths:
@@ -2727,8 +2776,10 @@ subsystems:
    maintainers:
      - name: Nilesh Javali
        email: njavali@redhat.com
+       restricted: true
      - name: Arun Easi
        email: aeasi@redhat.com
+       restricted: true
      - name: Chris Leech
        email: cleech@redhat.com
    paths:
@@ -2741,6 +2792,7 @@ subsystems:
    maintainers:
      - name: Manish Chopra
        email: mchopra@redhat.com
+       restricted: true
      - name: John W. Linville
        email: linville@redhat.com
    paths:
@@ -2753,6 +2805,7 @@ subsystems:
    maintainers:
      - name: Manish Chopra
        email: mchopra@redhat.com
+       restricted: true
      - name: John W. Linville
        email: linville@redhat.com
    paths:
@@ -2765,6 +2818,7 @@ subsystems:
    maintainers:
      - name: Manish Chopra
        email: mchopra@redhat.com
+       restricted: true
      - name: John W. Linville
        email: linville@redhat.com
    paths:
@@ -2777,6 +2831,7 @@ subsystems:
    maintainers:
      - name: Manish Chopra
        email: mchopra@redhat.com
+       restricted: true
      - name: John W. Linville
        email: linville@redhat.com
    paths:
@@ -2973,6 +3028,7 @@ subsystems:
    maintainers:
      - name: Frank Ramsay
        email: framsay@redhat.com
+       restricted: true
      - name: David Arcari
        email: darcari@redhat.com
    paths:
@@ -3030,21 +3086,6 @@ subsystems:
        includes:
           - drivers/infiniband/sw/rxe/
           - include/uapi/rdma/rdma_user_rxe.h
- - subsystem: SOFTWARE RAID (Multiple Disks, MD) SUPPORT
-   labels:
-     name: md
-   status: Maintained
-   maintainers:
-     - name: Nigel Croxon
-       email: ncroxon@redhat.com
-   paths:
-       includes:
-          - drivers/md/Kconfig
-          - drivers/md/Makefile
-          - drivers/md/md*
-          - drivers/md/raid*
-          - include/linux/raid/
-          - include/uapi/linux/raid/
  - subsystem: SQUASHFS FILE SYSTEM
    labels:
      name: squashfs

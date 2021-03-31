@@ -274,7 +274,7 @@ drivers/net/bonding/	jarod@redhat.com
 include/linux/if_bonding.h	jarod@redhat.com
 
 [BUS DRIVER]
-drivers/bus/	myron.stowe@redhat.com
+drivers/bus/	
 
 [CEPH COMMON CODE (LIBCEPH)]
 net/ceph/	idryomov@redhat.com jlayton@redhat.com
@@ -352,15 +352,23 @@ include/uapi/rdma/cxgb4-abi.h	linville@redhat.com
 [DEVICE DIRECT ACCESS]
 drivers/dax	jmoyer@redhat.com
 
+[DM and MD build and config files]
+drivers/md/Kconfig	snitzer@redhat.com ncroxon@redhat.com
+drivers/md/Makefile	snitzer@redhat.com ncroxon@redhat.com
+
 [DEVICE MAPPER SUPPORT]
 Documentation/device-mapper/	snitzer@redhat.com
-drivers/md/Kconfig	snitzer@redhat.com
-drivers/md/Makefile	snitzer@redhat.com
 drivers/md/dm*	snitzer@redhat.com
 drivers/md/persistent-data/	snitzer@redhat.com
 include/linux/device-mapper.h	snitzer@redhat.com
 include/linux/dm-*.h	snitzer@redhat.com
 include/uapi/linux/dm-*.h	snitzer@redhat.com
+
+[SOFTWARE RAID (Multiple Disks, MD) SUPPORT]
+drivers/md/md*	ncroxon@redhat.com
+drivers/md/raid*	ncroxon@redhat.com
+include/linux/raid/	ncroxon@redhat.com
+include/uapi/linux/raid/	ncroxon@redhat.com
 
 [DEVLINK]
 net/core/devlink.c	poros@redhat.com ivecera@redhat.com
@@ -678,14 +686,16 @@ lib/	prarit@redhat.com
 ^lib/nlattr.c	prarit@redhat.com
 
 [LIVE PATCHING / KPATCH]
-kernel/livepatch/	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com
-include/linux/livepatch.h	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com
-arch/x86/include/asm/livepatch.h	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com
-arch/x86/kernel/livepatch.c	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com
-Documentation/livepatch/	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com
-Documentation/ABI/testing/sysfs-kernel-livepatch	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com
-samples/livepatch/	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com
-tools/testing/selftests/livepatch/	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com
+Documentation/ABI/testing/sysfs-kernel-livepatch	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
+Documentation/livepatch/	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
+arch/powerpc/include/asm/livepatch.h	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
+arch/x86/include/asm/livepatch.h	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
+arch/x86/kernel/livepatch.c	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
+include/linux/livepatch.h	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
+kernel/livepatch/	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
+lib/livepatch/	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
+samples/livepatch/	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
+tools/testing/selftests/livepatch/	jpoimboe@redhat.com joe.lawrence@redhat.com asavkov@redhat.com ycote@redhat.com
 
 [LOCKING PRIMITIVES]
 Documentation/locking/	longman@redhat.com
@@ -1142,14 +1152,6 @@ include/uapi/rdma/siw-abi.h	kheib@redhat.com
 [SOFT-ROCE DRIVER (rdma_rxe)]
 drivers/infiniband/sw/rxe/	kheib@redhat.com
 include/uapi/rdma/rdma_user_rxe.h	kheib@redhat.com
-
-[SOFTWARE RAID (Multiple Disks, MD) SUPPORT]
-drivers/md/Kconfig	ncroxon@redhat.com
-drivers/md/Makefile	ncroxon@redhat.com
-drivers/md/md*	ncroxon@redhat.com
-drivers/md/raid*	ncroxon@redhat.com
-include/linux/raid/	ncroxon@redhat.com
-include/uapi/linux/raid/	ncroxon@redhat.com
 
 [SQUASHFS FILE SYSTEM]
 Documentation/filesystems/squashfs.txt	adas@redhat.com
