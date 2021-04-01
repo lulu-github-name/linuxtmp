@@ -35,13 +35,14 @@ static const struct nf_loginfo default_loginfo = {
 };
 
 /* One level of recursion won't kill us */
-static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
-			     const struct nf_loginfo *info,
-			     const struct sk_buff *skb, unsigned int iphoff)
+static noinline_for_stack void
+dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
+		 const struct nf_loginfo *info,
+		 const struct sk_buff *skb, unsigned int iphoff)
 {
-	struct iphdr _iph;
 	const struct iphdr *ih;
 	unsigned int logflags;
+	struct iphdr _iph;
 
 	if (info->type == NF_LOG_TYPE_LOG)
 		logflags = info->u.log.logflags;
@@ -49,14 +50,15 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 		logflags = NF_LOG_DEFAULT_MASK;
 
 	ih = skb_header_pointer(skb, iphoff, sizeof(_iph), &_iph);
-	if (ih == NULL) {
+	if (!ih) {
 		nf_log_buf_add(m, "TRUNCATED");
 		return;
 	}
 
 	/* Important fields:
-	 * TOS, len, DF/MF, fragment offset, TTL, src, dst, options. */
-	/* Max length: 40 "SRC=255.255.255.255 DST=255.255.255.255 " */
+	 * TOS, len, DF/MF, fragment offset, TTL, src, dst, options.
+	 * Max length: 40 "SRC=255.255.255.255 DST=255.255.255.255 "
+	 */
 	nf_log_buf_add(m, "SRC=%pI4 DST=%pI4 ", &ih->saddr, &ih->daddr);
 
 	/* Max length: 46 "LEN=65535 TOS=0xFF PREC=0xFF TTL=255 ID=65535 " */
@@ -78,14 +80,14 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 
 	if ((logflags & NF_LOG_IPOPT) &&
 	    ih->ihl * 4 > sizeof(struct iphdr)) {
-		const unsigned char *op;
 		unsigned char _opt[4 * 15 - sizeof(struct iphdr)];
+		const unsigned char *op;
 		unsigned int i, optsize;
 
 		optsize = ih->ihl * 4 - sizeof(struct iphdr);
-		op = skb_header_pointer(skb, iphoff+sizeof(_iph),
+		op = skb_header_pointer(skb, iphoff + sizeof(_iph),
 					optsize, _opt);
-		if (op == NULL) {
+		if (!op) {
 			nf_log_buf_add(m, "TRUNCATED");
 			return;
 		}
@@ -101,36 +103,31 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 	case IPPROTO_TCP:
 		if (nf_log_dump_tcp_header(m, skb, ih->protocol,
 					   ntohs(ih->frag_off) & IP_OFFSET,
-					   iphoff+ih->ihl*4, logflags))
+					   iphoff + ih->ihl * 4, logflags))
 			return;
 		break;
 	case IPPROTO_UDP:
 	case IPPROTO_UDPLITE:
 		if (nf_log_dump_udp_header(m, skb, ih->protocol,
 					   ntohs(ih->frag_off) & IP_OFFSET,
-					   iphoff+ih->ihl*4))
+					   iphoff + ih->ihl * 4))
 			return;
 		break;
 	case IPPROTO_ICMP: {
-		struct icmphdr _icmph;
+		static const size_t required_len[NR_ICMP_TYPES + 1] = {
+			[ICMP_ECHOREPLY] = 4,
+			[ICMP_DEST_UNREACH] = 8 + sizeof(struct iphdr),
+			[ICMP_SOURCE_QUENCH] = 8 + sizeof(struct iphdr),
+			[ICMP_REDIRECT] = 8 + sizeof(struct iphdr),
+			[ICMP_ECHO] = 4,
+			[ICMP_TIME_EXCEEDED] = 8 + sizeof(struct iphdr),
+			[ICMP_PARAMETERPROB] = 8 + sizeof(struct iphdr),
+			[ICMP_TIMESTAMP] = 20,
+			[ICMP_TIMESTAMPREPLY] = 20,
+			[ICMP_ADDRESS] = 12,
+			[ICMP_ADDRESSREPLY] = 12 };
 		const struct icmphdr *ich;
-		static const size_t required_len[NR_ICMP_TYPES+1]
-			= { [ICMP_ECHOREPLY] = 4,
-			    [ICMP_DEST_UNREACH]
-			    = 8 + sizeof(struct iphdr),
-			    [ICMP_SOURCE_QUENCH]
-			    = 8 + sizeof(struct iphdr),
-			    [ICMP_REDIRECT]
-			    = 8 + sizeof(struct iphdr),
-			    [ICMP_ECHO] = 4,
-			    [ICMP_TIME_EXCEEDED]
-			    = 8 + sizeof(struct iphdr),
-			    [ICMP_PARAMETERPROB]
-			    = 8 + sizeof(struct iphdr),
-			    [ICMP_TIMESTAMP] = 20,
-			    [ICMP_TIMESTAMPREPLY] = 20,
-			    [ICMP_ADDRESS] = 12,
-			    [ICMP_ADDRESSREPLY] = 12 };
+		struct icmphdr _icmph;
 
 		/* Max length: 11 "PROTO=ICMP " */
 		nf_log_buf_add(m, "PROTO=ICMP ");
@@ -141,9 +138,9 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 		/* Max length: 25 "INCOMPLETE [65535 bytes] " */
 		ich = skb_header_pointer(skb, iphoff + ih->ihl * 4,
 					 sizeof(_icmph), &_icmph);
-		if (ich == NULL) {
+		if (!ich) {
 			nf_log_buf_add(m, "INCOMPLETE [%u bytes] ",
-				       skb->len - iphoff - ih->ihl*4);
+				       skb->len - iphoff - ih->ihl * 4);
 			break;
 		}
 
@@ -153,9 +150,9 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 		/* Max length: 25 "INCOMPLETE [65535 bytes] " */
 		if (ich->type <= NR_ICMP_TYPES &&
 		    required_len[ich->type] &&
-		    skb->len-iphoff-ih->ihl*4 < required_len[ich->type]) {
+		    skb->len - iphoff - ih->ihl * 4 < required_len[ich->type]) {
 			nf_log_buf_add(m, "INCOMPLETE [%u bytes] ",
-				       skb->len - iphoff - ih->ihl*4);
+				       skb->len - iphoff - ih->ihl * 4);
 			break;
 		}
 
@@ -184,7 +181,7 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 			if (!iphoff) { /* Only recurse once. */
 				nf_log_buf_add(m, "[");
 				dump_ipv4_packet(net, m, info, skb,
-					    iphoff + ih->ihl*4+sizeof(_icmph));
+						 iphoff + ih->ihl * 4 + sizeof(_icmph));
 				nf_log_buf_add(m, "] ");
 			}
 
@@ -199,8 +196,8 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 	}
 	/* Max Length */
 	case IPPROTO_AH: {
-		struct ip_auth_hdr _ahdr;
 		const struct ip_auth_hdr *ah;
+		struct ip_auth_hdr _ahdr;
 
 		if (ntohs(ih->frag_off) & IP_OFFSET)
 			break;
@@ -209,11 +206,11 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 		nf_log_buf_add(m, "PROTO=AH ");
 
 		/* Max length: 25 "INCOMPLETE [65535 bytes] " */
-		ah = skb_header_pointer(skb, iphoff+ih->ihl*4,
+		ah = skb_header_pointer(skb, iphoff + ih->ihl * 4,
 					sizeof(_ahdr), &_ahdr);
-		if (ah == NULL) {
+		if (!ah) {
 			nf_log_buf_add(m, "INCOMPLETE [%u bytes] ",
-				       skb->len - iphoff - ih->ihl*4);
+				       skb->len - iphoff - ih->ihl * 4);
 			break;
 		}
 
@@ -222,8 +219,8 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 		break;
 	}
 	case IPPROTO_ESP: {
-		struct ip_esp_hdr _esph;
 		const struct ip_esp_hdr *eh;
+		struct ip_esp_hdr _esph;
 
 		/* Max length: 10 "PROTO=ESP " */
 		nf_log_buf_add(m, "PROTO=ESP ");
@@ -232,11 +229,11 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 			break;
 
 		/* Max length: 25 "INCOMPLETE [65535 bytes] " */
-		eh = skb_header_pointer(skb, iphoff+ih->ihl*4,
+		eh = skb_header_pointer(skb, iphoff + ih->ihl * 4,
 					sizeof(_esph), &_esph);
-		if (eh == NULL) {
+		if (!eh) {
 			nf_log_buf_add(m, "INCOMPLETE [%u bytes] ",
-				       skb->len - iphoff - ih->ihl*4);
+				       skb->len - iphoff - ih->ihl * 4);
 			break;
 		}
 
@@ -273,8 +270,8 @@ static void dump_ipv4_packet(struct net *net, struct nf_log_buf *m,
 }
 
 static void dump_ipv4_mac_header(struct nf_log_buf *m,
-			    const struct nf_loginfo *info,
-			    const struct sk_buff *skb)
+				 const struct nf_loginfo *info,
+				 const struct sk_buff *skb)
 {
 	struct net_device *dev = skb->dev;
 	unsigned int logflags = 0;
@@ -332,7 +329,7 @@ static void nf_log_ip_packet(struct net *net, u_int8_t pf,
 	nf_log_dump_packet_common(m, pf, hooknum, skb, in,
 				  out, loginfo, prefix);
 
-	if (in != NULL)
+	if (in)
 		dump_ipv4_mac_header(m, loginfo, skb);
 
 	dump_ipv4_packet(net, m, loginfo, skb, 0);
@@ -347,52 +344,51 @@ static struct nf_logger nf_ip_logger __read_mostly = {
 	.me		= THIS_MODULE,
 };
 
-static int __net_init nf_log_ipv4_net_init(struct net *net)
+static int __net_init nf_log_syslog_net_init(struct net *net)
 {
 	return nf_log_set(net, NFPROTO_IPV4, &nf_ip_logger);
 }
 
-static void __net_exit nf_log_ipv4_net_exit(struct net *net)
+static void __net_exit nf_log_syslog_net_exit(struct net *net)
 {
 	nf_log_unset(net, &nf_ip_logger);
 }
 
-static struct pernet_operations nf_log_ipv4_net_ops = {
-	.init = nf_log_ipv4_net_init,
-	.exit = nf_log_ipv4_net_exit,
+static struct pernet_operations nf_log_syslog_net_ops = {
+	.init = nf_log_syslog_net_init,
+	.exit = nf_log_syslog_net_exit,
 };
 
-static int __init nf_log_ipv4_init(void)
+static int __init nf_log_syslog_init(void)
 {
 	int ret;
 
-	ret = register_pernet_subsys(&nf_log_ipv4_net_ops);
+	ret = register_pernet_subsys(&nf_log_syslog_net_ops);
 	if (ret < 0)
 		return ret;
 
 	ret = nf_log_register(NFPROTO_IPV4, &nf_ip_logger);
-	if (ret < 0) {
-		pr_err("failed to register logger\n");
+	if (ret < 0)
 		goto err1;
-	}
 
 	return 0;
 
 err1:
-	unregister_pernet_subsys(&nf_log_ipv4_net_ops);
+	unregister_pernet_subsys(&nf_log_syslog_net_ops);
 	return ret;
 }
 
-static void __exit nf_log_ipv4_exit(void)
+static void __exit nf_log_syslog_exit(void)
 {
-	unregister_pernet_subsys(&nf_log_ipv4_net_ops);
+	unregister_pernet_subsys(&nf_log_syslog_net_ops);
 	nf_log_unregister(&nf_ip_logger);
 }
 
-module_init(nf_log_ipv4_init);
-module_exit(nf_log_ipv4_exit);
+module_init(nf_log_syslog_init);
+module_exit(nf_log_syslog_exit);
 
 MODULE_AUTHOR("Netfilter Core Team <coreteam@netfilter.org>");
-MODULE_DESCRIPTION("Netfilter IPv4 packet logging");
+MODULE_DESCRIPTION("Netfilter syslog packet logging");
 MODULE_LICENSE("GPL");
+MODULE_ALIAS("nf_log_ipv4");
 MODULE_ALIAS_NF_LOGGER(AF_INET, 0);
