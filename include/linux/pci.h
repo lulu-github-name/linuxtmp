@@ -515,7 +515,7 @@ struct pci_dev {
 	RH_KABI_USE(3, u16  dpc_cap)
 	RH_KABI_USE(4, u8   dpc_rp_log_size)
 #endif
-	RH_KABI_RESERVE(5)
+	RH_KABI_USE(5, u16  acs_cap)
 	RH_KABI_RESERVE(6)
 	RH_KABI_RESERVE(7)
 	RH_KABI_RESERVE(8)
