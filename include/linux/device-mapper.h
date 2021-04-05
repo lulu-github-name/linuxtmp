@@ -326,6 +326,11 @@ struct dm_target {
 	bool discards_supported:1;
 
 	/*
+	 * Set if we need to limit the number of in-flight bios when swapping.
+	 */
+	bool limit_swap_bios:1;
+
+	/*
 	 * Set if the target required discard bios to be split
 	 * on max_io_len boundary.
 	 */
