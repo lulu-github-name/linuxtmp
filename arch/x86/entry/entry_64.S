@@ -1267,8 +1267,7 @@ ENTRY(paranoid_entry)
 	 * is needed here.
 	 */
 	SAVE_AND_SET_GSBASE scratch_reg=%rax save_reg=%rbx
-	IBRS_ENTRY_SAVE_AND_CLOBBER  save_reg=%r13d
-	ret
+	jmp	.Librs_entry
 
 .Lparanoid_entry_checkgs:
 	/* EBX = 1 -> kernel GSBASE active, no restore required */
@@ -1281,8 +1280,7 @@ ENTRY(paranoid_entry)
 	rdmsr
 	testl	%edx, %edx
 	jns	.Lparanoid_entry_swapgs
-	IBRS_ENTRY_SAVE_AND_CLOBBER  save_reg=%r13d
-	ret
+	jmp	.Librs_entry
 
 .Lparanoid_entry_swapgs:
 	SWAPGS
@@ -1293,10 +1291,12 @@ ENTRY(paranoid_entry)
 	 * to prevent GS speculation, regardless of whether PTI is enabled.
 	 */
 	FENCE_SWAPGS_KERNEL_ENTRY
-	IBRS_ENTRY_SAVE_AND_CLOBBER  save_reg=%r13d
 
 	/* EBX = 0 -> SWAPGS required on exit */
 	xorl	%ebx, %ebx
+
+.Librs_entry:
+	IBRS_ENTRY_SAVE_AND_CLOBBER  save_reg=%r13d
 	ret
 END(paranoid_entry)
 
