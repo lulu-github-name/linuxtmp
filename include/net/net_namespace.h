@@ -189,6 +189,10 @@ struct net {
 	RH_KABI_EXTEND(int	sctp_pf_expose)
 	RH_KABI_EXTEND(int	sctp_ps_retrans)
 	RH_KABI_EXTEND_WITH_SIZE(struct netns_bpf bpf, 128)
+	/* UDP tunneling listening sock. */
+	RH_KABI_EXTEND(struct sock	*sctp_udp4_sock)
+	/* UDP tunneling listening port. */
+	RH_KABI_EXTEND(int	sctp_udp_port)
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
