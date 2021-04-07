@@ -884,6 +884,28 @@ int sctp_udp_sock_start(struct net *net)
 	setup_udp_tunnel_sock(net, sock, &tuncfg);
 	net->sctp_udp4_sock = sock->sk;
 
+#if IS_ENABLED(CONFIG_IPV6)
+	memset(&udp_conf, 0, sizeof(udp_conf));
+
+	udp_conf.family = AF_INET6;
+	udp_conf.local_ip6 = in6addr_any;
+	udp_conf.local_udp_port = htons(net->sctp_udp_port);
+	udp_conf.use_udp6_rx_checksums = true;
+	udp_conf.ipv6_v6only = true;
+	err = udp_sock_create(net, &udp_conf, &sock);
+	if (err) {
+		pr_err("Failed to create the SCTP UDP tunneling v6 sock\n");
+		udp_tunnel_sock_release(net->sctp_udp4_sock->sk_socket);
+		net->sctp_udp4_sock = NULL;
+		return err;
+	}
+
+	tuncfg.encap_type = 1;
+	tuncfg.encap_rcv = sctp_udp_rcv;
+	setup_udp_tunnel_sock(net, sock, &tuncfg);
+	net->sctp_udp6_sock = sock->sk;
+#endif
+
 	return 0;
 }
 
@@ -892,6 +914,10 @@ void sctp_udp_sock_stop(struct net *net)
 	if (net->sctp_udp4_sock) {
 		udp_tunnel_sock_release(net->sctp_udp4_sock->sk_socket);
 		net->sctp_udp4_sock = NULL;
+	}
+	if (net->sctp_udp6_sock) {
+		udp_tunnel_sock_release(net->sctp_udp6_sock->sk_socket);
+		net->sctp_udp6_sock = NULL;
 	}
 }
 
