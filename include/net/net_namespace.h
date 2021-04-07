@@ -194,6 +194,8 @@ struct net {
 	RH_KABI_EXTEND(struct sock	*sctp_udp6_sock)
 	/* UDP tunneling listening port. */
 	RH_KABI_EXTEND(int	sctp_udp_port)
+	/* UDP tunneling remote encap port. */
+	RH_KABI_EXTEND(int	sctp_encap_port)
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
