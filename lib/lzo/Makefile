@@ -1,5 +1,3 @@
-ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-
 lzo_compress-objs := lzo1x_compress.o
 lzo_decompress-objs := lzo1x_decompress_safe.o
 
