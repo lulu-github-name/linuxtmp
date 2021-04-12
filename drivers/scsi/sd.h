@@ -77,6 +77,8 @@ struct scsi_disk_aux {
 	struct work_struct zone_wp_offset_work;
 	char		*zone_wp_update_buf;
 	struct scsi_disk *sdkp;
+	u32		rev_nr_zones;
+	u32		rev_zone_blocks;
 };
 
 struct scsi_disk {
@@ -291,8 +293,8 @@ static inline int sd_is_zoned(struct scsi_disk *sdkp)
 #ifdef CONFIG_BLK_DEV_ZONED
 
 void sd_zbc_release_disk(struct scsi_disk *sdkp);
-extern int sd_zbc_read_zones(struct scsi_disk *sdkp, unsigned char *buffer);
-extern void sd_zbc_print_zones(struct scsi_disk *sdkp);
+int sd_zbc_read_zones(struct scsi_disk *sdkp, unsigned char *buffer);
+int sd_zbc_revalidate_zones(struct scsi_disk *sdkp);
 blk_status_t sd_zbc_setup_zone_mgmt_cmnd(struct scsi_cmnd *cmd,
 					 unsigned char op, bool all);
 unsigned int sd_zbc_complete(struct scsi_cmnd *cmd, unsigned int good_bytes,
@@ -313,7 +315,10 @@ static inline int sd_zbc_read_zones(struct scsi_disk *sdkp,
 	return 0;
 }
 
-static inline void sd_zbc_print_zones(struct scsi_disk *sdkp) {}
+static inline int sd_zbc_revalidate_zones(struct scsi_disk *sdkp)
+{
+	return 0;
+}
 
 static inline blk_status_t sd_zbc_setup_zone_mgmt_cmnd(struct scsi_cmnd *cmd,
 						       unsigned char op,
