@@ -1556,7 +1556,8 @@ struct net_device_ops {
 	RH_KABI_USE(5, struct net_device* (*ndo_get_xmit_slave)(struct net_device *dev,
 								struct sk_buff *skb,
 								bool all_slaves))
-	RH_KABI_RESERVE(6)
+	RH_KABI_USE(6, struct net_device*	(*ndo_sk_get_lower_dev)(struct net_device *dev,
+							struct sock *sk))
 	RH_KABI_RESERVE(7)
 	RH_KABI_RESERVE(8)
 	RH_KABI_RESERVE(9)
@@ -2923,6 +2924,8 @@ int init_dummy_netdev(struct net_device *dev);
 struct net_device *netdev_get_xmit_slave(struct net_device *dev,
 					 struct sk_buff *skb,
 					 bool all_slaves);
+struct net_device *netdev_sk_get_lowest_dev(struct net_device *dev,
+					    struct sock *sk);
 struct net_device *dev_get_by_index(struct net *net, int ifindex);
 struct net_device *__dev_get_by_index(struct net *net, int ifindex);
 struct net_device *dev_get_by_index_rcu(struct net *net, int ifindex);
