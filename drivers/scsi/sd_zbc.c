@@ -667,12 +667,28 @@ static int sd_zbc_init_disk(struct scsi_disk *sdkp)
 	return 0;
 }
 
-void sd_zbc_release_disk(struct scsi_disk *sdkp)
+static void sd_zbc_clear_zone_info(struct scsi_disk *sdkp)
 {
+	/* Serialize against revalidate zones */
+	mutex_lock(&sdkp->rev_mutex);
+
 	kvfree(sdkp->aux->zones_wp_offset);
 	sdkp->aux->zones_wp_offset = NULL;
 	kfree(sdkp->aux->zone_wp_update_buf);
 	sdkp->aux->zone_wp_update_buf = NULL;
+
+	sdkp->nr_zones = 0;
+	sdkp->aux->rev_nr_zones = 0;
+	sdkp->zone_blocks = 0;
+	sdkp->aux->rev_zone_blocks = 0;
+
+	mutex_unlock(&sdkp->rev_mutex);
+}
+
+void sd_zbc_release_disk(struct scsi_disk *sdkp)
+{
+	if (sd_is_zoned(sdkp))
+		sd_zbc_clear_zone_info(sdkp);
 }
 
 static void sd_zbc_revalidate_zones_cb(struct gendisk *disk)
@@ -771,6 +787,21 @@ int sd_zbc_read_zones(struct scsi_disk *sdkp, unsigned char *buf)
 		 */
 		return 0;
 
+	/* READ16/WRITE16 is mandatory for ZBC disks */
+	sdkp->device->use_16_for_rw = 1;
+	sdkp->device->use_10_for_rw = 0;
+
+	if (!blk_queue_is_zoned(q)) {
+		/*
+		 * This can happen for a host aware disk with partitions.
+		 * The block device zone information was already cleared
+		 * by blk_queue_set_zoned(). Only clear the scsi disk zone
+		 * information and exit early.
+		 */
+		sd_zbc_clear_zone_info(sdkp);
+		return 0;
+	}
+
 	/* Check zoned block device characteristics (unconstrained reads) */
 	ret = sd_zbc_check_zoned_characteristics(sdkp, buf);
 	if (ret)
@@ -785,10 +816,6 @@ int sd_zbc_read_zones(struct scsi_disk *sdkp, unsigned char *buf)
 	blk_queue_flag_set(QUEUE_FLAG_ZONE_RESETALL, q);
 	blk_queue_required_elevator_features(q, ELEVATOR_F_ZBD_SEQ_WRITE);
 	nr_zones = round_up(sdkp->capacity, zone_blocks) >> ilog2(zone_blocks);
-
-	/* READ16/WRITE16 is mandatory for ZBC disks */
-	sdkp->device->use_16_for_rw = 1;
-	sdkp->device->use_10_for_rw = 0;
 
 	sdkp->aux->rev_nr_zones = nr_zones;
 	sdkp->aux->rev_zone_blocks = zone_blocks;
