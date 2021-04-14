@@ -706,6 +706,7 @@ int sd_zbc_revalidate_zones(struct scsi_disk *sdkp)
 	unsigned int nr_zones = sdkp->aux->rev_nr_zones;
 	u32 max_append;
 	int ret = 0;
+	unsigned int flags;
 
 	/*
 	 * There is nothing to do for regular disks, including host-aware disks
@@ -738,16 +739,19 @@ int sd_zbc_revalidate_zones(struct scsi_disk *sdkp)
 	    disk->queue->nr_zones == nr_zones)
 		goto unlock;
 
+	flags = memalloc_noio_save();
 	sdkp->zone_blocks = zone_blocks;
 	sdkp->nr_zones = nr_zones;
-	sdkp->aux->rev_wp_offset = kvcalloc(nr_zones, sizeof(u32), GFP_NOIO);
+	sdkp->aux->rev_wp_offset = kvcalloc(nr_zones, sizeof(u32), GFP_KERNEL);
 	if (!sdkp->aux->rev_wp_offset) {
 		ret = -ENOMEM;
+		memalloc_noio_restore(flags);
 		goto unlock;
 	}
 
 	ret = blk_revalidate_disk_zones(disk, sd_zbc_revalidate_zones_cb);
 
+	memalloc_noio_restore(flags);
 	kvfree(sdkp->aux->rev_wp_offset);
 	sdkp->aux->rev_wp_offset = NULL;
 
