@@ -79,6 +79,7 @@ struct scsi_disk_aux {
 	struct scsi_disk *sdkp;
 	u32		rev_nr_zones;
 	u32		rev_zone_blocks;
+	int		max_retries;
 };
 
 struct scsi_disk {
