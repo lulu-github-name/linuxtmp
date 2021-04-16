@@ -122,8 +122,7 @@ EXPORT_SYMBOL_GPL(xdr_decode_string_inplace);
  * @len: length of string, in bytes
  *
  */
-void
-xdr_terminate_string(struct xdr_buf *buf, const u32 len)
+void xdr_terminate_string(const struct xdr_buf *buf, const u32 len)
 {
 	char *kaddr;
 
@@ -133,8 +132,7 @@ xdr_terminate_string(struct xdr_buf *buf, const u32 len)
 }
 EXPORT_SYMBOL_GPL(xdr_terminate_string);
 
-size_t
-xdr_buf_pagecount(struct xdr_buf *buf)
+size_t xdr_buf_pagecount(const struct xdr_buf *buf)
 {
 	if (!buf->page_len)
 		return 0;
@@ -1524,8 +1522,7 @@ EXPORT_SYMBOL_GPL(xdr_enter_page);
 
 static const struct kvec empty_iov = {.iov_base = NULL, .iov_len = 0};
 
-void
-xdr_buf_from_iov(struct kvec *iov, struct xdr_buf *buf)
+void xdr_buf_from_iov(const struct kvec *iov, struct xdr_buf *buf)
 {
 	buf->head[0] = *iov;
 	buf->tail[0] = empty_iov;
@@ -1637,7 +1634,8 @@ fix_len:
 }
 EXPORT_SYMBOL_GPL(xdr_buf_trim);
 
-static void __read_bytes_from_xdr_buf(struct xdr_buf *subbuf, void *obj, unsigned int len)
+static void __read_bytes_from_xdr_buf(const struct xdr_buf *subbuf,
+				      void *obj, unsigned int len)
 {
 	unsigned int this_len;
 
@@ -1654,7 +1652,8 @@ static void __read_bytes_from_xdr_buf(struct xdr_buf *subbuf, void *obj, unsigne
 }
 
 /* obj is assumed to point to allocated memory of size at least len: */
-int read_bytes_from_xdr_buf(struct xdr_buf *buf, unsigned int base, void *obj, unsigned int len)
+int read_bytes_from_xdr_buf(const struct xdr_buf *buf, unsigned int base,
+			    void *obj, unsigned int len)
 {
 	struct xdr_buf subbuf;
 	int status;
@@ -1667,7 +1666,8 @@ int read_bytes_from_xdr_buf(struct xdr_buf *buf, unsigned int base, void *obj, u
 }
 EXPORT_SYMBOL_GPL(read_bytes_from_xdr_buf);
 
-static void __write_bytes_to_xdr_buf(struct xdr_buf *subbuf, void *obj, unsigned int len)
+static void __write_bytes_to_xdr_buf(const struct xdr_buf *subbuf,
+				     void *obj, unsigned int len)
 {
 	unsigned int this_len;
 
@@ -1684,7 +1684,8 @@ static void __write_bytes_to_xdr_buf(struct xdr_buf *subbuf, void *obj, unsigned
 }
 
 /* obj is assumed to point to allocated memory of size at least len: */
-int write_bytes_to_xdr_buf(struct xdr_buf *buf, unsigned int base, void *obj, unsigned int len)
+int write_bytes_to_xdr_buf(const struct xdr_buf *buf, unsigned int base,
+			   void *obj, unsigned int len)
 {
 	struct xdr_buf subbuf;
 	int status;
@@ -1697,8 +1698,7 @@ int write_bytes_to_xdr_buf(struct xdr_buf *buf, unsigned int base, void *obj, un
 }
 EXPORT_SYMBOL_GPL(write_bytes_to_xdr_buf);
 
-int
-xdr_decode_word(struct xdr_buf *buf, unsigned int base, u32 *obj)
+int xdr_decode_word(const struct xdr_buf *buf, unsigned int base, u32 *obj)
 {
 	__be32	raw;
 	int	status;
@@ -1711,8 +1711,7 @@ xdr_decode_word(struct xdr_buf *buf, unsigned int base, u32 *obj)
 }
 EXPORT_SYMBOL_GPL(xdr_decode_word);
 
-int
-xdr_encode_word(struct xdr_buf *buf, unsigned int base, u32 obj)
+int xdr_encode_word(const struct xdr_buf *buf, unsigned int base, u32 obj)
 {
 	__be32	raw = cpu_to_be32(obj);
 
@@ -1721,9 +1720,8 @@ xdr_encode_word(struct xdr_buf *buf, unsigned int base, u32 obj)
 EXPORT_SYMBOL_GPL(xdr_encode_word);
 
 /* Returns 0 on success, or else a negative error code. */
-static int
-xdr_xcode_array2(struct xdr_buf *buf, unsigned int base,
-		 struct xdr_array2_desc *desc, int encode)
+static int xdr_xcode_array2(const struct xdr_buf *buf, unsigned int base,
+			    struct xdr_array2_desc *desc, int encode)
 {
 	char *elem = NULL, *c;
 	unsigned int copied = 0, todo, avail_here;
@@ -1915,9 +1913,8 @@ out:
 	return err;
 }
 
-int
-xdr_decode_array2(struct xdr_buf *buf, unsigned int base,
-		  struct xdr_array2_desc *desc)
+int xdr_decode_array2(const struct xdr_buf *buf, unsigned int base,
+		      struct xdr_array2_desc *desc)
 {
 	if (base >= buf->len)
 		return -EINVAL;
@@ -1926,9 +1923,8 @@ xdr_decode_array2(struct xdr_buf *buf, unsigned int base,
 }
 EXPORT_SYMBOL_GPL(xdr_decode_array2);
 
-int
-xdr_encode_array2(struct xdr_buf *buf, unsigned int base,
-		  struct xdr_array2_desc *desc)
+int xdr_encode_array2(const struct xdr_buf *buf, unsigned int base,
+		      struct xdr_array2_desc *desc)
 {
 	if ((unsigned long) base + 4 + desc->array_len * desc->elem_size >
 	    buf->head->iov_len + buf->page_len + buf->tail->iov_len)
@@ -1938,9 +1934,9 @@ xdr_encode_array2(struct xdr_buf *buf, unsigned int base,
 }
 EXPORT_SYMBOL_GPL(xdr_encode_array2);
 
-int
-xdr_process_buf(struct xdr_buf *buf, unsigned int offset, unsigned int len,
-		int (*actor)(struct scatterlist *, void *), void *data)
+int xdr_process_buf(const struct xdr_buf *buf, unsigned int offset,
+		    unsigned int len,
+		    int (*actor)(struct scatterlist *, void *), void *data)
 {
 	int i, ret = 0;
 	unsigned int page_len, thislen, page_offset;
