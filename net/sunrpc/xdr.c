@@ -1643,8 +1643,7 @@ static void __read_bytes_from_xdr_buf(struct xdr_buf *subbuf, void *obj, unsigne
 	len -= this_len;
 	obj += this_len;
 	this_len = min_t(unsigned int, len, subbuf->page_len);
-	if (this_len)
-		_copy_from_pages(obj, subbuf->pages, subbuf->page_base, this_len);
+	_copy_from_pages(obj, subbuf->pages, subbuf->page_base, this_len);
 	len -= this_len;
 	obj += this_len;
 	this_len = min_t(unsigned int, len, subbuf->tail[0].iov_len);
@@ -1674,8 +1673,7 @@ static void __write_bytes_to_xdr_buf(struct xdr_buf *subbuf, void *obj, unsigned
 	len -= this_len;
 	obj += this_len;
 	this_len = min_t(unsigned int, len, subbuf->page_len);
-	if (this_len)
-		_copy_to_pages(subbuf->pages, subbuf->page_base, obj, this_len);
+	_copy_to_pages(subbuf->pages, subbuf->page_base, obj, this_len);
 	len -= this_len;
 	obj += this_len;
 	this_len = min_t(unsigned int, len, subbuf->tail[0].iov_len);
