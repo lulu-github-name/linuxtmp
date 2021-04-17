@@ -1259,7 +1259,7 @@ uint64_t xdr_align_data(struct xdr_stream *xdr, uint64_t offset, uint32_t length
 	}
 
 	xdr->nwords -= XDR_QUADLEN(length);
-	xdr_set_page(xdr, from + length, PAGE_SIZE);
+	xdr_set_page(xdr, from + length, xdr_stream_remaining(xdr));
 	return length;
 }
 EXPORT_SYMBOL_GPL(xdr_align_data);
@@ -1296,7 +1296,7 @@ uint64_t xdr_expand_hole(struct xdr_stream *xdr, uint64_t offset, uint64_t lengt
 	_zero_pages(buf->pages, buf->page_base + offset, length);
 
 	buf->len += length - (from - offset) - truncated;
-	xdr_set_page(xdr, offset + length, PAGE_SIZE);
+	xdr_set_page(xdr, offset + length, xdr_stream_remaining(xdr));
 	return length;
 }
 EXPORT_SYMBOL_GPL(xdr_expand_hole);
