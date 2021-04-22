@@ -1479,6 +1479,13 @@ struct security_hook_list {
 } __randomize_layout;
 
 /*
+ * Security blob size or offset data.
+ */
+struct lsm_blob_sizes {
+	int	lbs_cred;
+};
+
+/*
  * LSM_RET_VOID is used as the default value in LSM_HOOK definitions for void
  * LSM hooks (in include/linux/lsm_hook_defs.h).
  */
@@ -1513,6 +1520,7 @@ struct lsm_info {
 	unsigned long flags;	/* Optional: flags describing LSM */
 	int *enabled;		/* Optional: controlled by CONFIG_LSM */
 	int (*init)(void);	/* Required. */
+	struct lsm_blob_sizes *blobs; /* Optional: for blob sharing. */
 };
 
 extern struct lsm_info __start_lsm_info[], __end_lsm_info[];
@@ -1551,5 +1559,9 @@ static inline void security_delete_hooks(struct security_hook_list *hooks,
 #else
 #define __lsm_ro_after_init	__ro_after_init
 #endif /* CONFIG_SECURITY_WRITABLE_HOOKS */
+
+#ifdef CONFIG_SECURITY
+void __init lsm_early_cred(struct cred *cred);
+#endif
 
 #endif /* ! __LINUX_LSM_HOOKS_H */

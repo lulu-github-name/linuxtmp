@@ -25,6 +25,7 @@
 #include <linux/binfmts.h>
 #include <linux/in.h>
 #include <linux/spinlock.h>
+#include <linux/lsm_hooks.h>
 #include <linux/msg.h>
 #include <net/net_namespace.h>
 #include "flask.h"
@@ -153,9 +154,10 @@ struct perf_event_security_struct {
 	u32 sid;  /* SID of perf_event obj creator */
 };
 
+extern struct lsm_blob_sizes selinux_blob_sizes;
 static inline struct task_security_struct *selinux_cred(const struct cred *cred)
 {
-	return cred->security;
+	return cred->security + selinux_blob_sizes.lbs_cred;
 }
 
 static inline struct file_security_struct *selinux_file(const struct file *file)
