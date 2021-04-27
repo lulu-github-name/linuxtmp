@@ -27,6 +27,7 @@
 #include <linux/clocksource.h>
 #include <linux/irqbypass.h>
 #include <linux/hyperv.h>
+#include <linux/static_call.h>
 
 #include <asm/apic.h>
 #include <asm/pvclock-abi.h>
