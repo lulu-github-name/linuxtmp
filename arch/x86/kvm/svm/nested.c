@@ -291,14 +291,6 @@ static bool nested_vmcb_valid_sregs(struct kvm_vcpu *vcpu,
 	return true;
 }
 
-static bool nested_vmcb_checks(struct kvm_vcpu *vcpu, struct vmcb *vmcb12)
-{
-	if (!nested_vmcb_valid_sregs(vcpu, &vmcb12->save))
-		return false;
-
-	return nested_vmcb_check_controls(&vmcb12->control);
-}
-
 static void nested_load_control_from_vmcb12(struct vcpu_svm *svm,
 					    struct vmcb_control_area *control)
 {
@@ -564,7 +556,6 @@ int enter_svm_guest_mode(struct kvm_vcpu *vcpu, u64 vmcb12_gpa,
 	WARN_ON(svm->vmcb == svm->nested.vmcb02.ptr);
 
 	nested_svm_copy_common_state(svm->vmcb01.ptr, svm->nested.vmcb02.ptr);
-	nested_load_control_from_vmcb12(svm, &vmcb12->control);
 
 	svm_switch_vmcb(svm, &svm->nested.vmcb02);
 	nested_vmcb02_prepare_control(svm);
@@ -614,7 +605,10 @@ int nested_svm_vmrun(struct kvm_vcpu *vcpu)
 	if (WARN_ON_ONCE(!svm->nested.initialized))
 		return -EINVAL;
 
-	if (!nested_vmcb_checks(vcpu, vmcb12)) {
+	nested_load_control_from_vmcb12(svm, &vmcb12->control);
+
+	if (!nested_vmcb_valid_sregs(vcpu, &vmcb12->save) ||
+	    !nested_vmcb_check_controls(&svm->nested.ctl)) {
 		vmcb12->control.exit_code    = SVM_EXIT_ERR;
 		vmcb12->control.exit_code_hi = 0;
 		vmcb12->control.exit_info_1  = 0;
