@@ -15,10 +15,12 @@
 #include <linux/pagemap.h>
 #include <linux/swap.h>
 #include <linux/processor.h>
+#include <linux/trace_events.h>
 
 #include "x86.h"
 #include "svm.h"
 #include "cpuid.h"
+#include "trace.h"
 
 static u8 sev_enc_bit;
 static int sev_flush_asids(void);
@@ -1469,6 +1471,8 @@ static void pre_sev_es_run(struct vcpu_svm *svm)
 	if (!svm->ghcb)
 		return;
 
+	trace_kvm_vmgexit_exit(svm->vcpu.vcpu_id, svm->ghcb);
+
 	sev_es_sync_to_ghcb(svm);
 
 	kvm_vcpu_unmap(&svm->vcpu, &svm->ghcb_map, true);
@@ -1617,6 +1621,8 @@ int sev_handle_vmgexit(struct vcpu_svm *svm)
 
 	svm->ghcb = svm->ghcb_map.hva;
 	ghcb = svm->ghcb_map.hva;
+
+	trace_kvm_vmgexit_enter(svm->vcpu.vcpu_id, ghcb);
 
 	exit_code = ghcb_get_sw_exit_code(ghcb);
 
