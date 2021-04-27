@@ -330,7 +330,7 @@ SYM_FUNC_START_LOCAL(__twofish_dec_blk8)
 	ret;
 SYM_FUNC_END(__twofish_dec_blk8)
 
-ENTRY(twofish_ecb_enc_8way)
+SYM_FUNC_START(twofish_ecb_enc_8way)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -348,9 +348,9 @@ ENTRY(twofish_ecb_enc_8way)
 
 	FRAME_END
 	ret;
-ENDPROC(twofish_ecb_enc_8way)
+SYM_FUNC_END(twofish_ecb_enc_8way)
 
-ENTRY(twofish_ecb_dec_8way)
+SYM_FUNC_START(twofish_ecb_dec_8way)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -368,9 +368,9 @@ ENTRY(twofish_ecb_dec_8way)
 
 	FRAME_END
 	ret;
-ENDPROC(twofish_ecb_dec_8way)
+SYM_FUNC_END(twofish_ecb_dec_8way)
 
-ENTRY(twofish_cbc_dec_8way)
+SYM_FUNC_START(twofish_cbc_dec_8way)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -393,9 +393,9 @@ ENTRY(twofish_cbc_dec_8way)
 
 	FRAME_END
 	ret;
-ENDPROC(twofish_cbc_dec_8way)
+SYM_FUNC_END(twofish_cbc_dec_8way)
 
-ENTRY(twofish_ctr_8way)
+SYM_FUNC_START(twofish_ctr_8way)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -420,9 +420,9 @@ ENTRY(twofish_ctr_8way)
 
 	FRAME_END
 	ret;
-ENDPROC(twofish_ctr_8way)
+SYM_FUNC_END(twofish_ctr_8way)
 
-ENTRY(twofish_xts_enc_8way)
+SYM_FUNC_START(twofish_xts_enc_8way)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -444,9 +444,9 @@ ENTRY(twofish_xts_enc_8way)
 
 	FRAME_END
 	ret;
-ENDPROC(twofish_xts_enc_8way)
+SYM_FUNC_END(twofish_xts_enc_8way)
 
-ENTRY(twofish_xts_dec_8way)
+SYM_FUNC_START(twofish_xts_dec_8way)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -468,4 +468,4 @@ ENTRY(twofish_xts_dec_8way)
 
 	FRAME_END
 	ret;
-ENDPROC(twofish_xts_dec_8way)
+SYM_FUNC_END(twofish_xts_dec_8way)

@@ -27,7 +27,7 @@
 .weak memmove
 
 SYM_FUNC_START_ALIAS(memmove)
-ENTRY(__memmove)
+SYM_FUNC_START(__memmove)
 
 	mov %rdi, %rax
 
@@ -208,7 +208,7 @@ ENTRY(__memmove)
 	movb %r11b, (%rdi)
 13:
 	retq
-ENDPROC(__memmove)
+SYM_FUNC_END(__memmove)
 SYM_FUNC_END_ALIAS(memmove)
 EXPORT_SYMBOL(__memmove)
 EXPORT_SYMBOL(memmove)

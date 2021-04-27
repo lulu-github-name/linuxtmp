@@ -677,7 +677,7 @@ SYM_FUNC_START_LOCAL(__serpent_dec_blk8_avx)
 	ret;
 SYM_FUNC_END(__serpent_dec_blk8_avx)
 
-ENTRY(serpent_ecb_enc_8way_avx)
+SYM_FUNC_START(serpent_ecb_enc_8way_avx)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -693,9 +693,9 @@ ENTRY(serpent_ecb_enc_8way_avx)
 
 	FRAME_END
 	ret;
-ENDPROC(serpent_ecb_enc_8way_avx)
+SYM_FUNC_END(serpent_ecb_enc_8way_avx)
 
-ENTRY(serpent_ecb_dec_8way_avx)
+SYM_FUNC_START(serpent_ecb_dec_8way_avx)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -711,9 +711,9 @@ ENTRY(serpent_ecb_dec_8way_avx)
 
 	FRAME_END
 	ret;
-ENDPROC(serpent_ecb_dec_8way_avx)
+SYM_FUNC_END(serpent_ecb_dec_8way_avx)
 
-ENTRY(serpent_cbc_dec_8way_avx)
+SYM_FUNC_START(serpent_cbc_dec_8way_avx)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -729,9 +729,9 @@ ENTRY(serpent_cbc_dec_8way_avx)
 
 	FRAME_END
 	ret;
-ENDPROC(serpent_cbc_dec_8way_avx)
+SYM_FUNC_END(serpent_cbc_dec_8way_avx)
 
-ENTRY(serpent_ctr_8way_avx)
+SYM_FUNC_START(serpent_ctr_8way_avx)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -749,9 +749,9 @@ ENTRY(serpent_ctr_8way_avx)
 
 	FRAME_END
 	ret;
-ENDPROC(serpent_ctr_8way_avx)
+SYM_FUNC_END(serpent_ctr_8way_avx)
 
-ENTRY(serpent_xts_enc_8way_avx)
+SYM_FUNC_START(serpent_xts_enc_8way_avx)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -771,9 +771,9 @@ ENTRY(serpent_xts_enc_8way_avx)
 
 	FRAME_END
 	ret;
-ENDPROC(serpent_xts_enc_8way_avx)
+SYM_FUNC_END(serpent_xts_enc_8way_avx)
 
-ENTRY(serpent_xts_dec_8way_avx)
+SYM_FUNC_START(serpent_xts_dec_8way_avx)
 	/* input:
 	 *	%rdi: ctx, CTX
 	 *	%rsi: dst
@@ -793,4 +793,4 @@ ENTRY(serpent_xts_dec_8way_avx)
 
 	FRAME_END
 	ret;
-ENDPROC(serpent_xts_dec_8way_avx)
+SYM_FUNC_END(serpent_xts_dec_8way_avx)
