@@ -516,7 +516,9 @@ struct pci_dev {
 	RH_KABI_USE(4, u8   dpc_rp_log_size)
 #endif
 	RH_KABI_USE(5, u16  acs_cap)
-	RH_KABI_RESERVE(6)
+#ifdef CONFIG_PCIEASPM
+	RH_KABI_USE(6, int  l1ss)	/* L1SS Capability pointer */
+#endif
 	RH_KABI_RESERVE(7)
 	RH_KABI_RESERVE(8)
 	RH_KABI_RESERVE(9)
