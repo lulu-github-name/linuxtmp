@@ -2312,7 +2312,6 @@ static int kvm_cpu_vmxon(u64 vmxon_pointer)
 	u64 msr;
 
 	cr4_set_bits(X86_CR4_VMXE);
-	intel_pt_handle_vmx(1);
 
 	asm_volatile_goto("1: vmxon %[vmxon_pointer]\n\t"
 			  _ASM_EXTABLE(1b, %l[fault])
@@ -2323,7 +2322,6 @@ static int kvm_cpu_vmxon(u64 vmxon_pointer)
 fault:
 	WARN_ONCE(1, "VMXON faulted, MSR_IA32_FEAT_CTL (0x3a) = 0x%llx\n",
 		  rdmsrl_safe(MSR_IA32_FEAT_CTL, &msr) ? 0xdeadbeef : msr);
-	intel_pt_handle_vmx(0);
 	cr4_clear_bits(X86_CR4_VMXE);
 
 	return -EFAULT;
@@ -2346,9 +2344,13 @@ static int hardware_enable(void)
 	    !hv_get_vp_assist_page(cpu))
 		return -EFAULT;
 
+	intel_pt_handle_vmx(1);
+
 	r = kvm_cpu_vmxon(phys_addr);
-	if (r)
+	if (r) {
+		intel_pt_handle_vmx(0);
 		return r;
+	}
 
 	if (enable_ept)
 		ept_sync_global();
@@ -2374,7 +2376,6 @@ static void kvm_cpu_vmxoff(void)
 {
 	asm volatile (__ex("vmxoff"));
 
-	intel_pt_handle_vmx(0);
 	cr4_clear_bits(X86_CR4_VMXE);
 }
 
@@ -2382,6 +2383,8 @@ static void hardware_disable(void)
 {
 	vmclear_local_loaded_vmcss();
 	kvm_cpu_vmxoff();
+
+	intel_pt_handle_vmx(0);
 }
 
 /*
