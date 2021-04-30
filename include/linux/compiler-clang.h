@@ -20,6 +20,7 @@
 /* all clang versions usable with the kernel support KASAN ABI version 5 */
 #define KASAN_ABI_VERSION 5
 
+#undef __no_sanitize_address
 #if __has_feature(address_sanitizer) || __has_feature(hwaddress_sanitizer)
 /* emulate gcc's __SANITIZE_ADDRESS__ flag */
 #define __SANITIZE_ADDRESS__
@@ -29,14 +30,12 @@
 #define __no_sanitize_address
 #endif
 
-#undef __no_sanitize_address
-#define __no_sanitize_address __attribute__((no_sanitize("address")))
-
 /* Clang doesn't have a way to turn it off per-function, yet. */
 #ifdef __noretpoline
 #undef __noretpoline
 #endif
 
+#undef __no_sanitize_thread
 #if __has_feature(thread_sanitizer)
 /* emulate gcc's __SANITIZE_THREAD__ flag */
 #define __SANITIZE_THREAD__
