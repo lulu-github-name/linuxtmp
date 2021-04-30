@@ -20,11 +20,13 @@
 #include <linux/acpi.h>
 #include <linux/efi.h>
 #include <linux/types.h>
+#include <linux/bitfield.h>
 #include <asm/apic.h>
 #include <asm/desc.h>
 #include <asm/hypervisor.h>
 #include <asm/hyperv-tlfs.h>
 #include <asm/mshyperv.h>
+#include <linux/kexec.h>
 #include <linux/version.h>
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
@@ -34,6 +36,8 @@
 #include <linux/cpuhotplug.h>
 #include <linux/syscore_ops.h>
 #include <clocksource/hyperv_timer.h>
+
+int hyperv_init_cpuhp;
 
 void *hv_hypercall_pg;
 EXPORT_SYMBOL_GPL(hv_hypercall_pg);
@@ -326,6 +330,25 @@ static struct syscore_ops hv_syscore_ops = {
 	.resume		= hv_resume,
 };
 
+static void (* __initdata old_setup_percpu_clockev)(void);
+
+static void __init hv_stimer_setup_percpu_clockev(void)
+{
+	/*
+	 * Ignore any errors in setting up stimer clockevents
+	 * as we can run with the LAPIC timer as a fallback.
+	 */
+	(void)hv_stimer_alloc();
+
+	/*
+	 * Still register the LAPIC timer, because the direct-mode STIMER is
+	 * not supported by old versions of Hyper-V. This also allows users
+	 * to switch to LAPIC timer via /sys, if they want to.
+	 */
+	if (old_setup_percpu_clockev)
+		old_setup_percpu_clockev();
+}
+
 /*
  * This function is to be invoked early in the boot sequence after the
  * hypervisor has been detected.
@@ -401,10 +424,14 @@ void __init hyperv_init(void)
 	wrmsrl(HV_X64_MSR_HYPERCALL, hypercall_msr.as_uint64);
 
 	/*
-	 * Ignore any errors in setting up stimer clockevents
-	 * as we can run with the LAPIC timer as a fallback.
+	 * hyperv_init() is called before LAPIC is initialized: see
+	 * apic_intr_mode_init() -> x86_platform.apic_post_init() and
+	 * apic_bsp_setup() -> setup_local_APIC(). The direct-mode STIMER
+	 * depends on LAPIC, so hv_stimer_alloc() should be called from
+	 * x86_init.timers.setup_percpu_clockev.
 	 */
-	(void)hv_stimer_alloc();
+	old_setup_percpu_clockev = x86_init.timers.setup_percpu_clockev;
+	x86_init.timers.setup_percpu_clockev = hv_stimer_setup_percpu_clockev;
 
 	hv_apic_init();
 
@@ -412,6 +439,7 @@ void __init hyperv_init(void)
 
 	register_syscore_ops(&hv_syscore_ops);
 
+	hyperv_init_cpuhp = cpuhp;
 	return;
 
 remove_cpuhp_state:
@@ -539,3 +567,17 @@ bool hv_is_hibernation_supported(void)
 	return acpi_sleep_state_supported(ACPI_STATE_S4);
 }
 EXPORT_SYMBOL_GPL(hv_is_hibernation_supported);
+
+enum hv_isolation_type hv_get_isolation_type(void)
+{
+	if (!(ms_hyperv.features_b & HV_ISOLATION))
+		return HV_ISOLATION_TYPE_NONE;
+	return FIELD_GET(HV_ISOLATION_TYPE, ms_hyperv.isolation_config_b);
+}
+EXPORT_SYMBOL_GPL(hv_get_isolation_type);
+
+bool hv_is_isolation_supported(void)
+{
+	return hv_get_isolation_type() != HV_ISOLATION_TYPE_NONE;
+}
+EXPORT_SYMBOL_GPL(hv_is_isolation_supported);
