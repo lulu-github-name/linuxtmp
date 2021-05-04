@@ -522,8 +522,8 @@ struct pci_dev {
 #endif
 #ifdef CONFIG_PCIEPORTBUS
 	RH_KABI_USE(7, struct rcec_ea  *rcec_ea) /* RCEC cached endpoint association */
+	RH_KABI_USE(8, struct pci_dev  *rcec)	 /* Associated RCEC device */
 #endif
-	RH_KABI_RESERVE(8)
 	RH_KABI_RESERVE(9)
 	RH_KABI_RESERVE(10)
 	RH_KABI_RESERVE(11)
