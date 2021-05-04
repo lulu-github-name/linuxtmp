@@ -306,6 +306,7 @@ struct pcie_link_state;
 struct pci_vpd;
 struct pci_sriov;
 struct pci_p2pdma;
+struct rcec_ea;
 
 struct pci_dev_extended_rh {
 };
@@ -519,7 +520,9 @@ struct pci_dev {
 #ifdef CONFIG_PCIEASPM
 	RH_KABI_USE(6, int  l1ss)	/* L1SS Capability pointer */
 #endif
-	RH_KABI_RESERVE(7)
+#ifdef CONFIG_PCIEPORTBUS
+	RH_KABI_USE(7, struct rcec_ea  *rcec_ea) /* RCEC cached endpoint association */
+#endif
 	RH_KABI_RESERVE(8)
 	RH_KABI_RESERVE(9)
 	RH_KABI_RESERVE(10)
