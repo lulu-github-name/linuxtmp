@@ -30,6 +30,7 @@ realtime_check:
     architectures: 'x86_64'
     package_name: kernel-rt
     skip_test: 'true'
+    skip_results: 'true'
   trigger:
     project: redhat/red-hat-ci-tools/kernel/cki-internal-pipelines/cki-internal-contributors
     branch: rhel8
