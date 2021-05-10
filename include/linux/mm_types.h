@@ -558,7 +558,15 @@ struct mm_struct {
 #else
 	RH_KABI_RESERVE(1)
 #endif
-	RH_KABI_RESERVE(2)
+	/**
+	 * @has_pinned: Whether this mm has pinned any pages.  This can
+	 * be either replaced in the future by @pinned_vm when it
+	 * becomes stable, or grow into a counter on its own. We're
+	 * aggresive on this bit now - even if the pinned pages were
+	 * unpinned later on, we'll still keep this bit set for the
+	 * lifecycle of this mm just for simplicity.
+	 */
+	RH_KABI_USE(2, atomic_t has_pinned)
 	RH_KABI_RESERVE(3)
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
