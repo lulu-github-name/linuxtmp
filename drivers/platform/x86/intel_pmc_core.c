@@ -193,8 +193,8 @@ static const struct pmc_bit_map cnp_pfear_map[] = {
 	{"SPE",                 BIT(5)},
 	{"Fuse",                BIT(6)},
 	/*
-	 * Reserved for Cannon Lake but valid for Ice Lake, Comet Lake
-	 * and Tiger Lake.
+	 * Reserved for Cannon Lake but valid for Ice Lake, Comet Lake,
+	 * Tiger Lake and Elkhart Lake.
 	 */
 	{"SBR8",		BIT(7)},
 
@@ -240,8 +240,8 @@ static const struct pmc_bit_map cnp_pfear_map[] = {
 	{"HDA_PGD5",            BIT(3)},
 	{"HDA_PGD6",            BIT(4)},
 	/*
-	 * Reserved for Cannon Lake but valid for Ice Lake, Comet Lake
-	 * and Tiger Lake.
+	 * Reserved for Cannon Lake but valid for Ice Lake, Comet Lake,
+	 * Tiger Lake and ELkhart Lake.
 	 */
 	{"PSF6",		BIT(5)},
 	{"PSF7",		BIT(6)},
@@ -274,7 +274,7 @@ static const struct pmc_bit_map *ext_icl_pfear_map[] = {
 };
 
 static const struct pmc_bit_map tgl_pfear_map[] = {
-	/* Tiger Lake generation onwards only */
+	/* Tiger Lake and Elkhart Lake generation onwards only */
 	{"PSF9",		BIT(0)},
 	{"RES_66",		BIT(1)},
 	{"RES_67",		BIT(2)},
@@ -1145,6 +1145,7 @@ static const struct x86_cpu_id intel_pmc_core_ids[] = {
 	X86_MATCH_INTEL_FAM6_MODEL(COMETLAKE_L,		&cnp_reg_map),
 	X86_MATCH_INTEL_FAM6_MODEL(TIGERLAKE_L,		&tgl_reg_map),
 	X86_MATCH_INTEL_FAM6_MODEL(TIGERLAKE,		&tgl_reg_map),
+	X86_MATCH_INTEL_FAM6_MODEL(ATOM_TREMONT,	&tgl_reg_map),
 	X86_MATCH_INTEL_FAM6_MODEL(ROCKETLAKE,		&tgl_reg_map),
 	{}
 };
