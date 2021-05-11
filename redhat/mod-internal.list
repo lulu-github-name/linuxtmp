@@ -12,6 +12,7 @@ netdevsim
 pktgen
 rcutorture
 rocker
+scftorture
 torture
 test_bpf
 test_klp_atomic_replace
