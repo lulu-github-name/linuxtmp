@@ -121,9 +121,11 @@ obj-$(CONFIG_TORTURE_TEST) += torture.o
 obj-$(CONFIG_HAS_IOMEM) += iomem.o
 obj-$(CONFIG_RSEQ) += rseq.o
 
-$(obj)/configs.o: $(obj)/config_data.h
-
 obj-$(CONFIG_SYSCTL_KUNIT_TEST) += sysctl-test.o
+
+obj-$(CONFIG_SCF_TORTURE_TEST) += scftorture.o
+
+$(obj)/configs.o: $(obj)/config_data.h
 
 targets += config_data.gz
 $(obj)/config_data.gz: $(KCONFIG_CONFIG) FORCE
