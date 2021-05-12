@@ -1144,9 +1144,12 @@ static int ionic_adminq_napi(struct napi_struct *napi, int budget)
 	struct ionic_dev *idev = &lif->ionic->idev;
 	unsigned long irqflags;
 	unsigned int flags = 0;
+	int rx_work = 0;
+	int tx_work = 0;
 	int n_work = 0;
 	int a_work = 0;
 	int work_done;
+	int credits;
 
 	if (lif->notifyqcq && lif->notifyqcq->flags & IONIC_QCQ_F_INITED)
 		n_work = ionic_cq_service(&lif->notifyqcq->cq, budget,
@@ -1158,7 +1161,15 @@ static int ionic_adminq_napi(struct napi_struct *napi, int budget)
 					  ionic_adminq_service, NULL, NULL);
 	spin_unlock_irqrestore(&lif->adminq_lock, irqflags);
 
-	work_done = max(n_work, a_work);
+	if (lif->hwstamp_rxq)
+		rx_work = ionic_cq_service(&lif->hwstamp_rxq->cq, budget,
+					   ionic_rx_service, NULL, NULL);
+
+	if (lif->hwstamp_txq)
+		tx_work = ionic_cq_service(&lif->hwstamp_txq->cq, budget,
+					   ionic_tx_service, NULL, NULL);
+
+	work_done = max(max(n_work, a_work), max(rx_work, tx_work));
 	if (work_done < budget && napi_complete_done(napi, work_done)) {
 		flags |= IONIC_INTR_CRED_UNMASK;
 		intr->rearm_count++;
@@ -1166,9 +1177,8 @@ static int ionic_adminq_napi(struct napi_struct *napi, int budget)
 
 	if (work_done || flags) {
 		flags |= IONIC_INTR_CRED_RESET_COALESCE;
-		ionic_intr_credits(idev->intr_ctrl,
-				   intr->index,
-				   n_work + a_work, flags);
+		credits = n_work + a_work + rx_work + tx_work;
+		ionic_intr_credits(idev->intr_ctrl, intr->index, credits, flags);
 	}
 
 	return work_done;
@@ -1528,6 +1538,7 @@ static int ionic_set_nic_features(struct ionic_lif *lif,
 	int err;
 
 	ctx.cmd.lif_setattr.features = ionic_netdev_features_to_nic(features);
+
 	err = ionic_adminq_post_wait(lif, &ctx);
 	if (err)
 		return err;
@@ -1950,6 +1961,17 @@ static void ionic_txrx_deinit(struct ionic_lif *lif)
 		}
 	}
 	lif->rx_mode = 0;
+
+	if (lif->hwstamp_txq) {
+		ionic_lif_qcq_deinit(lif, lif->hwstamp_txq);
+		ionic_tx_flush(&lif->hwstamp_txq->cq);
+		ionic_tx_empty(&lif->hwstamp_txq->q);
+	}
+
+	if (lif->hwstamp_rxq) {
+		ionic_lif_qcq_deinit(lif, lif->hwstamp_rxq);
+		ionic_rx_empty(&lif->hwstamp_rxq->q);
+	}
 }
 
 static void ionic_txrx_free(struct ionic_lif *lif)
@@ -2121,8 +2143,26 @@ static int ionic_txrx_enable(struct ionic_lif *lif)
 		}
 	}
 
+	if (lif->hwstamp_rxq) {
+		ionic_rx_fill(&lif->hwstamp_rxq->q);
+		err = ionic_qcq_enable(lif->hwstamp_rxq);
+		if (err)
+			goto err_out_hwstamp_rx;
+	}
+
+	if (lif->hwstamp_txq) {
+		err = ionic_qcq_enable(lif->hwstamp_txq);
+		if (err)
+			goto err_out_hwstamp_tx;
+	}
+
 	return 0;
 
+err_out_hwstamp_tx:
+	if (lif->hwstamp_rxq)
+		derr = ionic_qcq_disable(lif->hwstamp_rxq, (derr != -ETIMEDOUT));
+err_out_hwstamp_rx:
+	i = lif->nxqs;
 err_out:
 	while (i--) {
 		derr = ionic_qcq_disable(lif->txqcqs[i], (derr != -ETIMEDOUT));
@@ -2927,6 +2967,9 @@ static void ionic_lif_handle_fw_up(struct ionic_lif *lif)
 		if (err)
 			goto err_txrx_free;
 	}
+
+	/* restore the hardware timestamping queues */
+	ionic_lif_hwstamp_set(lif, NULL);
 
 	clear_bit(IONIC_LIF_F_FW_RESET, lif->state);
 	ionic_link_status_check_request(lif, CAN_SLEEP);
