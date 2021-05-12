@@ -582,6 +582,8 @@ struct wake_q_node {
 	struct wake_q_node *next;
 };
 
+struct task_struct;
+
 struct task_struct_rh {
 	/* Empty if CONFIG_POSIX_CPUTIMERS=n */
 	struct posix_cputimers posix_cputimers;
@@ -597,6 +599,8 @@ struct task_struct_rh {
 					mce_whole_page : 1,
 					__mce_reserved : 62;
 #endif
+	/* pointer back to the main task_struct */
+	struct task_struct		*task_struct;
 };
 
 struct task_struct {

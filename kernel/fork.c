@@ -841,6 +841,7 @@ bool dup_rh_task_struct(struct task_struct *dst, struct task_struct *src, int no
 	memcpy(dst->task_struct_rh,
 	       src->task_struct_rh,
 	       sizeof(struct task_struct_rh));
+	dst->task_struct_rh->task_struct = dst;
 
 	return true;
 }

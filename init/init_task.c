@@ -52,6 +52,7 @@ static struct sighand_struct init_sighand = {
 
 static struct task_struct_rh init_task_struct_rh = {
 	INIT_CPU_TIMERS(init_task_struct_rh)
+	.task_struct	= &init_task,
 };
 
 #ifdef CONFIG_SHADOW_CALL_STACK
