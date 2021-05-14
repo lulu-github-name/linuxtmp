@@ -878,7 +878,7 @@ static int device_is_rq_stackable(struct dm_target *ti, struct dm_dev *dev,
 	struct request_queue *q = bdev_get_queue(bdev);
 
 	/* request-based cannot stack on partitions! */
-	if (bdev != bdev->bd_contains)
+	if (bdev_is_partition(bdev))
 		return false;
 
 	return queue_is_mq(q);
@@ -1906,8 +1906,7 @@ void dm_table_set_restrictions(struct dm_table *t, struct request_queue *q,
 	}
 #endif
 
-	/* Allow reads to exceed readahead limits */
-	q->backing_dev_info->io_pages = limits->max_sectors >> (PAGE_SHIFT - 9);
+	blk_queue_update_readahead(q);
 }
 
 unsigned int dm_table_get_num_targets(struct dm_table *t)

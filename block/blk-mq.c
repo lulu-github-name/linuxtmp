@@ -105,7 +105,8 @@ static bool blk_mq_check_inflight(struct blk_mq_hw_ctx *hctx,
 {
 	struct mq_inflight *mi = priv;
 
-	if (rq->part == mi->part)
+	if ((!mi->part->partno || rq->part == mi->part) &&
+	    blk_mq_rq_state(rq) == MQ_RQ_IN_FLIGHT)
 		mi->inflight[rq_data_dir(rq)]++;
 
 	return true;
@@ -647,6 +648,14 @@ static inline bool blk_mq_complete_need_ipi(struct request *rq)
 
 	if (!IS_ENABLED(CONFIG_SMP) ||
 	    !test_bit(QUEUE_FLAG_SAME_COMP, &rq->q->queue_flags))
+		return false;
+	/*
+	 * With force threaded interrupts enabled, raising softirq from an SMP
+	 * function call will always result in waking the ksoftirqd thread.
+	 * This is probably worse than completing the request on a different
+	 * cache domain.
+	 */
+	if (force_irqthreads)
 		return false;
 
 	/* same CPU or cache domain?  Complete locally */
@@ -1511,31 +1520,6 @@ static void __blk_mq_run_hw_queue(struct blk_mq_hw_ctx *hctx)
 	int srcu_idx;
 
 	/*
-	 * We should be running this queue from one of the CPUs that
-	 * are mapped to it.
-	 *
-	 * There are at least two related races now between setting
-	 * hctx->next_cpu from blk_mq_hctx_next_cpu() and running
-	 * __blk_mq_run_hw_queue():
-	 *
-	 * - hctx->next_cpu is found offline in blk_mq_hctx_next_cpu(),
-	 *   but later it becomes online, then this warning is harmless
-	 *   at all
-	 *
-	 * - hctx->next_cpu is found online in blk_mq_hctx_next_cpu(),
-	 *   but later it becomes offline, then the warning can't be
-	 *   triggered, and we depend on blk-mq timeout handler to
-	 *   handle dispatched requests to this hctx
-	 */
-	if (!cpumask_test_cpu(raw_smp_processor_id(), hctx->cpumask) &&
-		cpu_online(hctx->next_cpu)) {
-		printk(KERN_WARNING "run queue from wrong CPU %d, hctx %s\n",
-			raw_smp_processor_id(),
-			cpumask_empty(hctx->cpumask) ? "inactive": "active");
-		dump_stack();
-	}
-
-	/*
 	 * We can't run the queue inline with ints disabled. Ensure that
 	 * we catch bad users of this early.
 	 */
@@ -1873,7 +1857,7 @@ static void blk_mq_run_work_fn(struct work_struct *work)
 	/*
 	 * If we are stopped, don't run the queue.
 	 */
-	if (test_bit(BLK_MQ_S_STOPPED, &hctx->state))
+	if (blk_mq_hctx_stopped(hctx))
 		return;
 
 	__blk_mq_run_hw_queue(hctx);
@@ -2213,6 +2197,7 @@ blk_qc_t blk_mq_make_request(struct request_queue *q, struct bio *bio)
 	struct blk_plug *plug;
 	struct request *same_queue_rq = NULL;
 	blk_qc_t cookie;
+	bool hipri;
 
 	blk_queue_bounce(q, &bio);
 
@@ -2229,6 +2214,8 @@ blk_qc_t blk_mq_make_request(struct request_queue *q, struct bio *bio)
 		goto queue_exit;
 
 	rq_qos_throttle(q, bio);
+
+	hipri = bio->bi_opf & REQ_HIPRI;
 
 	data.cmd_flags = bio->bi_opf;
 	rq = __blk_mq_alloc_request(&data);
@@ -2314,6 +2301,8 @@ blk_qc_t blk_mq_make_request(struct request_queue *q, struct bio *bio)
 		blk_mq_sched_insert_request(rq, false, true, true);
 	}
 
+	if (!hipri)
+		return BLK_QC_T_NONE;
 	return cookie;
 queue_exit:
 	blk_queue_exit(q);
@@ -2792,7 +2781,7 @@ static void blk_mq_init_cpu_queues(struct request_queue *q,
 		for (j = 0; j < set->nr_maps; j++) {
 			hctx = blk_mq_map_queue_type(q, j, i);
 			if (nr_hw_queues > 1 && hctx->numa_node == NUMA_NO_NODE)
-				hctx->numa_node = local_memory_node(cpu_to_node(i));
+				hctx->numa_node = cpu_to_node(i);
 		}
 	}
 }
@@ -3311,9 +3300,11 @@ static int __blk_mq_alloc_rq_maps(struct blk_mq_tag_set *set)
 {
 	int i;
 
-	for (i = 0; i < set->nr_hw_queues; i++)
+	for (i = 0; i < set->nr_hw_queues; i++) {
 		if (!__blk_mq_alloc_map_and_request(set, i))
 			goto out_unwind;
+		cond_resched();
+	}
 
 	return 0;
 
@@ -3914,9 +3905,10 @@ int blk_poll(struct request_queue *q, blk_qc_t cookie, bool spin)
 	 * the state. Like for the other success return cases, the
 	 * caller is responsible for checking if the IO completed. If
 	 * the IO isn't complete, we'll get called again and will go
-	 * straight to the busy poll loop.
+	 * straight to the busy poll loop. If specified not to spin,
+	 * we also should not sleep.
 	 */
-	if (blk_mq_poll_hybrid(q, hctx, cookie))
+	if (spin && blk_mq_poll_hybrid(q, hctx, cookie))
 		return 1;
 
 	hctx->poll_considered++;

@@ -17,21 +17,6 @@
 #include "blk-mq-tag.h"
 #include "blk-wbt.h"
 
-void blk_mq_sched_free_hctx_data(struct request_queue *q,
-				 void (*exit)(struct blk_mq_hw_ctx *))
-{
-	struct blk_mq_hw_ctx *hctx;
-	int i;
-
-	queue_for_each_hw_ctx(q, hctx, i) {
-		if (exit && hctx->sched_data)
-			exit(hctx);
-		kfree(hctx->sched_data);
-		hctx->sched_data = NULL;
-	}
-}
-EXPORT_SYMBOL_GPL(blk_mq_sched_free_hctx_data);
-
 void blk_mq_sched_assign_ioc(struct request *rq)
 {
 	struct request_queue *q = rq->q;
@@ -393,48 +378,6 @@ bool blk_mq_sched_try_merge(struct request_queue *q, struct bio *bio,
 EXPORT_SYMBOL_GPL(blk_mq_sched_try_merge);
 
 /*
- * Iterate list of requests and see if we can merge this bio with any
- * of them.
- */
-bool blk_mq_bio_list_merge(struct request_queue *q, struct list_head *list,
-			   struct bio *bio)
-{
-	struct request *rq;
-	int checked = 8;
-
-	list_for_each_entry_reverse(rq, list, queuelist) {
-		bool merged = false;
-
-		if (!checked--)
-			break;
-
-		if (!blk_rq_merge_ok(rq, bio))
-			continue;
-
-		switch (blk_try_merge(rq, bio)) {
-		case ELEVATOR_BACK_MERGE:
-			if (blk_mq_sched_allow_merge(q, rq, bio))
-				merged = bio_attempt_back_merge(q, rq, bio);
-			break;
-		case ELEVATOR_FRONT_MERGE:
-			if (blk_mq_sched_allow_merge(q, rq, bio))
-				merged = bio_attempt_front_merge(q, rq, bio);
-			break;
-		case ELEVATOR_DISCARD_MERGE:
-			merged = bio_attempt_discard_merge(q, rq, bio);
-			break;
-		default:
-			continue;
-		}
-
-		return merged;
-	}
-
-	return false;
-}
-EXPORT_SYMBOL_GPL(blk_mq_bio_list_merge);
-
-/*
  * Reverse check our software queue for entries that we could potentially
  * merge with. Currently includes a hand-wavy stop count of 8, to not spend
  * too much time checking for merges.
@@ -447,7 +390,7 @@ static bool blk_mq_attempt_merge(struct request_queue *q,
 
 	lockdep_assert_held(&ctx->lock);
 
-	if (blk_mq_bio_list_merge(q, &ctx->rq_lists[type], bio)) {
+	if (blk_bio_list_merge(q, &ctx->rq_lists[type], bio)) {
 		ctx->rq_merged++;
 		return true;
 	}
@@ -522,13 +465,7 @@ void blk_mq_sched_insert_request(struct request *rq, bool at_head,
 	struct blk_mq_ctx *ctx = rq->mq_ctx;
 	struct blk_mq_hw_ctx *hctx = rq->mq_hctx;
 
-	/* flush rq in flush machinery need to be dispatched directly */
-	if (!(rq->rq_flags & RQF_FLUSH_SEQ) && op_is_flush(rq->cmd_flags)) {
-		blk_insert_flush(rq);
-		goto run;
-	}
-
-	WARN_ON(e && (rq->tag != -1));
+	WARN_ON(e && (rq->tag != BLK_MQ_NO_TAG));
 
 	if (blk_mq_sched_bypass_insert(hctx, !!e, rq)) {
 		/*

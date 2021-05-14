@@ -46,6 +46,9 @@ typedef u8 __bitwise blk_status_t;
 
 #define BLK_STS_AGAIN		((__force blk_status_t)12)
 
+#define bdev_kobj(_bdev) \
+	(&part_to_dev((_bdev)->bd_part)->kobj)
+
 /*
  * BLK_STS_DEV_RESOURCE is returned from the driver to the block layer if
  * device related resources are unavailable, but the driver can guarantee
