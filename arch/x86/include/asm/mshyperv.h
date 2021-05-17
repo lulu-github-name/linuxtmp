@@ -40,17 +40,6 @@ void hyperv_reenlightenment_vector(void);
 #define trace_hyperv_callback_vector hyperv_callback_vector
 #endif
 
-/*
- * Reference to pv_ops must be inline so objtool
- * detection of noinstr violations can work correctly.
- */
-static __always_inline void hv_setup_sched_clock(void *sched_clock)
-{
-#ifdef CONFIG_PARAVIRT
-	pv_time_ops.sched_clock = sched_clock;
-#endif
-}
-
 void hyperv_vector_handler(struct pt_regs *regs);
 
 /*
@@ -59,10 +48,6 @@ void hyperv_vector_handler(struct pt_regs *regs);
  */
 void hv_stimer0_vector_handler(struct pt_regs *regs);
 void hv_stimer0_callback_vector(void);
-
-static inline void hv_enable_stimer0_percpu_irq(int irq) {}
-static inline void hv_disable_stimer0_percpu_irq(int irq) {}
-
 
 #if IS_ENABLED(CONFIG_HYPERV)
 extern int hyperv_init_cpuhp;
