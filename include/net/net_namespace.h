@@ -197,6 +197,7 @@ struct net {
 	RH_KABI_EXTEND(int	sctp_udp_port)
 	/* UDP tunneling remote encap port. */
 	RH_KABI_EXTEND(int	sctp_encap_port)
+	RH_KABI_EXTEND(seqcount_spinlock_t	xfrm_state_hash_generation)
 } __randomize_layout;
 
 #include <linux/seq_file_net.h>
