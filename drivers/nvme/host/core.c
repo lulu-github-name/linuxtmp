@@ -2128,7 +2128,7 @@ static int nvme_update_ns_info(struct nvme_ns *ns, struct nvme_id_ns *id)
 	case NVME_CSI_NVM:
 		break;
 	case NVME_CSI_ZNS:
-		ret = nvme_update_zone_info(disk, ns, lbaf);
+		ret = nvme_update_zone_info(ns, lbaf);
 		if (ret) {
 			dev_warn(ctrl->device,
 				"failed to add zoned namespace:%u ret:%d\n",
