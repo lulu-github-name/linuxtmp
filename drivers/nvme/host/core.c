@@ -350,7 +350,7 @@ static inline void __nvme_end_req(struct request *req, blk_status_t status)
 		req->__sector = nvme_lba_to_sect(req->q->queuedata,
 		le64_to_cpu(nvme_req(req)->result.u64));
 	}
-	nvme_trace_bio_complete(req, status);
+	nvme_trace_bio_complete(req);
 	blk_mq_end_request(req, status);
 }
 
