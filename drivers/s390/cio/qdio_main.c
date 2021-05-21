@@ -985,7 +985,6 @@ int qdio_shutdown(struct ccw_device *cdev, int how)
 	 */
 	qdio_set_state(irq_ptr, QDIO_IRQ_STATE_STOPPED);
 
-	tiqdio_remove_device(irq_ptr);
 	qdio_shutdown_queues(irq_ptr);
 	qdio_shutdown_debug_entries(irq_ptr);
 
@@ -1103,7 +1102,6 @@ int qdio_allocate(struct ccw_device *cdev, unsigned int no_input_qs,
 	if (rc)
 		goto err_queues;
 
-	INIT_LIST_HEAD(&irq_ptr->entry);
 	cdev->private->qdio_data = irq_ptr;
 	qdio_set_state(irq_ptr, QDIO_IRQ_STATE_INACTIVE);
 	return 0;
@@ -1285,9 +1283,6 @@ int qdio_activate(struct ccw_device *cdev)
 		DBF_ERROR("rc:%4x", rc);
 		goto out;
 	}
-
-	if (is_thinint_irq(irq_ptr))
-		tiqdio_add_device(irq_ptr);
 
 	/* wait for subchannel to become active */
 	msleep(5);
