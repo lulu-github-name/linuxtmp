@@ -292,6 +292,8 @@ static bool nvme_available_path(struct nvme_ns_head *head)
 	struct nvme_ns *ns;
 
 	list_for_each_entry_rcu(ns, &head->list, siblings) {
+		if (test_bit(NVME_CTRL_FAILFAST_EXPIRED, &ns->ctrl->flags))
+			continue;
 		switch (ns->ctrl->state) {
 		case NVME_CTRL_LIVE:
 		case NVME_CTRL_RESETTING:
@@ -699,6 +701,10 @@ void nvme_mpath_add_disk(struct nvme_ns *ns, struct nvme_id_ns *id)
 			disk->queue->backing_dev_info->capabilities |=
 					BDI_CAP_STABLE_WRITES;
 	}
+#ifdef CONFIG_BLK_DEV_ZONED
+	if (blk_queue_is_zoned(ns->queue) && ns->head->disk)
+		ns->head->disk->queue->nr_zones = ns->queue->nr_zones;
+#endif
 }
 
 void nvme_mpath_remove_disk(struct nvme_ns_head *head)
