@@ -716,8 +716,9 @@ retry:
 	return cc;
 }
 
-static void __qdio_outbound_processing(struct qdio_q *q)
+void qdio_outbound_tasklet(unsigned long data)
 {
+	struct qdio_q *q = (struct qdio_q *)data;
 	unsigned int start = q->first_to_check;
 	int count;
 
@@ -752,13 +753,6 @@ static void __qdio_outbound_processing(struct qdio_q *q)
 
 sched:
 	qdio_tasklet_schedule(q);
-}
-
-/* outbound tasklet */
-void qdio_outbound_processing(unsigned long data)
-{
-	struct qdio_q *q = (struct qdio_q *)data;
-	__qdio_outbound_processing(q);
 }
 
 void qdio_outbound_timer(struct timer_list *t)
