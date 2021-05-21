@@ -31,7 +31,6 @@
 #include <net/net_namespace.h>
 #include <net/sock.h>
 #include <net/devlink.h>
-#include <net/drop_monitor.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/devlink.h>
 
@@ -88,6 +87,7 @@ EXPORT_SYMBOL(devlink_dpipe_header_ipv6);
 
 EXPORT_TRACEPOINT_SYMBOL_GPL(devlink_hwmsg);
 EXPORT_TRACEPOINT_SYMBOL_GPL(devlink_hwerr);
+EXPORT_TRACEPOINT_SYMBOL_GPL(devlink_trap_report);
 
 static const struct nla_policy devlink_function_nl_policy[DEVLINK_PORT_FUNCTION_ATTR_MAX + 1] = {
 	[DEVLINK_PORT_FUNCTION_ATTR_HW_ADDR] = { .type = NLA_BINARY },
@@ -4797,27 +4797,17 @@ static int devlink_nl_region_read_snapshot_fill(struct sk_buff *skb,
 static int devlink_nl_cmd_region_read_dumpit(struct sk_buff *skb,
 					     struct netlink_callback *cb)
 {
+	const struct genl_dumpit_info *info = genl_dumpit_info(cb);
 	u64 ret_offset, start_offset, end_offset = U64_MAX;
+	struct nlattr **attrs = info->attrs;
 	struct devlink_region *region;
 	struct nlattr *chunks_attr;
 	const char *region_name;
 	struct devlink *devlink;
-	struct nlattr **attrs;
 	void *hdr;
 	int err;
 
 	start_offset = *((u64 *)&cb->args[0]);
-
-	attrs = kmalloc_array(DEVLINK_ATTR_MAX + 1, sizeof(*attrs), GFP_KERNEL);
-	if (!attrs)
-		return -ENOMEM;
-
-	err = nlmsg_parse_deprecated(cb->nlh,
-				     GENL_HDRLEN + devlink_nl_family.hdrsize,
-				     attrs, DEVLINK_ATTR_MAX,
-				     devlink_nl_family.policy, cb->extack);
-	if (err)
-		goto out_free;
 
 	mutex_lock(&devlink_mutex);
 	devlink = devlink_get_from_attrs(sock_net(cb->skb->sk), attrs);
@@ -4902,7 +4892,6 @@ static int devlink_nl_cmd_region_read_dumpit(struct sk_buff *skb,
 	genlmsg_end(skb, hdr);
 	mutex_unlock(&devlink->lock);
 	mutex_unlock(&devlink_mutex);
-	kfree(attrs);
 
 	return skb->len;
 
@@ -4912,8 +4901,6 @@ out_unlock:
 	mutex_unlock(&devlink->lock);
 out_dev:
 	mutex_unlock(&devlink_mutex);
-out_free:
-	kfree(attrs);
 	return err;
 }
 
@@ -6160,21 +6147,10 @@ devlink_health_reporter_get_from_info(struct devlink *devlink,
 static struct devlink_health_reporter *
 devlink_health_reporter_get_from_cb(struct netlink_callback *cb)
 {
+	const struct genl_dumpit_info *info = genl_dumpit_info(cb);
 	struct devlink_health_reporter *reporter;
+	struct nlattr **attrs = info->attrs;
 	struct devlink *devlink;
-	struct nlattr **attrs;
-	int err;
-
-	attrs = kmalloc_array(DEVLINK_ATTR_MAX + 1, sizeof(*attrs), GFP_KERNEL);
-	if (!attrs)
-		return NULL;
-
-	err = nlmsg_parse_deprecated(cb->nlh,
-				     GENL_HDRLEN + devlink_nl_family.hdrsize,
-				     attrs, DEVLINK_ATTR_MAX,
-				     devlink_nl_family.policy, cb->extack);
-	if (err)
-		goto free;
 
 	mutex_lock(&devlink_mutex);
 	devlink = devlink_get_from_attrs(sock_net(cb->skb->sk), attrs);
@@ -6183,12 +6159,9 @@ devlink_health_reporter_get_from_cb(struct netlink_callback *cb)
 
 	reporter = devlink_health_reporter_get_from_attrs(devlink, attrs);
 	mutex_unlock(&devlink_mutex);
-	kfree(attrs);
 	return reporter;
 unlock:
 	mutex_unlock(&devlink_mutex);
-free:
-	kfree(attrs);
 	return NULL;
 }
 
@@ -7057,6 +7030,24 @@ __devlink_trap_group_action_set(struct devlink *devlink,
 	struct devlink_trap_item *trap_item;
 	int err;
 
+	if (devlink->ops->trap_group_action_set) {
+		err = devlink->ops->trap_group_action_set(devlink, group_item->group,
+							  trap_action, extack);
+		if (err)
+			return err;
+
+		list_for_each_entry(trap_item, &devlink->trap_list, list) {
+			if (strcmp(trap_item->group_item->group->name, group_name))
+				continue;
+			if (trap_item->action != trap_action &&
+			    trap_item->trap->type != DEVLINK_TRAP_TYPE_DROP)
+				continue;
+			trap_item->action = trap_action;
+		}
+
+		return 0;
+	}
+
 	list_for_each_entry(trap_item, &devlink->trap_list, list) {
 		if (strcmp(trap_item->group_item->group->name, group_name))
 			continue;
@@ -7671,7 +7662,8 @@ static const struct genl_small_ops devlink_nl_ops[] = {
 	},
 	{
 		.cmd = DEVLINK_CMD_REGION_READ,
-		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+		.validate = GENL_DONT_VALIDATE_STRICT |
+			    GENL_DONT_VALIDATE_DUMP_STRICT,
 		.dumpit = devlink_nl_cmd_region_read_dumpit,
 		.flags = GENL_ADMIN_PERM,
 	},
@@ -7717,7 +7709,8 @@ static const struct genl_small_ops devlink_nl_ops[] = {
 	},
 	{
 		.cmd = DEVLINK_CMD_HEALTH_REPORTER_DUMP_GET,
-		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
+		.validate = GENL_DONT_VALIDATE_STRICT |
+			    GENL_DONT_VALIDATE_DUMP_STRICT,
 		.dumpit = devlink_nl_cmd_health_reporter_dump_get_dumpit,
 		.flags = GENL_ADMIN_PERM,
 		.internal_flags = DEVLINK_NL_FLAG_NEED_DEVLINK_OR_PORT |
@@ -7969,7 +7962,8 @@ static bool devlink_port_type_should_warn(struct devlink_port *devlink_port)
 {
 	/* Ignore CPU and DSA flavours. */
 	return devlink_port->attrs.flavour != DEVLINK_PORT_FLAVOUR_CPU &&
-	       devlink_port->attrs.flavour != DEVLINK_PORT_FLAVOUR_DSA;
+	       devlink_port->attrs.flavour != DEVLINK_PORT_FLAVOUR_DSA &&
+	       devlink_port->attrs.flavour != DEVLINK_PORT_FLAVOUR_UNUSED;
 }
 
 #define DEVLINK_PORT_TYPE_WARN_TIMEOUT (HZ * 3600)
@@ -8258,6 +8252,7 @@ static int __devlink_port_phys_port_name_get(struct devlink_port *devlink_port,
 		break;
 	case DEVLINK_PORT_FLAVOUR_CPU:
 	case DEVLINK_PORT_FLAVOUR_DSA:
+	case DEVLINK_PORT_FLAVOUR_UNUSED:
 		/* As CPU and DSA ports do not have a netdevice associated
 		 * case should not ever happen.
 		 */
@@ -9304,6 +9299,22 @@ static const struct devlink_trap devlink_trap_generic[] = {
 	DEVLINK_TRAP(FLOW_ACTION_SAMPLE, CONTROL),
 	DEVLINK_TRAP(FLOW_ACTION_TRAP, CONTROL),
 	DEVLINK_TRAP(EARLY_DROP, DROP),
+	DEVLINK_TRAP(VXLAN_PARSING, DROP),
+	DEVLINK_TRAP(LLC_SNAP_PARSING, DROP),
+	DEVLINK_TRAP(VLAN_PARSING, DROP),
+	DEVLINK_TRAP(PPPOE_PPP_PARSING, DROP),
+	DEVLINK_TRAP(MPLS_PARSING, DROP),
+	DEVLINK_TRAP(ARP_PARSING, DROP),
+	DEVLINK_TRAP(IP_1_PARSING, DROP),
+	DEVLINK_TRAP(IP_N_PARSING, DROP),
+	DEVLINK_TRAP(GRE_PARSING, DROP),
+	DEVLINK_TRAP(UDP_PARSING, DROP),
+	DEVLINK_TRAP(TCP_PARSING, DROP),
+	DEVLINK_TRAP(IPSEC_PARSING, DROP),
+	DEVLINK_TRAP(SCTP_PARSING, DROP),
+	DEVLINK_TRAP(DCCP_PARSING, DROP),
+	DEVLINK_TRAP(GTP_PARSING, DROP),
+	DEVLINK_TRAP(ESP_PARSING, DROP),
 };
 
 #define DEVLINK_TRAP_GROUP(_id)						      \
@@ -9338,6 +9349,7 @@ static const struct devlink_trap_group devlink_trap_group_generic[] = {
 	DEVLINK_TRAP_GROUP(PTP_GENERAL),
 	DEVLINK_TRAP_GROUP(ACL_SAMPLE),
 	DEVLINK_TRAP_GROUP(ACL_TRAP),
+	DEVLINK_TRAP_GROUP(PARSER_ERROR_DROPS),
 };
 
 static int devlink_trap_generic_verify(const struct devlink_trap *trap)
@@ -9640,20 +9652,19 @@ devlink_trap_stats_update(struct devlink_stats __percpu *trap_stats,
 }
 
 static void
-devlink_trap_report_metadata_fill(struct net_dm_hw_metadata *hw_metadata,
-				  const struct devlink_trap_item *trap_item,
-				  struct devlink_port *in_devlink_port,
-				  const struct flow_action_cookie *fa_cookie)
+devlink_trap_report_metadata_set(struct devlink_trap_metadata *metadata,
+				 const struct devlink_trap_item *trap_item,
+				 struct devlink_port *in_devlink_port,
+				 const struct flow_action_cookie *fa_cookie)
 {
-	struct devlink_trap_group_item *group_item = trap_item->group_item;
-
-	hw_metadata->trap_group_name = group_item->group->name;
-	hw_metadata->trap_name = trap_item->trap->name;
-	hw_metadata->fa_cookie = fa_cookie;
+	metadata->trap_name = trap_item->trap->name;
+	metadata->trap_group_name = trap_item->group_item->group->name;
+	metadata->fa_cookie = fa_cookie;
+	metadata->trap_type = trap_item->trap->type;
 
 	spin_lock(&in_devlink_port->type_lock);
 	if (in_devlink_port->type == DEVLINK_PORT_TYPE_ETH)
-		hw_metadata->input_dev = in_devlink_port->type_dev;
+		metadata->input_dev = in_devlink_port->type_dev;
 	spin_unlock(&in_devlink_port->type_lock);
 }
 
@@ -9671,21 +9682,17 @@ void devlink_trap_report(struct devlink *devlink, struct sk_buff *skb,
 
 {
 	struct devlink_trap_item *trap_item = trap_ctx;
-	struct net_dm_hw_metadata hw_metadata = {};
 
 	devlink_trap_stats_update(trap_item->stats, skb->len);
 	devlink_trap_stats_update(trap_item->group_item->stats, skb->len);
 
-	/* Control packets were not dropped by the device or encountered an
-	 * exception during forwarding and therefore should not be reported to
-	 * the kernel's drop monitor.
-	 */
-	if (trap_item->trap->type == DEVLINK_TRAP_TYPE_CONTROL)
-		return;
+	if (trace_devlink_trap_report_enabled()) {
+		struct devlink_trap_metadata metadata = {};
 
-	devlink_trap_report_metadata_fill(&hw_metadata, trap_item,
-					  in_devlink_port, fa_cookie);
-	net_dm_hw_report(skb, &hw_metadata);
+		devlink_trap_report_metadata_set(&metadata, trap_item,
+						 in_devlink_port, fa_cookie);
+		trace_devlink_trap_report(devlink, skb, &metadata);
+	}
 }
 EXPORT_SYMBOL_GPL(devlink_trap_report);
 
