@@ -200,7 +200,7 @@ static int selinux_lsm_notifier_avc_callback(u32 event)
 {
 	if (event == AVC_CALLBACK_RESET) {
 		sel_ib_pkey_flush();
-		call_lsm_notifier(LSM_POLICY_CHANGE, NULL);
+		call_blocking_lsm_notifier(LSM_POLICY_CHANGE, NULL);
 	}
 
 	return 0;
@@ -578,6 +578,55 @@ static int selinux_is_sblabel_mnt(struct super_block *sb)
 	}
 }
 
+static int sb_check_xattr_support(struct super_block *sb)
+{
+	struct superblock_security_struct *sbsec = sb->s_security;
+	struct dentry *root = sb->s_root;
+	struct inode *root_inode = d_backing_inode(root);
+	u32 sid;
+	int rc;
+
+	/*
+	 * Make sure that the xattr handler exists and that no
+	 * error other than -ENODATA is returned by getxattr on
+	 * the root directory.  -ENODATA is ok, as this may be
+	 * the first boot of the SELinux kernel before we have
+	 * assigned xattr values to the filesystem.
+	 */
+	if (!(root_inode->i_opflags & IOP_XATTR)) {
+		pr_warn("SELinux: (dev %s, type %s) has no xattr support\n",
+			sb->s_id, sb->s_type->name);
+		goto fallback;
+	}
+
+	rc = __vfs_getxattr(root, root_inode, XATTR_NAME_SELINUX, NULL, 0);
+	if (rc < 0 && rc != -ENODATA) {
+		if (rc == -EOPNOTSUPP) {
+			pr_warn("SELinux: (dev %s, type %s) has no security xattr handler\n",
+				sb->s_id, sb->s_type->name);
+			goto fallback;
+		} else {
+			pr_warn("SELinux: (dev %s, type %s) getxattr errno %d\n",
+				sb->s_id, sb->s_type->name, -rc);
+			return rc;
+		}
+	}
+	return 0;
+
+fallback:
+	/* No xattr support - try to fallback to genfs if possible. */
+	rc = security_genfs_sid(&selinux_state, sb->s_type->name, "/",
+				SECCLASS_DIR, &sid);
+	if (rc)
+		return -EOPNOTSUPP;
+
+	pr_warn("SELinux: (dev %s, type %s) falling back to genfs\n",
+		sb->s_id, sb->s_type->name);
+	sbsec->behavior = SECURITY_FS_USE_GENFS;
+	sbsec->sid = sid;
+	return 0;
+}
+
 static int sb_finish_set_opts(struct super_block *sb)
 {
 	struct superblock_security_struct *sbsec = sb->s_security;
@@ -586,30 +635,9 @@ static int sb_finish_set_opts(struct super_block *sb)
 	int rc = 0;
 
 	if (sbsec->behavior == SECURITY_FS_USE_XATTR) {
-		/* Make sure that the xattr handler exists and that no
-		   error other than -ENODATA is returned by getxattr on
-		   the root directory.  -ENODATA is ok, as this may be
-		   the first boot of the SELinux kernel before we have
-		   assigned xattr values to the filesystem. */
-		if (!(root_inode->i_opflags & IOP_XATTR)) {
-			pr_warn("SELinux: (dev %s, type %s) has no "
-			       "xattr support\n", sb->s_id, sb->s_type->name);
-			rc = -EOPNOTSUPP;
-			goto out;
-		}
-
-		rc = __vfs_getxattr(root, root_inode, XATTR_NAME_SELINUX, NULL, 0);
-		if (rc < 0 && rc != -ENODATA) {
-			if (rc == -EOPNOTSUPP)
-				pr_warn("SELinux: (dev %s, type "
-				       "%s) has no security xattr handler\n",
-				       sb->s_id, sb->s_type->name);
-			else
-				pr_warn("SELinux: (dev %s, type "
-				       "%s) getxattr errno %d\n", sb->s_id,
-				       sb->s_type->name, -rc);
-			goto out;
-		}
+		rc = sb_check_xattr_support(sb);
+		if (rc)
+			return rc;
 	}
 
 	sbsec->flags |= SE_SBINITIALIZED;
@@ -648,7 +676,6 @@ static int sb_finish_set_opts(struct super_block *sb)
 		spin_lock(&sbsec->isec_lock);
 	}
 	spin_unlock(&sbsec->isec_lock);
-out:
 	return rc;
 }
 
@@ -1549,7 +1576,7 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
 			 * inode_doinit with a dentry, before these inodes could
 			 * be used again by userspace.
 			 */
-			goto out;
+			goto out_invalid;
 		}
 
 		rc = inode_doinit_use_xattr(inode, dentry, sbsec->def_sid,
@@ -1610,7 +1637,7 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
 			 * could be used again by userspace.
 			 */
 			if (!dentry)
-				goto out;
+				goto out_invalid;
 			rc = selinux_genfs_get_sid(dentry, sclass,
 						   sbsec->flags, &sid);
 			if (rc) {
@@ -1635,11 +1662,10 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
 out:
 	spin_lock(&isec->lock);
 	if (isec->initialized == LABEL_PENDING) {
-		if (!sid || rc) {
+		if (rc) {
 			isec->initialized = LABEL_INVALID;
 			goto out_unlock;
 		}
-
 		isec->initialized = LABEL_INITIALIZED;
 		isec->sid = sid;
 	}
@@ -1647,6 +1673,15 @@ out:
 out_unlock:
 	spin_unlock(&isec->lock);
 	return rc;
+
+out_invalid:
+	spin_lock(&isec->lock);
+	if (isec->initialized == LABEL_PENDING) {
+		isec->initialized = LABEL_INVALID;
+		isec->sid = sid;
+	}
+	spin_unlock(&isec->lock);
+	return 0;
 }
 
 /* Convert a Linux signal to an access vector. */
@@ -2087,7 +2122,7 @@ static inline u32 file_to_av(struct file *file)
 }
 
 /*
- * Convert a file to an access vector and include the correct open
+ * Convert a file to an access vector and include the correct
  * open permission.
  */
 static inline u32 open_file_to_av(struct file *file)
@@ -3360,6 +3395,9 @@ static int selinux_inode_removexattr(struct dentry *dentry, const char *name)
 		return dentry_has_perm(current_cred(), dentry, FILE__SETATTR);
 	}
 
+	if (!selinux_initialized(&selinux_state))
+		return 0;
+
 	/* No one is allowed to remove a SELinux security label.
 	   You can change the label, but all data must be labeled. */
 	return -EACCES;
@@ -3447,6 +3485,10 @@ static int selinux_inode_setsecurity(struct inode *inode, const char *name,
 static int selinux_inode_listsecurity(struct inode *inode, char *buffer, size_t buffer_size)
 {
 	const int len = sizeof(XATTR_NAME_SELINUX);
+
+	if (!selinux_initialized(&selinux_state))
+		return 0;
+
 	if (buffer && len <= buffer_size)
 		memcpy(buffer, XATTR_NAME_SELINUX, len);
 	return len;
@@ -4105,6 +4147,7 @@ static int selinux_kernel_load_data(enum kernel_load_data_id id)
 	switch (id) {
 	case LOADING_MODULE:
 		rc = selinux_kernel_module_from_file(NULL);
+		break;
 	default:
 		break;
 	}
@@ -4519,7 +4562,7 @@ static int selinux_skb_peerlbl_sid(struct sk_buff *skb, u16 family, u32 *sid)
  *
  * If @skb_sid is valid then the user:role:type information from @sk_sid is
  * combined with the MLS information from @skb_sid in order to create
- * @conn_sid.  If @skb_sid is not valid then then @conn_sid is simply a copy
+ * @conn_sid.  If @skb_sid is not valid then @conn_sid is simply a copy
  * of @sk_sid.  Returns zero on success, negative values on failure.
  *
  */
@@ -5389,7 +5432,7 @@ static int selinux_sctp_bind_connect(struct sock *sk, int optname,
 
 			/* As selinux_sctp_bind_connect() is called by the
 			 * SCTP protocol layer, the socket is already locked,
-			 * therefore selinux_netlbl_socket_connect_locked() is
+			 * therefore selinux_netlbl_socket_connect_locked()
 			 * is called here. The situations handled are:
 			 * sctp_connectx(3), sctp_sendmsg(3), sendmsg(2),
 			 * whenever a new IP address is added or when a new
