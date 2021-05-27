@@ -33,6 +33,7 @@
 
 #include <asm/machdep.h>
 #include <asm/mce.h>
+#include <asm/nmi.h>
 #include <asm/extable.h>
 
 #include "setup.h"
@@ -577,6 +578,8 @@ EXPORT_SYMBOL_GPL(machine_check_print_event_info);
 long machine_check_early(struct pt_regs *regs)
 {
 	long handled = 0;
+
+	hv_nmi_check_nonrecoverable(regs);
 
 	/*
 	 * See if platform is capable of handling machine check.
