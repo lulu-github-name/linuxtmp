@@ -63,6 +63,7 @@
 #include "callback.h"
 #include "pnfs.h"
 #include "netns.h"
+#include "sysfs.h"
 #include "nfs4idmap.h"
 #include "nfs4session.h"
 #include "fscache.h"
@@ -6067,9 +6068,34 @@ static void nfs4_init_boot_verifier(const struct nfs_client *clp,
 	memcpy(bootverf->data, verf, sizeof(bootverf->data));
 }
 
+static size_t
+nfs4_get_uniquifier(struct nfs_client *clp, char *buf, size_t buflen)
+{
+	struct nfs_net *nn = net_generic(clp->cl_net, nfs_net_id);
+	struct nfs_netns_client *nn_clp = nn->nfs_client;
+	const char *id;
+
+	buf[0] = '\0';
+
+	if (nn_clp) {
+		rcu_read_lock();
+		id = rcu_dereference(nn_clp->identifier);
+		if (id)
+			strscpy(buf, id, buflen);
+		rcu_read_unlock();
+	}
+
+	if (nfs4_client_id_uniquifier[0] != '\0' && buf[0] == '\0')
+		strscpy(buf, nfs4_client_id_uniquifier, buflen);
+
+	return strlen(buf);
+}
+
 static int
 nfs4_init_nonuniform_client_string(struct nfs_client *clp)
 {
+	char buf[NFS4_CLIENT_ID_UNIQ_LEN];
+	size_t buflen;
 	size_t len;
 	char *str;
 
@@ -6083,8 +6109,11 @@ nfs4_init_nonuniform_client_string(struct nfs_client *clp)
 		strlen(rpc_peeraddr2str(clp->cl_rpcclient, RPC_DISPLAY_ADDR)) +
 		1;
 	rcu_read_unlock();
-	if (nfs4_client_id_uniquifier[0] != '\0')
-		len += strlen(nfs4_client_id_uniquifier) + 1;
+
+	buflen = nfs4_get_uniquifier(clp, buf, sizeof(buf));
+	if (buflen)
+		len += buflen + 1;
+
 	if (len > NFS4_OPAQUE_LIMIT + 1)
 		return -EINVAL;
 
@@ -6098,10 +6127,9 @@ nfs4_init_nonuniform_client_string(struct nfs_client *clp)
 		return -ENOMEM;
 
 	rcu_read_lock();
-	if (nfs4_client_id_uniquifier[0] != '\0')
+	if (buflen)
 		scnprintf(str, len, "Linux NFSv4.0 %s/%s/%s",
-			  clp->cl_rpcclient->cl_nodename,
-			  nfs4_client_id_uniquifier,
+			  clp->cl_rpcclient->cl_nodename, buf,
 			  rpc_peeraddr2str(clp->cl_rpcclient,
 					   RPC_DISPLAY_ADDR));
 	else
@@ -6116,49 +6144,22 @@ nfs4_init_nonuniform_client_string(struct nfs_client *clp)
 }
 
 static int
-nfs4_init_uniquifier_client_string(struct nfs_client *clp)
-{
-	size_t len;
-	char *str;
-
-	len = 10 + 10 + 1 + 10 + 1 +
-		strlen(nfs4_client_id_uniquifier) + 1 +
-		strlen(clp->cl_rpcclient->cl_nodename) + 1;
-
-	if (len > NFS4_OPAQUE_LIMIT + 1)
-		return -EINVAL;
-
-	/*
-	 * Since this string is allocated at mount time, and held until the
-	 * nfs_client is destroyed, we can use GFP_KERNEL here w/o worrying
-	 * about a memory-reclaim deadlock.
-	 */
-	str = kmalloc(len, GFP_KERNEL);
-	if (!str)
-		return -ENOMEM;
-
-	scnprintf(str, len, "Linux NFSv%u.%u %s/%s",
-			clp->rpc_ops->version, clp->cl_minorversion,
-			nfs4_client_id_uniquifier,
-			clp->cl_rpcclient->cl_nodename);
-	clp->cl_owner_id = str;
-	return 0;
-}
-
-static int
 nfs4_init_uniform_client_string(struct nfs_client *clp)
 {
+	char buf[NFS4_CLIENT_ID_UNIQ_LEN];
+	size_t buflen;
 	size_t len;
 	char *str;
 
 	if (clp->cl_owner_id != NULL)
 		return 0;
 
-	if (nfs4_client_id_uniquifier[0] != '\0')
-		return nfs4_init_uniquifier_client_string(clp);
-
 	len = 10 + 10 + 1 + 10 + 1 +
 		strlen(clp->cl_rpcclient->cl_nodename) + 1;
+
+	buflen = nfs4_get_uniquifier(clp, buf, sizeof(buf));
+	if (buflen)
+		len += buflen + 1;
 
 	if (len > NFS4_OPAQUE_LIMIT + 1)
 		return -EINVAL;
@@ -6172,9 +6173,14 @@ nfs4_init_uniform_client_string(struct nfs_client *clp)
 	if (!str)
 		return -ENOMEM;
 
-	scnprintf(str, len, "Linux NFSv%u.%u %s",
-			clp->rpc_ops->version, clp->cl_minorversion,
-			clp->cl_rpcclient->cl_nodename);
+	if (buflen)
+		scnprintf(str, len, "Linux NFSv%u.%u %s/%s",
+			  clp->rpc_ops->version, clp->cl_minorversion,
+			  buf, clp->cl_rpcclient->cl_nodename);
+	else
+		scnprintf(str, len, "Linux NFSv%u.%u %s",
+			  clp->rpc_ops->version, clp->cl_minorversion,
+			  clp->cl_rpcclient->cl_nodename);
 	clp->cl_owner_id = str;
 	return 0;
 }
@@ -7502,7 +7508,7 @@ nfs4_listxattr_nfs4_label(struct inode *inode, char *list, size_t list_len)
 
 	if (nfs_server_capable(inode, NFS_CAP_SECURITY_LABEL)) {
 		len = security_inode_listsecurity(inode, list, list_len);
-		if (list_len && len > list_len)
+		if (len >= 0 && list_len && len > list_len)
 			return -ERANGE;
 	}
 	return len;
@@ -8101,9 +8107,11 @@ int nfs4_proc_secinfo(struct inode *dir, const struct qstr *name,
  * both PNFS and NON_PNFS flags set, and not having one of NON_PNFS, PNFS, or
  * DS flags set.
  */
-static int nfs4_check_cl_exchange_flags(u32 flags)
+static int nfs4_check_cl_exchange_flags(u32 flags, u32 version)
 {
-	if (flags & ~EXCHGID4_FLAG_MASK_R)
+	if (version >= 2 && (flags & ~EXCHGID4_2_FLAG_MASK_R))
+		goto out_inval;
+	else if (version < 2 && (flags & ~EXCHGID4_FLAG_MASK_R))
 		goto out_inval;
 	if ((flags & EXCHGID4_FLAG_USE_PNFS_MDS) &&
 	    (flags & EXCHGID4_FLAG_USE_NON_PNFS))
@@ -8516,7 +8524,8 @@ static int _nfs4_proc_exchange_id(struct nfs_client *clp, const struct cred *cre
 	if (status  != 0)
 		goto out;
 
-	status = nfs4_check_cl_exchange_flags(resp->flags);
+	status = nfs4_check_cl_exchange_flags(resp->flags,
+			clp->cl_mvops->minor_version);
 	if (status  != 0)
 		goto out;
 
@@ -9755,7 +9764,6 @@ _nfs41_proc_secinfo_no_name(struct nfs_server *server, struct nfs_fh *fhandle,
 		.rpc_argp = &args,
 		.rpc_resp = &res,
 	};
-	struct rpc_clnt *clnt = server->client;
 	struct nfs4_call_sync_data data = {
 		.seq_server = server,
 		.seq_args = &args.seq_args,
@@ -9772,8 +9780,7 @@ _nfs41_proc_secinfo_no_name(struct nfs_server *server, struct nfs_fh *fhandle,
 	int status;
 
 	if (use_integrity) {
-		clnt = server->nfs_client->cl_rpcclient;
-		task_setup.rpc_client = clnt;
+		task_setup.rpc_client = server->nfs_client->cl_rpcclient;
 
 		cred = nfs4_get_clid_cred(server->nfs_client);
 		msg.rpc_cred = cred;

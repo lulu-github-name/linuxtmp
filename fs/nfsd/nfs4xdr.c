@@ -3738,36 +3738,14 @@ static __be32 nfsd4_encode_readv(struct nfsd4_compoundres *resp,
 {
 	struct xdr_stream *xdr = &resp->xdr;
 	u32 eof;
-	int v;
 	int starting_len = xdr->buf->len - 8;
-	long len;
-	int thislen;
 	__be32 nfserr;
 	__be32 tmp;
-	__be32 *p;
 	int pad;
 
-	/*
-	 * svcrdma requires every READ payload to start somewhere
-	 * in xdr->pages.
-	 */
-	if (xdr->iov == xdr->buf->head) {
-		xdr->iov = NULL;
-		xdr->end = xdr->p;
-	}
-
-	len = maxcount;
-	v = 0;
-	while (len) {
-		thislen = min_t(long, len, PAGE_SIZE);
-		p = xdr_reserve_space(xdr, thislen);
-		WARN_ON_ONCE(!p);
-		resp->rqstp->rq_vec[v].iov_base = p;
-		resp->rqstp->rq_vec[v].iov_len = thislen;
-		v++;
-		len -= thislen;
-	}
-	read->rd_vlen = v;
+	read->rd_vlen = xdr_reserve_space_vec(xdr, resp->rqstp->rq_vec, maxcount);
+	if (read->rd_vlen < 0)
+		return nfserr_resource;
 
 	nfserr = nfsd_readv(resp->rqstp, read->rd_fhp, file, read->rd_offset,
 			    resp->rqstp->rq_vec, read->rd_vlen, &maxcount,
@@ -4532,7 +4510,7 @@ nfsd4_encode_noop(struct nfsd4_compoundres *resp, __be32 nfserr, void *p)
 /*
  * Encode kmalloc-ed buffer in to XDR stream.
  */
-static int
+static __be32
 nfsd4_vbuf_to_stream(struct xdr_stream *xdr, char *buf, u32 buflen)
 {
 	u32 cplen;
@@ -4648,7 +4626,7 @@ nfsd4_encode_listxattrs(struct nfsd4_compoundres *resp, __be32 nfserr,
 	u32 xdrlen, offset;
 	u64 cookie;
 	char *sp;
-	__be32 status;
+	__be32 status, tmp;
 	__be32 *p;
 	u32 nuser;
 
@@ -4681,7 +4659,7 @@ nfsd4_encode_listxattrs(struct nfsd4_compoundres *resp, __be32 nfserr,
 		slen = strlen(sp);
 
 		/*
-		 * Check if this a user. attribute, skip it if not.
+		 * Check if this is a "user." attribute, skip it if not.
 		 */
 		if (strncmp(sp, XATTR_USER_PREFIX, XATTR_USER_PREFIX_LEN))
 			goto contloop;
@@ -4712,7 +4690,7 @@ nfsd4_encode_listxattrs(struct nfsd4_compoundres *resp, __be32 nfserr,
 			goto out;
 		}
 
-		p = xdr_encode_opaque(p, sp, slen);
+		xdr_encode_opaque(p, sp, slen);
 
 		xdrleft -= xdrlen;
 		count++;
@@ -4741,8 +4719,8 @@ wreof:
 	cookie = offset + count;
 
 	write_bytes_to_xdr_buf(xdr->buf, cookie_offset, &cookie, 8);
-	count = htonl(count);
-	write_bytes_to_xdr_buf(xdr->buf, count_offset, &count, 4);
+	tmp = cpu_to_be32(count);
+	write_bytes_to_xdr_buf(xdr->buf, count_offset, &tmp, 4);
 out:
 	if (listxattrs->lsxa_len)
 		kvfree(listxattrs->lsxa_buf);
@@ -5010,6 +4988,12 @@ void nfsd4_release_compoundargs(struct svc_rqst *rqstp)
 }
 
 int
+nfs4svc_decode_voidarg(struct svc_rqst *rqstp, __be32 *p)
+{
+	return 1;
+}
+
+int
 nfs4svc_decode_compoundargs(struct svc_rqst *rqstp, __be32 *p)
 {
 	struct nfsd4_compoundargs *args = rqstp->rq_argp;
@@ -5036,14 +5020,13 @@ nfs4svc_decode_compoundargs(struct svc_rqst *rqstp, __be32 *p)
 int
 nfs4svc_encode_compoundres(struct svc_rqst *rqstp, __be32 *p)
 {
-	/*
-	 * All that remains is to write the tag and operation count...
-	 */
 	struct nfsd4_compoundres *resp = rqstp->rq_resp;
 	struct xdr_buf *buf = resp->xdr.buf;
 
 	WARN_ON_ONCE(buf->len != buf->head[0].iov_len + buf->page_len +
 				 buf->tail[0].iov_len);
+
+	*p = resp->cstate.status;
 
 	rqstp->rq_next_page = resp->xdr.page_ptr + 1;
 
