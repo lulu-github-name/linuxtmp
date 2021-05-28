@@ -4395,6 +4395,9 @@ static int mark_lock(struct task_struct *curr, struct held_lock *this,
 	if (unlikely(hlock_class(this)->usage_mask & new_mask))
 		goto unlock;
 
+	if (!hlock_class(this)->usage_mask)
+		debug_atomic_dec(nr_unused_locks);
+
 	hlock_class(this)->usage_mask |= new_mask;
 
 	if (new_bit < LOCK_TRACE_STATES) {
@@ -4402,19 +4405,10 @@ static int mark_lock(struct task_struct *curr, struct held_lock *this,
 			return 0;
 	}
 
-	switch (new_bit) {
-	case 0 ... LOCK_USED-1:
+	if (new_bit < LOCK_USED) {
 		ret = mark_lock_irq(curr, this, new_bit);
 		if (!ret)
 			return 0;
-		break;
-
-	case LOCK_USED:
-		debug_atomic_dec(nr_unused_locks);
-		break;
-
-	default:
-		break;
 	}
 
 unlock:
