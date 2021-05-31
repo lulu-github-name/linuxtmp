@@ -9185,6 +9185,22 @@ static netdev_features_t netdev_fix_features(struct net_device *dev,
 		}
 	}
 
+	if (features & NETIF_F_HW_TLS_TX) {
+		bool ip_csum = (features & (NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM)) ==
+			(NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM);
+		bool hw_csum = features & NETIF_F_HW_CSUM;
+
+		if (!ip_csum && !hw_csum) {
+			netdev_dbg(dev, "Dropping TLS TX HW offload feature since no CSUM feature.\n");
+			features &= ~NETIF_F_HW_TLS_TX;
+		}
+	}
+
+	if ((features & NETIF_F_HW_TLS_RX) && !(features & NETIF_F_RXCSUM)) {
+		netdev_dbg(dev, "Dropping TLS RX HW offload feature since no RXCSUM feature.\n");
+		features &= ~NETIF_F_HW_TLS_RX;
+	}
+
 	return features;
 }
 
