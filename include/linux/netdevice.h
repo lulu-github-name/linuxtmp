@@ -1336,6 +1336,9 @@ struct devlink;
  *	Get devlink port instance associated with a given netdev.
  *	Called with a reference on the netdevice and devlink locks only,
  *	rtnl_lock is not held.
+ * struct net_device *(*ndo_get_peer_dev)(struct net_device *dev);
+ *	If a device is paired with a peer device, return the peer instance.
+ *	The caller must be under RCU read context.
  */
 struct net_device_ops {
 	int			(*ndo_init)(struct net_device *dev);
@@ -1557,7 +1560,7 @@ struct net_device_ops {
 								bool all_slaves))
 	RH_KABI_USE(6, struct net_device*	(*ndo_sk_get_lower_dev)(struct net_device *dev,
 							struct sock *sk))
-	RH_KABI_RESERVE(7)
+	RH_KABI_USE(7, struct net_device *(*ndo_get_peer_dev)(struct net_device *dev))
 	RH_KABI_RESERVE(8)
 	RH_KABI_RESERVE(9)
 	RH_KABI_RESERVE(10)
