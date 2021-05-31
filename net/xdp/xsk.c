@@ -1143,7 +1143,7 @@ static void xsk_destruct(struct sock *sk)
 		return;
 
 	if (!xp_put_pool(xs->pool))
-		xdp_put_umem(xs->umem);
+		xdp_put_umem(xs->umem, !xs->pool);
 
 	sk_refcnt_debug_dec(sk);
 }
