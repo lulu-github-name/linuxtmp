@@ -15,7 +15,6 @@
 #include <linux/init.h>
 #include <linux/msi.h>
 #include <linux/of.h>
-#include <linux/of_pci.h>
 #include <linux/pci.h>
 #include <linux/pm.h>
 #include <linux/slab.h>
@@ -30,8 +29,6 @@
 #include <linux/pm_runtime.h>
 #include <linux/pci_hotplug.h>
 #include <linux/vmalloc.h>
-#include <linux/pci-ats.h>
-#include <asm/setup.h>
 #include <asm/dma.h>
 #include <linux/aer.h>
 #include "pci.h"
@@ -101,7 +98,19 @@ unsigned long pci_hotplug_mmio_pref_size = DEFAULT_HOTPLUG_MMIO_PREF_SIZE;
 #define DEFAULT_HOTPLUG_BUS_SIZE	1
 unsigned long pci_hotplug_bus_size = DEFAULT_HOTPLUG_BUS_SIZE;
 
+
+/* PCIe MPS/MRRS strategy; can be overridden by kernel command-line param */
+#ifdef CONFIG_PCIE_BUS_TUNE_OFF
+enum pcie_bus_config_types pcie_bus_config = PCIE_BUS_TUNE_OFF;
+#elif defined CONFIG_PCIE_BUS_SAFE
+enum pcie_bus_config_types pcie_bus_config = PCIE_BUS_SAFE;
+#elif defined CONFIG_PCIE_BUS_PERFORMANCE
+enum pcie_bus_config_types pcie_bus_config = PCIE_BUS_PERFORMANCE;
+#elif defined CONFIG_PCIE_BUS_PEER2PEER
+enum pcie_bus_config_types pcie_bus_config = PCIE_BUS_PEER2PEER;
+#else
 enum pcie_bus_config_types pcie_bus_config = PCIE_BUS_DEFAULT;
+#endif
 
 /*
  * The default CLS is used if arch didn't set CLS explicitly and not
@@ -875,6 +884,10 @@ static void pci_std_enable_acs(struct pci_dev *dev)
 	/* Upstream Forwarding */
 	ctrl |= (cap & PCI_ACS_UF);
 
+	/* Enable Translation Blocking for external devices */
+	if (dev->external_facing || dev->untrusted)
+		ctrl |= (cap & PCI_ACS_TB);
+
 	pci_write_config_word(dev, pos + PCI_ACS_CTRL, ctrl);
 }
 
@@ -1064,7 +1077,7 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
 	if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
 		pci_dev_d3_sleep(dev);
 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
-		msleep(PCI_PM_D2_DELAY);
+		udelay(PCI_PM_D2_DELAY);
 
 	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
 	dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
@@ -4704,9 +4717,7 @@ static bool pcie_wait_for_link_delay(struct pci_dev *pdev, bool active,
 	}
 	if (active && ret)
 		msleep(delay);
-	else if (ret != active)
-		pci_info(pdev, "Data Link Layer Link Active not %s in 1000 msec\n",
-			active ? "set" : "cleared");
+
 	return ret == active;
 }
 
@@ -4831,6 +4842,7 @@ void pci_bridge_wait_for_secondary_bus(struct pci_dev *dev)
 			delay);
 		if (!pcie_wait_for_link_delay(dev, true, delay)) {
 			/* Did not train, no need to wait any further */
+			pci_info(dev, "Data Link Layer Link Active not set in 1000 msec\n");
 			return;
 		}
 	}
@@ -4923,15 +4935,9 @@ static int pci_reset_hotplug_slot(struct hotplug_slot *hotplug, int probe)
 
 static int pci_dev_reset_slot_function(struct pci_dev *dev, int probe)
 {
-	struct pci_dev *pdev;
-
-	if (dev->subordinate || !dev->slot ||
+	if (dev->multifunction || dev->subordinate || !dev->slot ||
 	    dev->dev_flags & PCI_DEV_FLAGS_NO_BUS_RESET)
 		return -ENOTTY;
-
-	list_for_each_entry(pdev, &dev->bus->devices, bus_list)
-		if (pdev != dev && pdev->slot == dev->slot)
-			return -ENOTTY;
 
 	return pci_reset_hotplug_slot(dev->slot->hotplug, probe);
 }
@@ -6008,7 +6014,7 @@ int pci_set_vga_state(struct pci_dev *dev, bool decode,
 
 	if (flags & PCI_VGA_STATE_CHANGE_DECODES) {
 		pci_read_config_word(dev, PCI_COMMAND, &cmd);
-		if (decode == true)
+		if (decode)
 			cmd |= command_bits;
 		else
 			cmd &= ~command_bits;
@@ -6024,7 +6030,7 @@ int pci_set_vga_state(struct pci_dev *dev, bool decode,
 		if (bridge) {
 			pci_read_config_word(bridge, PCI_BRIDGE_CONTROL,
 					     &cmd);
-			if (decode == true)
+			if (decode)
 				cmd |= PCI_BRIDGE_CTL_VGA;
 			else
 				cmd &= ~PCI_BRIDGE_CTL_VGA;
@@ -6353,7 +6359,7 @@ static ssize_t resource_alignment_show(struct bus_type *bus, char *buf)
 
 	spin_lock(&resource_alignment_lock);
 	if (resource_alignment_param)
-		count = snprintf(buf, PAGE_SIZE, "%s", resource_alignment_param);
+		count = scnprintf(buf, PAGE_SIZE, "%s", resource_alignment_param);
 	spin_unlock(&resource_alignment_lock);
 
 	/*
