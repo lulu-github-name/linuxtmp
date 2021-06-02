@@ -22,9 +22,6 @@
 #include "libbpf_internal.h"
 #include "hashmap.h"
 
-/* make sure libbpf doesn't use kernel-only integer typedefs */
-#pragma GCC poison u8 u16 u32 u64 s8 s16 s32 s64
-
 #define BTF_MAX_NR_TYPES 0x7fffffffU
 #define BTF_MAX_STR_OFFSET 0x7fffffffU
 
@@ -147,6 +144,23 @@ void *btf_add_mem(void **data, size_t *cap_cnt, size_t elem_sz,
 	*data = new_data;
 	*cap_cnt = new_cnt;
 	return new_data + cur_cnt * elem_sz;
+}
+
+/* Ensure given dynamically allocated memory region has enough allocated space
+ * to accommodate *need_cnt* elements of size *elem_sz* bytes each
+ */
+int btf_ensure_mem(void **data, size_t *cap_cnt, size_t elem_sz, size_t need_cnt)
+{
+	void *p;
+
+	if (need_cnt <= *cap_cnt)
+		return 0;
+
+	p = btf_add_mem(data, cap_cnt, elem_sz, *cap_cnt, SIZE_MAX, need_cnt - *cap_cnt);
+	if (!p)
+		return -ENOMEM;
+
+	return 0;
 }
 
 static int btf_add_type_idx_entry(struct btf *btf, __u32 type_off)

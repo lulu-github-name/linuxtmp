@@ -349,14 +349,14 @@ bool dev_map_can_have_prog(struct bpf_map *map)
 	return false;
 }
 
-static int bq_xmit_all(struct xdp_dev_bulk_queue *bq, u32 flags)
+static void bq_xmit_all(struct xdp_dev_bulk_queue *bq, u32 flags)
 {
 	struct net_device *dev = bq->dev;
 	int sent = 0, drops = 0, err = 0;
 	int i;
 
 	if (unlikely(!bq->count))
-		return 0;
+		return;
 
 	for (i = 0; i < bq->count; i++) {
 		struct xdp_frame *xdpf = bq->q[i];
@@ -377,7 +377,7 @@ out:
 	trace_xdp_devmap_xmit(bq->dev_rx, dev, sent, drops, err);
 	bq->dev_rx = NULL;
 	__list_del_clearprev(&bq->flush_node);
-	return 0;
+	return;
 error:
 	/* If ndo_xdp_xmit fails with an errno, no frames have been
 	 * xmit'ed and it's our responsibility to them free all.
@@ -429,8 +429,8 @@ struct bpf_dtab_netdev *__dev_map_lookup_elem(struct bpf_map *map, u32 key)
 /* Runs under RCU-read-side, plus in softirq under NAPI protection.
  * Thus, safe percpu variable access.
  */
-static int bq_enqueue(struct net_device *dev, struct xdp_frame *xdpf,
-		      struct net_device *dev_rx)
+static void bq_enqueue(struct net_device *dev, struct xdp_frame *xdpf,
+		       struct net_device *dev_rx)
 {
 	struct list_head *flush_list = this_cpu_ptr(&dev_flush_list);
 	struct xdp_dev_bulk_queue *bq = this_cpu_ptr(dev->xdp_bulkq);
@@ -449,8 +449,6 @@ static int bq_enqueue(struct net_device *dev, struct xdp_frame *xdpf,
 
 	if (!bq->flush_node.prev)
 		list_add(&bq->flush_node, flush_list);
-
-	return 0;
 }
 
 static inline int __xdp_enqueue(struct net_device *dev, struct xdp_buff *xdp,
@@ -470,7 +468,8 @@ static inline int __xdp_enqueue(struct net_device *dev, struct xdp_buff *xdp,
 	if (unlikely(!xdpf))
 		return -EOVERFLOW;
 
-	return bq_enqueue(dev, xdpf, dev_rx);
+	bq_enqueue(dev, xdpf, dev_rx);
+	return 0;
 }
 
 static struct xdp_buff *dev_map_run_prog(struct net_device *dev,
@@ -759,6 +758,7 @@ static int dev_map_hash_update_elem(struct bpf_map *map, void *key, void *value,
 
 static int dev_map_btf_id;
 const struct bpf_map_ops dev_map_ops = {
+	.map_meta_equal = bpf_map_meta_equal,
 	.map_alloc = dev_map_alloc,
 	.map_free = dev_map_free,
 	.map_get_next_key = dev_map_get_next_key,
@@ -772,6 +772,7 @@ const struct bpf_map_ops dev_map_ops = {
 
 static int dev_map_hash_map_btf_id;
 const struct bpf_map_ops dev_map_hash_ops = {
+	.map_meta_equal = bpf_map_meta_equal,
 	.map_alloc = dev_map_alloc,
 	.map_free = dev_map_free,
 	.map_get_next_key = dev_map_hash_get_next_key,
