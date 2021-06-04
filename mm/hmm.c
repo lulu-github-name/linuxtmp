@@ -314,8 +314,10 @@ static int hmm_vma_do_fault(struct mm_walk *walk, unsigned long addr,
 		flags |= FAULT_FLAG_WRITE;
 
 	ret = handle_mm_fault(vma, addr, flags);
-	if (ret & VM_FAULT_RETRY)
+	if (ret & VM_FAULT_RETRY) {
+		/* Note, handle_mm_fault did up_read(&mm->mmap_sem)) */
 		return -EAGAIN;
+	}
 	if (ret & VM_FAULT_ERROR) {
 		*pfn = range->values[HMM_PFN_ERROR];
 		return -EFAULT;
