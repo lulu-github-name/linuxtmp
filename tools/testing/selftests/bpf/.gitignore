@@ -35,3 +35,4 @@ test_cpp
 /runqslower
 /bench
 *.ko
+xdpxceiver
