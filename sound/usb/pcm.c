@@ -1814,6 +1814,9 @@ static int snd_usb_substream_playback_trigger(struct snd_pcm_substream *substrea
 					      subs);
 		subs->running = 1;
 		return 0;
+	case SNDRV_PCM_TRIGGER_SUSPEND:
+		subs->need_setup_fmt = true;
+		fallthrough;
 	case SNDRV_PCM_TRIGGER_STOP:
 		stop_endpoints(subs);
 		snd_usb_endpoint_set_callback(subs->data_endpoint,
@@ -1828,13 +1831,6 @@ static int snd_usb_substream_playback_trigger(struct snd_pcm_substream *substrea
 					      subs);
 		subs->running = 0;
 		return 0;
-	case SNDRV_PCM_TRIGGER_SUSPEND:
-		if (subs->stream->chip->setup_fmt_after_resume_quirk) {
-			stop_endpoints(subs);
-			subs->need_setup_fmt = true;
-			return 0;
-		}
-		break;
 	}
 
 	return -EINVAL;
@@ -1858,6 +1854,9 @@ static int snd_usb_substream_capture_trigger(struct snd_pcm_substream *substream
 					      subs);
 		subs->running = 1;
 		return 0;
+	case SNDRV_PCM_TRIGGER_SUSPEND:
+		subs->need_setup_fmt = true;
+		fallthrough;
 	case SNDRV_PCM_TRIGGER_STOP:
 		stop_endpoints(subs);
 		fallthrough;
@@ -1866,13 +1865,6 @@ static int snd_usb_substream_capture_trigger(struct snd_pcm_substream *substream
 					      NULL, NULL, NULL);
 		subs->running = 0;
 		return 0;
-	case SNDRV_PCM_TRIGGER_SUSPEND:
-		if (subs->stream->chip->setup_fmt_after_resume_quirk) {
-			stop_endpoints(subs);
-			subs->need_setup_fmt = true;
-			return 0;
-		}
-		break;
 	}
 
 	return -EINVAL;
