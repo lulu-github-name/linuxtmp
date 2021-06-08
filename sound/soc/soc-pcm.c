@@ -1993,14 +1993,15 @@ out:
 int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 			       int cmd)
 {
+	struct snd_soc_pcm_runtime *be;
 	struct snd_soc_dpcm *dpcm;
 	int ret = 0;
 
 	for_each_dpcm_be(fe, stream, dpcm) {
+		struct snd_pcm_substream *be_substream;
 
-		struct snd_soc_pcm_runtime *be = dpcm->be;
-		struct snd_pcm_substream *be_substream =
-			snd_soc_dpcm_get_substream(be, stream);
+		be = dpcm->be;
+		be_substream = snd_soc_dpcm_get_substream(be, stream);
 
 		/* is this op for this BE ? */
 		if (!snd_soc_dpcm_be_can_update(fe, be, stream))
@@ -2018,7 +2019,7 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 
 			ret = soc_pcm_trigger(be_substream, cmd);
 			if (ret)
-				return ret;
+				goto end;
 
 			be->dpcm[stream].state = SND_SOC_DPCM_STATE_START;
 			break;
@@ -2028,7 +2029,7 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 
 			ret = soc_pcm_trigger(be_substream, cmd);
 			if (ret)
-				return ret;
+				goto end;
 
 			be->dpcm[stream].state = SND_SOC_DPCM_STATE_START;
 			break;
@@ -2038,7 +2039,7 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 
 			ret = soc_pcm_trigger(be_substream, cmd);
 			if (ret)
-				return ret;
+				goto end;
 
 			be->dpcm[stream].state = SND_SOC_DPCM_STATE_START;
 			break;
@@ -2052,7 +2053,7 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 
 			ret = soc_pcm_trigger(be_substream, cmd);
 			if (ret)
-				return ret;
+				goto end;
 
 			be->dpcm[stream].state = SND_SOC_DPCM_STATE_STOP;
 			break;
@@ -2065,7 +2066,7 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 
 			ret = soc_pcm_trigger(be_substream, cmd);
 			if (ret)
-				return ret;
+				goto end;
 
 			be->dpcm[stream].state = SND_SOC_DPCM_STATE_SUSPEND;
 			break;
@@ -2078,13 +2079,16 @@ int dpcm_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream,
 
 			ret = soc_pcm_trigger(be_substream, cmd);
 			if (ret)
-				return ret;
+				goto end;
 
 			be->dpcm[stream].state = SND_SOC_DPCM_STATE_PAUSED;
 			break;
 		}
 	}
-
+end:
+	if (ret < 0)
+		dev_err(fe->dev, "ASoC: %s() failed at %s (%d)\n",
+			__func__, be->dai_link->name, ret);
 	return ret;
 }
 EXPORT_SYMBOL_GPL(dpcm_be_dai_trigger);
@@ -2318,8 +2322,6 @@ static int dpcm_run_update_shutdown(struct snd_soc_pcm_runtime *fe, int stream)
 			fe->dai_link->name);
 
 		err = dpcm_be_dai_trigger(fe, stream, SNDRV_PCM_TRIGGER_STOP);
-		if (err < 0)
-			dev_err(fe->dev,"ASoC: trigger FE failed %d\n", err);
 	}
 
 	err = dpcm_be_dai_hw_free(fe, stream);
@@ -2401,10 +2403,8 @@ static int dpcm_run_update_startup(struct snd_soc_pcm_runtime *fe, int stream)
 
 		ret = dpcm_be_dai_trigger(fe, stream,
 					SNDRV_PCM_TRIGGER_START);
-		if (ret < 0) {
-			dev_err(fe->dev,"ASoC: trigger FE failed %d\n", ret);
+		if (ret < 0)
 			goto hw_free;
-		}
 	}
 
 	return 0;
