@@ -1,2 +1,1 @@
-# Needed by the ath11k wireless driver
-CONFIG_REMOTEPROC=m
+# CONFIG_REMOTEPROC is not set

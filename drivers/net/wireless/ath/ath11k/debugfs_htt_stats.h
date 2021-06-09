@@ -1656,11 +1656,20 @@ struct htt_tx_sounding_stats_tlv {
 };
 
 struct htt_pdev_obss_pd_stats_tlv {
-	u32        num_obss_tx_ppdu_success;
-	u32        num_obss_tx_ppdu_failure;
+	u32 num_obss_tx_ppdu_success;
+	u32 num_obss_tx_ppdu_failure;
+	u32 num_sr_tx_transmissions;
+	u32 num_spatial_reuse_opportunities;
+	u32 num_non_srg_opportunities;
+	u32 num_non_srg_ppdu_tried;
+	u32 num_non_srg_ppdu_success;
+	u32 num_srg_opportunities;
+	u32 num_srg_ppdu_tried;
+	u32 num_srg_ppdu_success;
+	u32 num_psr_opportunities;
+	u32 num_psr_ppdu_tried;
+	u32 num_psr_ppdu_success;
 };
-
-void ath11k_debug_htt_stats_init(struct ath11k *ar);
 
 struct htt_ring_backpressure_stats_tlv {
 	u32 pdev_id;
@@ -1686,5 +1695,30 @@ struct htt_ring_backpressure_stats_tlv {
 	 */
 	u32 backpressure_hist[5];
 };
+
+#ifdef CONFIG_ATH11K_DEBUGFS
+
+void ath11k_debugfs_htt_stats_init(struct ath11k *ar);
+void ath11k_debugfs_htt_ext_stats_handler(struct ath11k_base *ab,
+					  struct sk_buff *skb);
+int ath11k_debugfs_htt_stats_req(struct ath11k *ar);
+
+#else /* CONFIG_ATH11K_DEBUGFS */
+
+static inline void ath11k_debugfs_htt_stats_init(struct ath11k *ar)
+{
+}
+
+static inline void ath11k_debugfs_htt_ext_stats_handler(struct ath11k_base *ab,
+							struct sk_buff *skb)
+{
+}
+
+static inline int ath11k_debugfs_htt_stats_req(struct ath11k *ar)
+{
+	return 0;
+}
+
+#endif /* CONFIG_ATH11K_DEBUGFS */
 
 #endif
