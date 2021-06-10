@@ -55,7 +55,9 @@ static struct ctl_table mptcp_sysctl_table[] = {
 		/* users with CAP_NET_ADMIN or root (not and) can change this
 		 * value, same as other sysctl or the 'net' tree.
 		 */
-		.proc_handler = proc_dointvec,
+		.proc_handler = proc_dointvec_minmax,
+		.extra1       = SYSCTL_ZERO,
+		.extra2       = SYSCTL_ONE
 	},
 	{
 		.procname = "add_addr_timeout",
