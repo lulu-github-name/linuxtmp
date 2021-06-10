@@ -139,6 +139,51 @@ static void mptcp_so_incoming_cpu(struct mptcp_sock *msk, int val)
 	mptcp_sol_socket_sync_intval(msk, SO_INCOMING_CPU, val);
 }
 
+
+static int mptcp_setsockopt_sol_socket_tstamp(struct mptcp_sock *msk, int optname, int val)
+{
+	struct mptcp_subflow_context *subflow;
+	struct sock *sk = (struct sock *)msk;
+	bool valbool = !!val;
+	int ret;
+
+	ret = kernel_setsockopt(sk->sk_socket, SOL_SOCKET, optname,
+				(char *)&val, sizeof(val));
+	if (ret)
+		return ret;
+
+	lock_sock(sk);
+	mptcp_for_each_subflow(msk, subflow) {
+		struct sock *ssk = mptcp_subflow_tcp_sock(subflow);
+		bool slow = lock_sock_fast(ssk);
+
+		switch (optname) {
+		case SO_TIMESTAMP:
+		case SO_TIMESTAMPNS:
+			if (valbool)  {
+				if (optname == SO_TIMESTAMP)
+					sock_reset_flag(ssk, SOCK_RCVTSTAMPNS);
+				else
+					sock_set_flag(ssk, SOCK_RCVTSTAMPNS);
+				sock_set_flag(ssk, SOCK_RCVTSTAMP);
+				sock_enable_timestamp(ssk, SOCK_TIMESTAMP);
+			} else {
+				sock_reset_flag(ssk, SOCK_RCVTSTAMP);
+				sock_reset_flag(ssk, SOCK_RCVTSTAMPNS);
+			}
+			break;
+		case SO_TIMESTAMPING:
+			sock_set_timestamping(ssk, optname, val);
+			break;
+		}
+
+		unlock_sock_fast(ssk, slow);
+	}
+
+	release_sock(sk);
+	return 0;
+}
+
 static int mptcp_setsockopt_sol_socket_int(struct mptcp_sock *msk, int optname,
 					   sockptr_t optval, unsigned int optlen)
 {
@@ -163,6 +208,10 @@ static int mptcp_setsockopt_sol_socket_int(struct mptcp_sock *msk, int optname,
 	case SO_INCOMING_CPU:
 		mptcp_so_incoming_cpu(msk, val);
 		return 0;
+	case SO_TIMESTAMP:
+	case SO_TIMESTAMPNS:
+	case SO_TIMESTAMPING:
+		return mptcp_setsockopt_sol_socket_tstamp(msk, optname, val);
 	}
 
 	return -ENOPROTOOPT;
@@ -251,6 +300,9 @@ static int mptcp_setsockopt_sol_socket(struct mptcp_sock *msk, int optname,
 	case SO_MARK:
 	case SO_INCOMING_CPU:
 	case SO_DEBUG:
+	case SO_TIMESTAMP:
+	case SO_TIMESTAMPNS:
+	case SO_TIMESTAMPING:
 		return mptcp_setsockopt_sol_socket_int(msk, optname, optval, optlen);
 	case SO_LINGER:
 		return mptcp_setsockopt_sol_socket_linger(msk, optval, optlen);
