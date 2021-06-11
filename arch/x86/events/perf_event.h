@@ -680,8 +680,8 @@ struct x86_pmu {
 	u64		(*limit_period)(struct perf_event *event, u64 l);
 
 	/* PMI handler bits */
-	unsigned int	late_ack		:1,
-			counter_freezing	:1;
+	unsigned int	late_ack		:1;
+
 	/*
 	 * sysfs attrs
 	 */
