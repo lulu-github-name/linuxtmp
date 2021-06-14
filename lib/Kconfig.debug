@@ -2184,6 +2184,14 @@ config TEST_LIVEPATCH
 
 	  If unsure, say N.
 
+config TEST_MEMCAT_P
+	tristate "Test memcat_p() helper function"
+	help
+	  Test the memcat_p() helper for correctly merging two
+	  pointer arrays together.
+
+	  If unsure, say N.
+
 endif # RUNTIME_TESTING_MENU
 
 config MEMTEST
