@@ -681,8 +681,8 @@ int __udp4_lib_err(struct sk_buff *skb, u32 info, struct udp_table *udptable)
 	struct net *net = dev_net(skb->dev);
 
 	sk = __udp4_lib_lookup(net, iph->daddr, uh->dest,
-			       iph->saddr, uh->source, skb->dev->ifindex, 0,
-			       udptable, NULL);
+			       iph->saddr, uh->source, skb->dev->ifindex,
+			       inet_sdif(skb), udptable, NULL);
 	if (!sk || udp_sk(sk)->encap_type) {
 		/* No socket for error: try tunnels before discarding */
 		if (static_branch_unlikely(&udp_encap_needed_key))
