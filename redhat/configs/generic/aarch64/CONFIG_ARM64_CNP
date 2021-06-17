@@ -1,1 +1,1 @@
-# CONFIG_ARM64_CNP is not set
+CONFIG_ARM64_CNP=y
