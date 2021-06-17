@@ -306,6 +306,7 @@ struct pcie_link_state;
 struct pci_vpd;
 struct pci_sriov;
 struct pci_p2pdma;
+struct rcec_ea;
 
 struct pci_dev_extended_rh {
 };
@@ -519,8 +520,10 @@ struct pci_dev {
 #ifdef CONFIG_PCIEASPM
 	RH_KABI_USE(6, int  l1ss)	/* L1SS Capability pointer */
 #endif
-	RH_KABI_RESERVE(7)
-	RH_KABI_RESERVE(8)
+#ifdef CONFIG_PCIEPORTBUS
+	RH_KABI_USE(7, struct rcec_ea  *rcec_ea) /* RCEC cached endpoint association */
+	RH_KABI_USE(8, struct pci_dev  *rcec)	 /* Associated RCEC device */
+#endif
 	RH_KABI_RESERVE(9)
 	RH_KABI_RESERVE(10)
 	RH_KABI_RESERVE(11)
@@ -1265,6 +1268,7 @@ u32 pcie_bandwidth_available(struct pci_dev *dev, struct pci_dev **limiting_dev,
 			     enum pci_bus_speed *speed,
 			     enum pcie_link_width *width);
 void pcie_print_link_status(struct pci_dev *dev);
+bool pcie_has_flr(struct pci_dev *dev);
 int pcie_flr(struct pci_dev *dev);
 int __pci_reset_function_locked(struct pci_dev *dev);
 int pci_reset_function(struct pci_dev *dev);
