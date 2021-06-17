@@ -543,7 +543,7 @@ void __oom_reap_task_mm(struct mm_struct *mm)
 
 static bool oom_reap_task_mm(struct task_struct *tsk, struct mm_struct *mm)
 {
-	if (!down_read_trylock(&mm->mmap_sem)) {
+	if (!mmap_read_trylock(mm)) {
 		trace_skip_task_reaping(tsk->pid);
 		return false;
 	}
@@ -555,7 +555,7 @@ static bool oom_reap_task_mm(struct task_struct *tsk, struct mm_struct *mm)
 	 * notifiers cannot block for unbounded amount of time
 	 */
 	if (mm_has_blockable_invalidate_notifiers(mm)) {
-		up_read(&mm->mmap_sem);
+		mmap_read_unlock(mm);
 		schedule_timeout_idle(HZ);
 		return true;
 	}
@@ -567,7 +567,7 @@ static bool oom_reap_task_mm(struct task_struct *tsk, struct mm_struct *mm)
 	 * down_write();up_write() cycle in exit_mmap().
 	 */
 	if (test_bit(MMF_OOM_SKIP, &mm->flags)) {
-		up_read(&mm->mmap_sem);
+		mmap_read_unlock(mm);
 		trace_skip_task_reaping(tsk->pid);
 		return true;
 	}
@@ -581,7 +581,7 @@ static bool oom_reap_task_mm(struct task_struct *tsk, struct mm_struct *mm)
 			K(get_mm_counter(mm, MM_ANONPAGES)),
 			K(get_mm_counter(mm, MM_FILEPAGES)),
 			K(get_mm_counter(mm, MM_SHMEMPAGES)));
-	up_read(&mm->mmap_sem);
+	mmap_read_unlock(mm);
 
 	trace_finish_task_reaping(tsk->pid);
 	return true;
