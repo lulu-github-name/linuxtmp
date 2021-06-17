@@ -2325,12 +2325,10 @@ static void __ibmvnic_reset(struct work_struct *work)
 	struct ibmvnic_adapter *adapter;
 	bool saved_state = false;
 	unsigned long flags;
-	struct net_device *netdev;
 	u32 reset_state;
 	int rc = 0;
 
 	adapter = container_of(work, struct ibmvnic_adapter, ibmvnic_reset);
-	netdev = adapter->netdev;
 
 	if (test_and_set_bit_lock(0, &adapter->resetting)) {
 		queue_delayed_work(system_long_wq,
