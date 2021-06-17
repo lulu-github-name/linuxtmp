@@ -12,7 +12,7 @@
 #ifndef __ASSEMBLY__
 #include <linux/bits.h>
 #include <linux/compiler.h>
-#include <linux/kernel.h>
+#include <linux/minmax.h>
 #include <linux/types.h>
 #include <linux/rh_kabi.h>
 
@@ -237,6 +237,16 @@ static inline bool resource_contains(struct resource *r1, struct resource *r2)
 static inline bool resource_overlaps(struct resource *r1, struct resource *r2)
 {
        return r1->start <= r2->end && r1->end >= r2->start;
+}
+
+static inline bool
+resource_intersection(struct resource *r1, struct resource *r2, struct resource *r)
+{
+	if (!resource_overlaps(r1, r2))
+		return false;
+	r->start = max(r1->start, r2->start);
+	r->end = min(r1->end, r2->end);
+	return true;
 }
 
 static inline bool
