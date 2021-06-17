@@ -941,7 +941,7 @@ int mmu_interval_notifier_insert(struct mmu_interval_notifier *mni,
 	struct mmu_notifier_mm *mmn_mm;
 	int ret;
 
-	might_lock(&mm->mmap_sem);
+	might_lock(&mm->mmap_lock);
 
 	mmn_mm = smp_load_acquire(&mm->mmu_notifier_mm);
 	if (!mmn_mm || !mmn_mm->has_itree) {
