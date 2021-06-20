@@ -958,10 +958,9 @@ static struct mlx5_ib_mr *alloc_mr_from_cache(struct ib_pd *pd,
 	struct mlx5_ib_mr *mr;
 	int npages;
 	int page_shift;
-	int ncont;
 
 	mlx5_ib_cont_pages(umem, iova, MLX5_MKEY_PAGE_SHIFT_MASK, &npages,
-			   &page_shift, &ncont);
+			   &page_shift);
 	ent = mr_cache_ent_from_order(dev, order_base_2(ib_umem_num_dma_blocks(
 						   umem, 1UL << page_shift)));
 	if (!ent)
@@ -1152,7 +1151,6 @@ static struct mlx5_ib_mr *reg_create(struct ib_mr *ibmr, struct ib_pd *pd,
 	int page_shift;
 	__be64 *pas;
 	int npages;
-	int ncont;
 	void *mkc;
 	int inlen;
 	u32 *in;
@@ -1164,7 +1162,7 @@ static struct mlx5_ib_mr *reg_create(struct ib_mr *ibmr, struct ib_pd *pd,
 		return ERR_PTR(-ENOMEM);
 
 	mlx5_ib_cont_pages(umem, iova, MLX5_MKEY_PAGE_SHIFT_MASK, &npages,
-			   &page_shift, &ncont);
+			   &page_shift);
 
 	mr->page_shift = page_shift;
 	mr->ibmr.pd = pd;
