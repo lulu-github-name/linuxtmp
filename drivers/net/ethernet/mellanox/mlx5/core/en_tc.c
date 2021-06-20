@@ -4603,7 +4603,6 @@ mlx5e_alloc_flow(struct mlx5e_priv *priv, int attr_size,
 err_free:
 	kfree(flow);
 	kvfree(parse_attr);
-	kfree(attr);
 	return err;
 }
 
