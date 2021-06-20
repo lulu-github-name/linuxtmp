@@ -1074,7 +1074,7 @@ static void *mlx5_ib_create_xlt_wr(struct mlx5_ib_mr *mr,
 				   unsigned int flags)
 {
 	struct mlx5_ib_dev *dev = mr_to_mdev(mr);
-	struct device *ddev = dev->ib_dev.dev.parent;
+	struct device *ddev = &dev->mdev->pdev->dev;
 	dma_addr_t dma;
 	void *xlt;
 
@@ -1111,7 +1111,7 @@ static void *mlx5_ib_create_xlt_wr(struct mlx5_ib_mr *mr,
 static void mlx5_ib_unmap_free_xlt(struct mlx5_ib_dev *dev, void *xlt,
 				   struct ib_sge *sg)
 {
-	struct device *ddev = dev->ib_dev.dev.parent;
+	struct device *ddev = &dev->mdev->pdev->dev;
 
 	dma_unmap_single(ddev, sg->addr, sg->length, DMA_TO_DEVICE);
 	mlx5_ib_free_xlt(xlt, sg->length);
@@ -1121,7 +1121,7 @@ int mlx5_ib_update_xlt(struct mlx5_ib_mr *mr, u64 idx, int npages,
 		       int page_shift, int flags)
 {
 	struct mlx5_ib_dev *dev = mr_to_mdev(mr);
-	struct device *ddev = dev->ib_dev.dev.parent;
+	struct device *ddev = &dev->mdev->pdev->dev;
 	void *xlt;
 	struct mlx5_umr_wr wr;
 	struct ib_sge sg;
@@ -1681,6 +1681,8 @@ mlx5_alloc_priv_descs(struct ib_device *device,
 		      int ndescs,
 		      int desc_size)
 {
+	struct mlx5_ib_dev *dev = to_mdev(device);
+	struct device *ddev = &dev->mdev->pdev->dev;
 	int size = ndescs * desc_size;
 	int add_size;
 	int ret;
@@ -1693,9 +1695,8 @@ mlx5_alloc_priv_descs(struct ib_device *device,
 
 	mr->descs = PTR_ALIGN(mr->descs_alloc, MLX5_UMR_ALIGN);
 
-	mr->desc_map = dma_map_single(device->dev.parent, mr->descs,
-				      size, DMA_TO_DEVICE);
-	if (dma_mapping_error(device->dev.parent, mr->desc_map)) {
+	mr->desc_map = dma_map_single(ddev, mr->descs, size, DMA_TO_DEVICE);
+	if (dma_mapping_error(ddev, mr->desc_map)) {
 		ret = -ENOMEM;
 		goto err;
 	}
@@ -1713,9 +1714,10 @@ mlx5_free_priv_descs(struct mlx5_ib_mr *mr)
 	if (mr->descs) {
 		struct ib_device *device = mr->ibmr.device;
 		int size = mr->max_descs * mr->desc_size;
+		struct mlx5_ib_dev *dev = to_mdev(device);
 
-		dma_unmap_single(device->dev.parent, mr->desc_map,
-				 size, DMA_TO_DEVICE);
+		dma_unmap_single(&dev->mdev->pdev->dev, mr->desc_map, size,
+				 DMA_TO_DEVICE);
 		kfree(mr->descs_alloc);
 		mr->descs = NULL;
 	}
