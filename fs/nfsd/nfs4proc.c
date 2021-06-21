@@ -1974,7 +1974,7 @@ static void svcxdr_init_encode(struct svc_rqst *rqstp,
 	xdr->end = head->iov_base + PAGE_SIZE - rqstp->rq_auth_slack;
 	/* Tail and page_len should be zero at this point: */
 	buf->len = buf->head[0].iov_len;
-	xdr->scratch.iov_len = 0;
+	xdr_reset_scratch_buffer(xdr);
 	xdr->page_ptr = buf->pages - 1;
 	buf->buflen = PAGE_SIZE * (1 + rqstp->rq_page_end - buf->pages)
 		- rqstp->rq_auth_slack;
@@ -2909,16 +2909,13 @@ static const char *nfsd4_op_name(unsigned opnum)
 	return "unknown_operation";
 }
 
-#define nfsd4_voidres			nfsd4_voidargs
-struct nfsd4_voidargs { int dummy; };
-
 static const struct svc_procedure nfsd_procedures4[2] = {
 	[NFSPROC4_NULL] = {
 		.pc_func = nfsd4_proc_null,
-		.pc_decode = nfs4svc_decode_voidarg,
-		.pc_encode = nfs4svc_encode_voidres,
-		.pc_argsize = sizeof(struct nfsd4_voidargs),
-		.pc_ressize = sizeof(struct nfsd4_voidres),
+		.pc_decode = nfssvc_decode_voidarg,
+		.pc_encode = nfssvc_encode_voidres,
+		.pc_argsize = sizeof(struct nfsd_voidargs),
+		.pc_ressize = sizeof(struct nfsd_voidres),
 		.pc_cachetype = RC_NOCACHE,
 		.pc_xdrressize = 1,
 	},

@@ -52,6 +52,8 @@
 #include "netns.h"
 #include "pnfs.h"
 
+#include "trace.h"
+
 #ifdef CONFIG_NFSD_V4_SECURITY_LABEL
 #include <linux/security.h>
 #endif
@@ -2172,9 +2174,14 @@ nfsd4_decode_compound(struct nfsd4_compoundargs *argp)
 		READ_BUF(4);
 		op->opnum = be32_to_cpup(p++);
 
-		if (nfsd4_opnum_in_range(argp, op))
+		if (nfsd4_opnum_in_range(argp, op)) {
 			op->status = nfsd4_dec_ops[op->opnum](argp, &op->u);
-		else {
+			if (op->status != nfs_ok)
+				trace_nfsd_compound_decode_err(argp->rqstp,
+							       argp->opcnt, i,
+							       op->opnum,
+							       op->status);
+		} else {
 			op->opnum = OP_ILLEGAL;
 			op->status = nfserr_op_illegal;
 		}
@@ -2222,12 +2229,8 @@ static __be32 *encode_change(__be32 *p, struct kstat *stat, struct inode *inode,
 	if (exp->ex_flags & NFSEXP_V4ROOT) {
 		*p++ = cpu_to_be32(convert_to_wallclock(exp->cd->flush_time));
 		*p++ = 0;
-	} else if (IS_I_VERSION(inode)) {
+	} else
 		p = xdr_encode_hyper(p, nfsd4_change_attribute(stat, inode));
-	} else {
-		*p++ = cpu_to_be32(stat->ctime.tv_sec);
-		*p++ = cpu_to_be32(stat->ctime.tv_nsec);
-	}
 	return p;
 }
 
@@ -2259,15 +2262,8 @@ static __be32 *encode_time_delta(__be32 *p, struct inode *inode)
 static __be32 *encode_cinfo(__be32 *p, struct nfsd4_change_info *c)
 {
 	*p++ = cpu_to_be32(c->atomic);
-	if (c->change_supported) {
-		p = xdr_encode_hyper(p, c->before_change);
-		p = xdr_encode_hyper(p, c->after_change);
-	} else {
-		*p++ = cpu_to_be32(c->before_ctime_sec);
-		*p++ = cpu_to_be32(c->before_ctime_nsec);
-		*p++ = cpu_to_be32(c->after_ctime_sec);
-		*p++ = cpu_to_be32(c->after_ctime_nsec);
-	}
+	p = xdr_encode_hyper(p, c->before_change);
+	p = xdr_encode_hyper(p, c->after_change);
 	return p;
 }
 
@@ -2482,7 +2478,7 @@ static u32 nfs4_file_type(umode_t mode)
 	case S_IFREG:	return NF4REG;
 	case S_IFSOCK:	return NF4SOCK;
 	default:	return NF4BAD;
-	};
+	}
 }
 
 static inline __be32
@@ -3118,16 +3114,6 @@ out_acl:
 			goto out;
 	}
 
-	if (bmval2 & FATTR4_WORD2_CHANGE_ATTR_TYPE) {
-		p = xdr_reserve_space(xdr, 4);
-		if (!p)
-			goto out_resource;
-		if (IS_I_VERSION(d_inode(dentry)))
-			*p++ = cpu_to_be32(NFS4_CHANGE_TYPE_IS_MONOTONIC_INCR);
-		else
-			*p++ = cpu_to_be32(NFS4_CHANGE_TYPE_IS_TIME_METADATA);
-	}
-
 #ifdef CONFIG_NFSD_V4_SECURITY_LABEL
 	if (bmval2 & FATTR4_WORD2_SECURITY_LABEL) {
 		status = nfsd4_encode_security_label(xdr, rqstp, context,
@@ -3680,8 +3666,8 @@ static __be32 nfsd4_encode_splice_read(
 {
 	struct xdr_stream *xdr = &resp->xdr;
 	struct xdr_buf *buf = xdr->buf;
+	int status, space_left;
 	u32 eof;
-	int space_left;
 	__be32 nfserr;
 	__be32 *p = xdr->p - 2;
 
@@ -3692,14 +3678,13 @@ static __be32 nfsd4_encode_splice_read(
 	nfserr = nfsd_splice_read(read->rd_rqstp, read->rd_fhp,
 				  file, read->rd_offset, &maxcount, &eof);
 	read->rd_length = maxcount;
-	if (nfserr) {
-		/*
-		 * nfsd_splice_actor may have already messed with the
-		 * page length; reset it so as not to confuse
-		 * xdr_truncate_encode:
-		 */
-		buf->page_len = 0;
-		return nfserr;
+	if (nfserr)
+		goto out_err;
+	status = svc_encode_result_payload(read->rd_rqstp,
+					   buf->head[0].iov_len, maxcount);
+	if (status) {
+		nfserr = nfserrno(status);
+		goto out_err;
 	}
 
 	*(p++) = htonl(eof);
@@ -3730,6 +3715,15 @@ static __be32 nfsd4_encode_splice_read(
 	xdr->end = (__be32 *)((void *)xdr->end + space_left);
 
 	return 0;
+
+out_err:
+	/*
+	 * nfsd_splice_actor may have already messed with the
+	 * page length; reset it so as not to confuse
+	 * xdr_truncate_encode in our caller.
+	 */
+	buf->page_len = 0;
+	return nfserr;
 }
 
 static __be32 nfsd4_encode_readv(struct nfsd4_compoundres *resp,
@@ -3753,7 +3747,7 @@ static __be32 nfsd4_encode_readv(struct nfsd4_compoundres *resp,
 	read->rd_length = maxcount;
 	if (nfserr)
 		return nfserr;
-	if (svc_encode_read_payload(resp->rqstp, starting_len + 8, maxcount))
+	if (svc_encode_result_payload(resp->rqstp, starting_len + 8, maxcount))
 		return nfserr_io;
 	xdr_truncate_encode(xdr, starting_len + 8 + xdr_align_size(maxcount));
 
@@ -3824,6 +3818,7 @@ nfsd4_encode_readlink(struct nfsd4_compoundres *resp, __be32 nfserr, struct nfsd
 	int zero = 0;
 	struct xdr_stream *xdr = &resp->xdr;
 	int length_offset = xdr->buf->len;
+	int status;
 	__be32 *p;
 
 	p = xdr_reserve_space(xdr, 4);
@@ -3844,9 +3839,13 @@ nfsd4_encode_readlink(struct nfsd4_compoundres *resp, __be32 nfserr, struct nfsd
 						(char *)p, &maxcount);
 	if (nfserr == nfserr_isdir)
 		nfserr = nfserr_inval;
-	if (nfserr) {
-		xdr_truncate_encode(xdr, length_offset);
-		return nfserr;
+	if (nfserr)
+		goto out_err;
+	status = svc_encode_result_payload(readlink->rl_rqstp, length_offset,
+					   maxcount);
+	if (status) {
+		nfserr = nfserrno(status);
+		goto out_err;
 	}
 
 	wire_count = htonl(maxcount);
@@ -3856,6 +3855,10 @@ nfsd4_encode_readlink(struct nfsd4_compoundres *resp, __be32 nfserr, struct nfsd
 		write_bytes_to_xdr_buf(xdr->buf, length_offset + 4 + maxcount,
 						&zero, 4 - (maxcount&3));
 	return 0;
+
+out_err:
+	xdr_truncate_encode(xdr, length_offset);
+	return nfserr;
 }
 
 static __be32
@@ -4896,6 +4899,8 @@ nfsd4_encode_operation(struct nfsd4_compoundres *resp, struct nfsd4_op *op)
 	       !nfsd4_enc_ops[op->opnum]);
 	encoder = nfsd4_enc_ops[op->opnum];
 	op->status = encoder(resp, op->status, &op->u);
+	if (op->status)
+		trace_nfsd_compound_encode_err(rqstp, op->opnum, op->status);
 	if (opdesc && opdesc->op_release)
 		opdesc->op_release(&op->u);
 	xdr_commit_encode(xdr);
@@ -4964,12 +4969,6 @@ nfsd4_encode_replay(struct xdr_stream *xdr, struct nfsd4_op *op)
 	p = xdr_encode_opaque_fixed(p, rp->rp_buf, rp->rp_buflen);
 }
 
-int
-nfs4svc_encode_voidres(struct svc_rqst *rqstp, __be32 *p)
-{
-        return xdr_ressize_check(rqstp, p);
-}
-
 void nfsd4_release_compoundargs(struct svc_rqst *rqstp)
 {
 	struct nfsd4_compoundargs *args = rqstp->rq_argp;
@@ -4985,12 +4984,6 @@ void nfsd4_release_compoundargs(struct svc_rqst *rqstp)
 		args->to_free = tb->next;
 		kfree(tb);
 	}
-}
-
-int
-nfs4svc_decode_voidarg(struct svc_rqst *rqstp, __be32 *p)
-{
-	return 1;
 }
 
 int
