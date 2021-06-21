@@ -39,7 +39,7 @@ static void mlx5i_get_drvinfo(struct net_device *dev,
 	struct mlx5e_priv *priv = mlx5i_epriv(dev);
 
 	mlx5e_ethtool_get_drvinfo(priv, drvinfo);
-	strlcpy(drvinfo->driver, DRIVER_NAME "[ib_ipoib]",
+	strlcpy(drvinfo->driver, KBUILD_MODNAME "[ib_ipoib]",
 		sizeof(drvinfo->driver));
 }
 
@@ -129,14 +129,6 @@ static int mlx5i_flash_device(struct net_device *netdev,
 
 	return mlx5e_ethtool_flash_device(priv, flash);
 }
-
-enum mlx5_ptys_width {
-	MLX5_PTYS_WIDTH_1X	= 1 << 0,
-	MLX5_PTYS_WIDTH_2X	= 1 << 1,
-	MLX5_PTYS_WIDTH_4X	= 1 << 2,
-	MLX5_PTYS_WIDTH_8X	= 1 << 3,
-	MLX5_PTYS_WIDTH_12X	= 1 << 4,
-};
 
 static inline int mlx5_ptys_width_enum_to_int(enum mlx5_ptys_width width)
 {

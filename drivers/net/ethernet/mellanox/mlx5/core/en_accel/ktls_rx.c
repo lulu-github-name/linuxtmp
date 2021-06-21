@@ -202,7 +202,7 @@ static int post_rx_param_wqes(struct mlx5e_channel *c,
 
 	err = 0;
 	sq = &c->async_icosq;
-	spin_lock(&c->async_icosq_lock);
+	spin_lock_bh(&c->async_icosq_lock);
 
 	cseg = post_static_params(sq, priv_rx);
 	if (IS_ERR(cseg))
@@ -213,7 +213,7 @@ static int post_rx_param_wqes(struct mlx5e_channel *c,
 
 	mlx5e_notify_hw(&sq->wq, sq->pc, sq->uar_map, cseg);
 unlock:
-	spin_unlock(&c->async_icosq_lock);
+	spin_unlock_bh(&c->async_icosq_lock);
 
 	return err;
 
@@ -267,7 +267,7 @@ resync_post_get_progress_params(struct mlx5e_icosq *sq,
 		goto err_out;
 	}
 
-	pdev = sq->channel->priv->mdev->device;
+	pdev = mlx5_core_dma_dev(sq->channel->priv->mdev);
 	buf->dma_addr = dma_map_single(pdev, &buf->progress,
 				       PROGRESS_PARAMS_PADDED_SIZE, DMA_FROM_DEVICE);
 	if (unlikely(dma_mapping_error(pdev, buf->dma_addr))) {
@@ -279,10 +279,10 @@ resync_post_get_progress_params(struct mlx5e_icosq *sq,
 
 	BUILD_BUG_ON(MLX5E_KTLS_GET_PROGRESS_WQEBBS != 1);
 
-	spin_lock(&sq->channel->async_icosq_lock);
+	spin_lock_bh(&sq->channel->async_icosq_lock);
 
 	if (unlikely(!mlx5e_wqc_has_room_for(&sq->wq, sq->cc, sq->pc, 1))) {
-		spin_unlock(&sq->channel->async_icosq_lock);
+		spin_unlock_bh(&sq->channel->async_icosq_lock);
 		err = -ENOSPC;
 		goto err_dma_unmap;
 	}
@@ -313,7 +313,7 @@ resync_post_get_progress_params(struct mlx5e_icosq *sq,
 	icosq_fill_wi(sq, pi, &wi);
 	sq->pc++;
 	mlx5e_notify_hw(&sq->wq, sq->pc, sq->uar_map, cseg);
-	spin_unlock(&sq->channel->async_icosq_lock);
+	spin_unlock_bh(&sq->channel->async_icosq_lock);
 
 	return 0;
 
@@ -374,7 +374,7 @@ static int resync_handle_seq_match(struct mlx5e_ktls_offload_context_rx *priv_rx
 	err = 0;
 
 	sq = &c->async_icosq;
-	spin_lock(&c->async_icosq_lock);
+	spin_lock_bh(&c->async_icosq_lock);
 
 	cseg = post_static_params(sq, priv_rx);
 	if (IS_ERR(cseg)) {
@@ -386,7 +386,7 @@ static int resync_handle_seq_match(struct mlx5e_ktls_offload_context_rx *priv_rx
 	mlx5e_notify_hw(&sq->wq, sq->pc, sq->uar_map, cseg);
 	priv_rx->stats->tls_resync_res_ok++;
 unlock:
-	spin_unlock(&c->async_icosq_lock);
+	spin_unlock_bh(&c->async_icosq_lock);
 
 	return err;
 }
@@ -408,7 +408,7 @@ void mlx5e_ktls_handle_get_psv_completion(struct mlx5e_icosq_wqe_info *wi,
 
 	priv_rx = buf->priv_rx;
 	resync = &priv_rx->resync;
-	dev = resync->priv->mdev->device;
+	dev = mlx5_core_dma_dev(resync->priv->mdev);
 	if (unlikely(test_bit(MLX5E_PRIV_RX_FLAG_DELETING, priv_rx->flags)))
 		goto out;
 

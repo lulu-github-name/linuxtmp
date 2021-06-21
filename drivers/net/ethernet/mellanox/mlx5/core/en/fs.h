@@ -12,9 +12,12 @@ enum {
 };
 
 struct mlx5e_tc_table {
-	/* protects flow table */
+	/* Protects the dynamic assignment of the t parameter
+	 * which is the nic tc root table.
+	 */
 	struct mutex			t_lock;
 	struct mlx5_flow_table		*t;
+	struct mlx5_fs_chains           *chains;
 
 	struct rhashtable               ht;
 
@@ -24,6 +27,8 @@ struct mlx5e_tc_table {
 
 	struct notifier_block     netdevice_nb;
 	struct netdev_net_notifier	netdevice_nn;
+
+	struct mlx5_tc_ct_priv         *ct;
 };
 
 struct mlx5e_flow_table {
@@ -282,8 +287,7 @@ void mlx5e_disable_cvlan_filter(struct mlx5e_priv *priv);
 int mlx5e_create_flow_steering(struct mlx5e_priv *priv);
 void mlx5e_destroy_flow_steering(struct mlx5e_priv *priv);
 
-bool mlx5e_tunnel_proto_supported(struct mlx5_core_dev *mdev, u8 proto_type);
-bool mlx5e_any_tunnel_proto_supported(struct mlx5_core_dev *mdev);
+u8 mlx5e_get_proto_by_tunnel_type(enum mlx5e_tunnel_types tt);
 
 #endif /* __MLX5E_FLOW_STEER_H__ */
 
