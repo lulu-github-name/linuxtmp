@@ -34,6 +34,8 @@ workflow: !reference [.workflow]
 .realtime_check:
   # best-effort, shouldn't block MRs
   allow_failure: true
+  trigger:
+    branch: rhel8-rt
   variables:
     # adjust configuration above slightly for -rt
     name: kernel-rt-rhel8
