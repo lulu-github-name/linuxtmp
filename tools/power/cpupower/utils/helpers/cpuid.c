@@ -127,8 +127,12 @@ out:
 	/* AMD Boost state enable/disable register */
 	if (cpu_info->vendor == X86_VENDOR_AMD) {
 		if (ext_cpuid_level >= 0x80000007) {
-			if (cpuid_edx(0x80000007) & (1 << 9))
+			if (cpuid_edx(0x80000007) & (1 << 9)) {
 				cpu_info->caps |= CPUPOWER_CAP_AMD_CPB;
+
+				if (cpu_info->family >= 0x17)
+					cpu_info->caps |= CPUPOWER_CAP_AMD_CPB_MSR;
+			}
 
 			if ((cpuid_edx(0x80000007) & (1 << 7)) &&
 			    cpu_info->family != 0x14) {
