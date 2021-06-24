@@ -159,9 +159,12 @@ struct eeh_dev {
 	struct pci_dn *pdn;		/* Associated PCI device node	*/
 	struct pci_dev *pdev;		/* Associated PCI device	*/
 	bool in_error;			/* Error flag for edev		*/
+
+	/* VF specific properties */
 	struct pci_dev *physfn;		/* Associated SRIOV PF		*/
 	RH_KABI_REPLACE(struct pci_bus * bus, struct pci_controller *controller)
 	RH_KABI_EXTEND(int bdfn)	/* bdfn of device (for cfg ops) */
+	RH_KABI_EXTEND(int vf_index)    /* Index of this VF             */
 };
 
 /* "fmt" must be a simple literal string */
