@@ -246,7 +246,8 @@ struct eeh_ops {
 	int (*next_error)(struct eeh_pe **pe);
 	RH_KABI_REPLACE(int (*restore_config)(struct pci_dn *pdn),
 			int (*restore_config)(struct eeh_dev *edev))
-	int (*notify_resume)(struct pci_dn *pdn);
+	RH_KABI_REPLACE(int (*notify_resume)(struct pci_dn *pdn),
+			int (*notify_resume)(struct eeh_dev *edev))
 };
 
 extern int eeh_subsystem_flags;
