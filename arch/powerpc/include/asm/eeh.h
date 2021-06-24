@@ -230,7 +230,7 @@ enum {
 
 struct eeh_ops {
 	char *name;
-	int (*init)(void);
+	RH_KABI_DEPRECATE_FN(int*, init, void);
 	struct eeh_dev *(*probe)(struct pci_dev *pdev);
 	int (*set_option)(struct eeh_pe *pe, int option);
 	RH_KABI_DEPRECATE_FN(int, get_pe_addr, struct eeh_pe *pe);
