@@ -17,8 +17,6 @@ workflow: !reference [.workflow]
   trigger:
     branch: rhel8
   variables:
-    commit_hash: ${CI_COMMIT_SHA}
-    title: ${CI_COMMIT_TITLE}
     kernel_type: internal
     make_target: rpm
     builder_image: quay.io/cki/builder-rhel8
@@ -34,6 +32,8 @@ workflow: !reference [.workflow]
 .realtime_check:
   # best-effort, shouldn't block MRs
   allow_failure: true
+  trigger:
+    branch: rhel8-rt
   variables:
     # adjust configuration above slightly for -rt
     name: kernel-rt-rhel8
@@ -49,20 +49,25 @@ workflow: !reference [.workflow]
 # regular pipelines
 
 merge_request_regular:
-  extends: [.trigger, .internal, .merge_request, .with_notifications]
+  extends: [.internal, .merge_request, .with_notifications,
+            .trigger]
 
 realtime_check_regular:
-  extends: [.trigger, .internal, .merge_request, .realtime_check]
+  extends: [.internal, .merge_request,
+            .trigger, .realtime_check]
 
 baseline_regular:
-  extends: [.trigger, .internal, .baseline, .with_notifications]
+  extends: [.internal, .baseline, .with_notifications,
+            .trigger]
 
 # private pipelines
 
 merge_request_private:
-  extends: [.trigger, .scratch, .merge_request]
+  extends: [.scratch, .merge_request,
+            .trigger]
 
 realtime_check_private:
-  extends: [.trigger, .scratch, .merge_request, .realtime_check]
+  extends: [.scratch, .merge_request,
+            .trigger, .realtime_check]
 
 # no private baselines as repos are mirrored
