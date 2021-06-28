@@ -624,12 +624,23 @@ void acpi_bus_put_acpi_device(struct acpi_device *adev)
 	put_device(&adev->dev);
 }
 
+static struct acpi_device_bus_id *acpi_device_bus_id_match(const char *dev_id)
+{
+	struct acpi_device_bus_id *acpi_device_bus_id;
+
+	/* Find suitable bus_id and instance number in acpi_bus_id_list. */
+	list_for_each_entry(acpi_device_bus_id, &acpi_bus_id_list, node) {
+		if (!strcmp(acpi_device_bus_id->bus_id, dev_id))
+			return acpi_device_bus_id;
+	}
+	return NULL;
+}
+
 int acpi_device_add(struct acpi_device *device,
 		    void (*release)(struct device *))
 {
+	struct acpi_device_bus_id *acpi_device_bus_id;
 	int result;
-	struct acpi_device_bus_id *acpi_device_bus_id, *new_bus_id;
-	int found = 0;
 
 	if (device->handle) {
 		acpi_status status;
@@ -655,38 +666,26 @@ int acpi_device_add(struct acpi_device *device,
 	INIT_LIST_HEAD(&device->del_list);
 	mutex_init(&device->physical_node_lock);
 
-	new_bus_id = kzalloc(sizeof(struct acpi_device_bus_id), GFP_KERNEL);
-	if (!new_bus_id) {
-		pr_err(PREFIX "Memory allocation error\n");
-		result = -ENOMEM;
-		goto err_detach;
-	}
-
 	mutex_lock(&acpi_device_lock);
-	/*
-	 * Find suitable bus_id and instance number in acpi_bus_id_list
-	 * If failed, create one and link it into acpi_bus_id_list
-	 */
-	list_for_each_entry(acpi_device_bus_id, &acpi_bus_id_list, node) {
-		if (!strcmp(acpi_device_bus_id->bus_id,
-			    acpi_device_hid(device))) {
-			acpi_device_bus_id->instance_no++;
-			found = 1;
-			kfree(new_bus_id);
-			break;
+
+	acpi_device_bus_id = acpi_device_bus_id_match(acpi_device_hid(device));
+	if (acpi_device_bus_id) {
+		acpi_device_bus_id->instance_no++;
+	} else {
+		acpi_device_bus_id = kzalloc(sizeof(*acpi_device_bus_id),
+					     GFP_KERNEL);
+		if (!acpi_device_bus_id) {
+			result = -ENOMEM;
+			goto err_unlock;
 		}
-	}
-	if (!found) {
-		acpi_device_bus_id = new_bus_id;
 		acpi_device_bus_id->bus_id =
 			kstrdup_const(acpi_device_hid(device), GFP_KERNEL);
 		if (!acpi_device_bus_id->bus_id) {
-			pr_err(PREFIX "Memory allocation error for bus id\n");
+			kfree(acpi_device_bus_id);
 			result = -ENOMEM;
-			goto err_free_new_bus_id;
+			goto err_unlock;
 		}
 
-		acpi_device_bus_id->instance_no = 0;
 		list_add_tail(&acpi_device_bus_id->node, &acpi_bus_id_list);
 	}
 	dev_set_name(&device->dev, "%s:%02x", acpi_device_bus_id->bus_id, acpi_device_bus_id->instance_no);
@@ -696,10 +695,12 @@ int acpi_device_add(struct acpi_device *device,
 
 	if (device->wakeup.flags.valid)
 		list_add_tail(&device->wakeup_list, &acpi_wakeup_device_list);
+
 	mutex_unlock(&acpi_device_lock);
 
 	if (device->parent)
 		device->dev.parent = &device->parent->dev;
+
 	device->dev.bus = &acpi_bus_type;
 	device->dev.release = release;
 	result = device_add(&device->dev);
@@ -715,20 +716,19 @@ int acpi_device_add(struct acpi_device *device,
 
 	return 0;
 
- err:
+err:
 	mutex_lock(&acpi_device_lock);
+
 	if (device->parent)
 		list_del(&device->node);
+
 	list_del(&device->wakeup_list);
 
- err_free_new_bus_id:
-	if (!found)
-		kfree(new_bus_id);
-
+err_unlock:
 	mutex_unlock(&acpi_device_lock);
 
- err_detach:
 	acpi_detach_data(device->handle, acpi_scan_drop_device);
+
 	return result;
 }
 
@@ -1680,6 +1680,8 @@ void acpi_init_device_object(struct acpi_device *device, acpi_handle handle,
 	device_initialize(&device->dev);
 	dev_set_uevent_suppress(&device->dev, true);
 	acpi_init_coherency(device);
+	/* Assume there are unmet deps to start with. */
+	device->dep_unmet = 1;
 }
 
 void acpi_device_add_finalize(struct acpi_device *device)
@@ -1945,6 +1947,8 @@ static void acpi_scan_dep_init(struct acpi_device *adev)
 {
 	struct acpi_dep_data *dep;
 
+	adev->dep_unmet = 0;
+
 	mutex_lock(&acpi_dep_list_lock);
 
 	list_for_each_entry(dep, &acpi_dep_list, node) {
@@ -1992,7 +1996,13 @@ static acpi_status acpi_bus_check_add(acpi_handle handle, bool check_dep,
 		return AE_CTRL_DEPTH;
 
 	acpi_scan_init_hotplug(device);
-	if (!check_dep)
+	/*
+	 * If check_dep is true at this point, the device has no dependencies,
+	 * or the creation of the device object would have been postponed above.
+	 */
+	if (check_dep)
+		device->dep_unmet = 0;
+	else
 		acpi_scan_dep_init(device);
 
 out:
