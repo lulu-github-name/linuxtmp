@@ -583,6 +583,14 @@ struct zone {
 
 	RH_KABI_FILL_HOLE(unsigned long watermark_boost)
 
+	/*
+	 * the high and batch values are copied to individual pagesets for
+	 * faster access.
+	 * Utilizes a hole in the KABI between watermark_boost and zone padding
+	 */
+	RH_KABI_FILL_HOLE(int pageset_high)
+	RH_KABI_FILL_HOLE(int pageset_batch)
+
 	/* Write-intensive fields used from the page allocator */
 	ZONE_PADDING(_pad1_)
 
