@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright 2002 Andi Kleen, SuSE Labs.
  * Thanks to Ben LaHaise for precious feedback.
@@ -23,7 +24,7 @@
 #include <linux/uaccess.h>
 #include <asm/pgalloc.h>
 #include <asm/proto.h>
-#include <asm/pat.h>
+#include <asm/memtype.h>
 #include <asm/set_memory.h>
 
 #include "../mm_internal.h"
@@ -757,7 +758,7 @@ static int __should_split_large_page(pte_t *kpte, unsigned long address,
 {
 	unsigned long numpages, pmask, psize, lpaddr, pfn, old_pfn;
 	pgprot_t old_prot, new_prot, req_prot, chk_prot;
-	pte_t new_pte, old_pte, *tmp;
+	pte_t new_pte, *tmp;
 	enum pg_level level;
 
 	/*
@@ -800,7 +801,7 @@ static int __should_split_large_page(pte_t *kpte, unsigned long address,
 	 * Convert protection attributes to 4k-format, as cpa->mask* are set
 	 * up accordingly.
 	 */
-	old_pte = *kpte;
+
 	/* Clear PSE (aka _PAGE_PAT) and move PAT bit to correct position */
 	req_prot = pgprot_large_2_4k(old_prot);
 
@@ -1811,7 +1812,7 @@ int set_memory_uc(unsigned long addr, int numpages)
 	/*
 	 * for now UC MINUS. see comments in ioremap_nocache()
 	 */
-	ret = reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
+	ret = memtype_reserve(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
 			      _PAGE_CACHE_MODE_UC_MINUS, NULL);
 	if (ret)
 		goto out_err;
@@ -1823,68 +1824,11 @@ int set_memory_uc(unsigned long addr, int numpages)
 	return 0;
 
 out_free:
-	free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
+	memtype_free(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
 out_err:
 	return ret;
 }
 EXPORT_SYMBOL(set_memory_uc);
-
-static int _set_memory_array(unsigned long *addr, int numpages,
-		enum page_cache_mode new_type)
-{
-	enum page_cache_mode set_type;
-	int i, j;
-	int ret;
-
-	for (i = 0; i < numpages; i++) {
-		ret = reserve_memtype(__pa(addr[i]), __pa(addr[i]) + PAGE_SIZE,
-					new_type, NULL);
-		if (ret)
-			goto out_free;
-	}
-
-	/* If WC, set to UC- first and then WC */
-	set_type = (new_type == _PAGE_CACHE_MODE_WC) ?
-				_PAGE_CACHE_MODE_UC_MINUS : new_type;
-
-	ret = change_page_attr_set(addr, numpages,
-				   cachemode2pgprot(set_type), 1);
-
-	if (!ret && new_type == _PAGE_CACHE_MODE_WC)
-		ret = change_page_attr_set_clr(addr, numpages,
-					       cachemode2pgprot(
-						_PAGE_CACHE_MODE_WC),
-					       __pgprot(_PAGE_CACHE_MASK),
-					       0, CPA_ARRAY, NULL);
-	if (ret)
-		goto out_free;
-
-	return 0;
-
-out_free:
-	for (j = 0; j < i; j++)
-		free_memtype(__pa(addr[j]), __pa(addr[j]) + PAGE_SIZE);
-
-	return ret;
-}
-
-int set_memory_array_uc(unsigned long *addr, int numpages)
-{
-	return _set_memory_array(addr, numpages, _PAGE_CACHE_MODE_UC_MINUS);
-}
-EXPORT_SYMBOL(set_memory_array_uc);
-
-int set_memory_array_wc(unsigned long *addr, int numpages)
-{
-	return _set_memory_array(addr, numpages, _PAGE_CACHE_MODE_WC);
-}
-EXPORT_SYMBOL(set_memory_array_wc);
-
-int set_memory_array_wt(unsigned long *addr, int numpages)
-{
-	return _set_memory_array(addr, numpages, _PAGE_CACHE_MODE_WT);
-}
-EXPORT_SYMBOL_GPL(set_memory_array_wt);
 
 int _set_memory_wc(unsigned long addr, int numpages)
 {
@@ -1906,14 +1850,14 @@ int set_memory_wc(unsigned long addr, int numpages)
 {
 	int ret;
 
-	ret = reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
+	ret = memtype_reserve(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
 		_PAGE_CACHE_MODE_WC, NULL);
 	if (ret)
 		return ret;
 
 	ret = _set_memory_wc(addr, numpages);
 	if (ret)
-		free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
+		memtype_free(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
 
 	return ret;
 }
@@ -1924,23 +1868,6 @@ int _set_memory_wt(unsigned long addr, int numpages)
 	return change_page_attr_set(&addr, numpages,
 				    cachemode2pgprot(_PAGE_CACHE_MODE_WT), 0);
 }
-
-int set_memory_wt(unsigned long addr, int numpages)
-{
-	int ret;
-
-	ret = reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
-			      _PAGE_CACHE_MODE_WT, NULL);
-	if (ret)
-		return ret;
-
-	ret = _set_memory_wt(addr, numpages);
-	if (ret)
-		free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
-
-	return ret;
-}
-EXPORT_SYMBOL_GPL(set_memory_wt);
 
 int _set_memory_wb(unsigned long addr, int numpages)
 {
@@ -1957,28 +1884,10 @@ int set_memory_wb(unsigned long addr, int numpages)
 	if (ret)
 		return ret;
 
-	free_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
+	memtype_free(__pa(addr), __pa(addr) + numpages * PAGE_SIZE);
 	return 0;
 }
 EXPORT_SYMBOL(set_memory_wb);
-
-int set_memory_array_wb(unsigned long *addr, int numpages)
-{
-	int i;
-	int ret;
-
-	/* WB cache mode is hard wired to all cache attribute bits being 0 */
-	ret = change_page_attr_clear(addr, numpages,
-				      __pgprot(_PAGE_CACHE_MASK), 1);
-	if (ret)
-		return ret;
-
-	for (i = 0; i < numpages; i++)
-		free_memtype(__pa(addr[i]), __pa(addr[i]) + PAGE_SIZE);
-
-	return 0;
-}
-EXPORT_SYMBOL(set_memory_array_wb);
 
 int set_memory_x(unsigned long addr, int numpages)
 {
@@ -1987,7 +1896,6 @@ int set_memory_x(unsigned long addr, int numpages)
 
 	return change_page_attr_clear(&addr, numpages, __pgprot(_PAGE_NX), 0);
 }
-EXPORT_SYMBOL(set_memory_x);
 
 int set_memory_nx(unsigned long addr, int numpages)
 {
@@ -1996,7 +1904,6 @@ int set_memory_nx(unsigned long addr, int numpages)
 
 	return change_page_attr_set(&addr, numpages, __pgprot(_PAGE_NX), 0);
 }
-EXPORT_SYMBOL(set_memory_nx);
 
 int set_memory_ro(unsigned long addr, int numpages)
 {
@@ -2109,7 +2016,7 @@ static int _set_pages_array(struct page **pages, int numpages,
 			continue;
 		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
 		end = start + PAGE_SIZE;
-		if (reserve_memtype(start, end, new_type, NULL))
+		if (memtype_reserve(start, end, new_type, NULL))
 			goto err_out;
 	}
 
@@ -2135,7 +2042,7 @@ err_out:
 			continue;
 		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
 		end = start + PAGE_SIZE;
-		free_memtype(start, end);
+		memtype_free(start, end);
 	}
 	return -EINVAL;
 }
@@ -2184,28 +2091,12 @@ int set_pages_array_wb(struct page **pages, int numpages)
 			continue;
 		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
 		end = start + PAGE_SIZE;
-		free_memtype(start, end);
+		memtype_free(start, end);
 	}
 
 	return 0;
 }
 EXPORT_SYMBOL(set_pages_array_wb);
-
-int set_pages_x(struct page *page, int numpages)
-{
-	unsigned long addr = (unsigned long)page_address(page);
-
-	return set_memory_x(addr, numpages);
-}
-EXPORT_SYMBOL(set_pages_x);
-
-int set_pages_nx(struct page *page, int numpages)
-{
-	unsigned long addr = (unsigned long)page_address(page);
-
-	return set_memory_nx(addr, numpages);
-}
-EXPORT_SYMBOL(set_pages_nx);
 
 int set_pages_ro(struct page *page, int numpages)
 {

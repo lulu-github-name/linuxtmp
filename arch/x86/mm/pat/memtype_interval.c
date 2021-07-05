@@ -5,19 +5,18 @@
  * Authors: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
  *          Suresh B Siddha <suresh.b.siddha@intel.com>
  *
- * Interval tree (augmented rbtree) used to store the PAT memory type
- * reservations.
+ * Interval tree used to store the PAT memory type reservations.
  */
 
 #include <linux/seq_file.h>
 #include <linux/debugfs.h>
 #include <linux/kernel.h>
-#include <linux/rbtree_augmented.h>
+#include <linux/interval_tree_generic.h>
 #include <linux/sched.h>
 #include <linux/gfp.h>
 
 #include <asm/pgtable.h>
-#include <asm/pat.h>
+#include <asm/memtype.h>
 
 #include "memtype.h"
 
@@ -26,129 +25,79 @@
  * physical memory areas. Without proper tracking, conflicting memory
  * types in different mappings can cause CPU cache corruption.
  *
- * The tree is an interval tree (augmented rbtree) with tree ordered
- * on starting address. Tree can contain multiple entries for
+ * The tree is an interval tree (augmented rbtree) which tree is ordered
+ * by the starting address. The tree can contain multiple entries for
  * different regions which overlap. All the aliases have the same
- * cache attributes of course.
+ * cache attributes of course, as enforced by the PAT logic.
  *
  * memtype_lock protects the rbtree.
  */
 
-static struct rb_root memtype_rbroot = RB_ROOT;
-
-static int is_node_overlap(struct memtype *node, u64 start, u64 end)
+static inline u64 interval_start(struct memtype *entry)
 {
-	if (node->start >= end || node->end <= start)
-		return 0;
-
-	return 1;
+	return entry->start;
 }
 
-static u64 get_subtree_max_end(struct rb_node *node)
+static inline u64 interval_end(struct memtype *entry)
 {
-	u64 ret = 0;
-	if (node) {
-		struct memtype *data = rb_entry(node, struct memtype, rb);
-		ret = data->subtree_max_end;
-	}
-	return ret;
+	return entry->end - 1;
 }
 
-#define NODE_END(node) ((node)->end)
+INTERVAL_TREE_DEFINE(struct memtype, rb, u64, subtree_max_end,
+		     interval_start, interval_end,
+		     static, interval)
 
-RB_DECLARE_CALLBACKS_MAX(static, memtype_rb_augment_cb,
-			 struct memtype, rb, u64, subtree_max_end, NODE_END)
-
-/* Find the first (lowest start addr) overlapping range from rb tree */
-static struct memtype *memtype_rb_lowest_match(struct rb_root *root,
-				u64 start, u64 end)
-{
-	struct rb_node *node = root->rb_node;
-	struct memtype *last_lower = NULL;
-
-	while (node) {
-		struct memtype *data = rb_entry(node, struct memtype, rb);
-
-		if (get_subtree_max_end(node->rb_left) > start) {
-			/* Lowest overlap if any must be on left side */
-			node = node->rb_left;
-		} else if (is_node_overlap(data, start, end)) {
-			last_lower = data;
-			break;
-		} else if (start >= data->start) {
-			/* Lowest overlap if any must be on right side */
-			node = node->rb_right;
-		} else {
-			break;
-		}
-	}
-	return last_lower; /* Returns NULL if there is no overlap */
-}
+static struct rb_root_cached memtype_rbroot = RB_ROOT_CACHED;
 
 enum {
 	MEMTYPE_EXACT_MATCH	= 0,
 	MEMTYPE_END_MATCH	= 1
 };
 
-static struct memtype *memtype_rb_match(struct rb_root *root,
-				u64 start, u64 end, int match_type)
+static struct memtype *memtype_match(u64 start, u64 end, int match_type)
 {
-	struct memtype *match;
+	struct memtype *entry_match;
 
-	match = memtype_rb_lowest_match(root, start, end);
-	while (match != NULL && match->start < end) {
-		struct rb_node *node;
+	entry_match = interval_iter_first(&memtype_rbroot, start, end-1);
 
+	while (entry_match != NULL && entry_match->start < end) {
 		if ((match_type == MEMTYPE_EXACT_MATCH) &&
-		    (match->start == start) && (match->end == end))
-			return match;
+		    (entry_match->start == start) && (entry_match->end == end))
+			return entry_match;
 
 		if ((match_type == MEMTYPE_END_MATCH) &&
-		    (match->start < start) && (match->end == end))
-			return match;
+		    (entry_match->start < start) && (entry_match->end == end))
+			return entry_match;
 
-		node = rb_next(&match->rb);
-		if (node)
-			match = rb_entry(node, struct memtype, rb);
-		else
-			match = NULL;
+		entry_match = interval_iter_next(entry_match, start, end-1);
 	}
 
 	return NULL; /* Returns NULL if there is no match */
 }
 
-static int memtype_rb_check_conflict(struct rb_root *root,
-				u64 start, u64 end,
-				enum page_cache_mode reqtype,
-				enum page_cache_mode *newtype)
+static int memtype_check_conflict(u64 start, u64 end,
+				  enum page_cache_mode reqtype,
+				  enum page_cache_mode *newtype)
 {
-	struct rb_node *node;
-	struct memtype *match;
+	struct memtype *entry_match;
 	enum page_cache_mode found_type = reqtype;
 
-	match = memtype_rb_lowest_match(&memtype_rbroot, start, end);
-	if (match == NULL)
+	entry_match = interval_iter_first(&memtype_rbroot, start, end-1);
+	if (entry_match == NULL)
 		goto success;
 
-	if (match->type != found_type && newtype == NULL)
+	if (entry_match->type != found_type && newtype == NULL)
 		goto failure;
 
-	dprintk("Overlap at 0x%Lx-0x%Lx\n", match->start, match->end);
-	found_type = match->type;
+	dprintk("Overlap at 0x%Lx-0x%Lx\n", entry_match->start, entry_match->end);
+	found_type = entry_match->type;
 
-	node = rb_next(&match->rb);
-	while (node) {
-		match = rb_entry(node, struct memtype, rb);
-
-		if (match->start >= end) /* Checked all possible matches */
-			goto success;
-
-		if (is_node_overlap(match, start, end) &&
-		    match->type != found_type) {
+	entry_match = interval_iter_next(entry_match, start, end-1);
+	while (entry_match) {
+		if (entry_match->type != found_type)
 			goto failure;
-		}
 
-		node = rb_next(&match->rb);
+		entry_match = interval_iter_next(entry_match, start, end-1);
 	}
 success:
 	if (newtype)
@@ -159,107 +108,84 @@ success:
 failure:
 	pr_info("x86/PAT: %s:%d conflicting memory types %Lx-%Lx %s<->%s\n",
 		current->comm, current->pid, start, end,
-		cattr_name(found_type), cattr_name(match->type));
+		cattr_name(found_type), cattr_name(entry_match->type));
+
 	return -EBUSY;
 }
 
-static void memtype_rb_insert(struct rb_root *root, struct memtype *newdata)
-{
-	struct rb_node **node = &(root->rb_node);
-	struct rb_node *parent = NULL;
-
-	while (*node) {
-		struct memtype *data = rb_entry(*node, struct memtype, rb);
-
-		parent = *node;
-		if (data->subtree_max_end < newdata->end)
-			data->subtree_max_end = newdata->end;
-		if (newdata->start <= data->start)
-			node = &((*node)->rb_left);
-		else if (newdata->start > data->start)
-			node = &((*node)->rb_right);
-	}
-
-	newdata->subtree_max_end = newdata->end;
-	rb_link_node(&newdata->rb, parent, node);
-	rb_insert_augmented(&newdata->rb, root, &memtype_rb_augment_cb);
-}
-
-int rbt_memtype_check_insert(struct memtype *new,
-			     enum page_cache_mode *ret_type)
+int memtype_check_insert(struct memtype *entry_new, enum page_cache_mode *ret_type)
 {
 	int err = 0;
 
-	err = memtype_rb_check_conflict(&memtype_rbroot, new->start, new->end,
-						new->type, ret_type);
+	err = memtype_check_conflict(entry_new->start, entry_new->end, entry_new->type, ret_type);
+	if (err)
+		return err;
 
-	if (!err) {
-		if (ret_type)
-			new->type = *ret_type;
+	if (ret_type)
+		entry_new->type = *ret_type;
 
-		new->subtree_max_end = new->end;
-		memtype_rb_insert(&memtype_rbroot, new);
-	}
-	return err;
+	interval_insert(entry_new, &memtype_rbroot);
+	return 0;
 }
 
-struct memtype *rbt_memtype_erase(u64 start, u64 end)
+struct memtype *memtype_erase(u64 start, u64 end)
 {
-	struct memtype *data;
+	struct memtype *entry_old;
 
 	/*
 	 * Since the memtype_rbroot tree allows overlapping ranges,
-	 * rbt_memtype_erase() checks with EXACT_MATCH first, i.e. free
+	 * memtype_erase() checks with EXACT_MATCH first, i.e. free
 	 * a whole node for the munmap case.  If no such entry is found,
 	 * it then checks with END_MATCH, i.e. shrink the size of a node
 	 * from the end for the mremap case.
 	 */
-	data = memtype_rb_match(&memtype_rbroot, start, end,
-				MEMTYPE_EXACT_MATCH);
-	if (!data) {
-		data = memtype_rb_match(&memtype_rbroot, start, end,
-					MEMTYPE_END_MATCH);
-		if (!data)
+	entry_old = memtype_match(start, end, MEMTYPE_EXACT_MATCH);
+	if (!entry_old) {
+		entry_old = memtype_match(start, end, MEMTYPE_END_MATCH);
+		if (!entry_old)
 			return ERR_PTR(-EINVAL);
 	}
 
-	if (data->start == start) {
+	if (entry_old->start == start) {
 		/* munmap: erase this node */
-		rb_erase_augmented(&data->rb, &memtype_rbroot,
-					&memtype_rb_augment_cb);
+		interval_remove(entry_old, &memtype_rbroot);
 	} else {
 		/* mremap: update the end value of this node */
-		rb_erase_augmented(&data->rb, &memtype_rbroot,
-					&memtype_rb_augment_cb);
-		data->end = start;
-		data->subtree_max_end = data->end;
-		memtype_rb_insert(&memtype_rbroot, data);
+		interval_remove(entry_old, &memtype_rbroot);
+		entry_old->end = start;
+		interval_insert(entry_old, &memtype_rbroot);
+
 		return NULL;
 	}
 
-	return data;
+	return entry_old;
 }
 
-struct memtype *rbt_memtype_lookup(u64 addr)
+struct memtype *memtype_lookup(u64 addr)
 {
-	return memtype_rb_lowest_match(&memtype_rbroot, addr, addr + PAGE_SIZE);
+	return interval_iter_first(&memtype_rbroot, addr, addr + PAGE_SIZE-1);
 }
 
-#if defined(CONFIG_DEBUG_FS)
-int rbt_memtype_copy_nth_element(struct memtype *out, loff_t pos)
+/*
+ * Debugging helper, copy the Nth entry of the tree into a
+ * a copy for printout. This allows us to print out the tree
+ * via debugfs, without holding the memtype_lock too long:
+ */
+#ifdef CONFIG_DEBUG_FS
+int memtype_copy_nth_element(struct memtype *entry_out, loff_t pos)
 {
-	struct rb_node *node;
+	struct memtype *entry_match;
 	int i = 1;
 
-	node = rb_first(&memtype_rbroot);
-	while (node && pos != i) {
-		node = rb_next(node);
+	entry_match = interval_iter_first(&memtype_rbroot, 0, ULONG_MAX);
+
+	while (entry_match && pos != i) {
+		entry_match = interval_iter_next(entry_match, 0, ULONG_MAX);
 		i++;
 	}
 
-	if (node) { /* pos == i */
-		struct memtype *this = rb_entry(node, struct memtype, rb);
-		*out = *this;
+	if (entry_match) { /* pos == i */
+		*entry_out = *entry_match;
 		return 0;
 	} else {
 		return 1;

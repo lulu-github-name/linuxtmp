@@ -346,22 +346,13 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
 }
 
 /*
- * FOLL_FORCE or a forced COW break can write even to unwritable pte's,
- * but only after we've gone through a COW cycle and they are dirty.
+ * FOLL_FORCE can write to even unwritable pte's, but only
+ * after we've gone through a COW cycle and they are dirty.
  */
 static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
 {
-	return pte_write(pte) || ((flags & FOLL_COW) && pte_dirty(pte));
-}
-
-/*
- * A (separate) COW fault might break the page the other way and
- * get_user_pages() would return the page from what is now the wrong
- * VM. So we need to force a COW break at GUP time even for reads.
- */
-static inline bool should_force_cow_break(struct vm_area_struct *vma, unsigned int flags)
-{
-	return is_cow_mapping(vma->vm_flags) && (flags & (FOLL_GET | FOLL_PIN));
+	return pte_write(pte) ||
+		((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
 }
 
 static struct page *follow_page_pte(struct vm_area_struct *vma,
@@ -1031,11 +1022,9 @@ static long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 				goto out;
 			}
 			if (is_vm_hugetlb_page(vma)) {
-				if (should_force_cow_break(vma, foll_flags))
-					foll_flags |= FOLL_WRITE;
 				i = follow_hugetlb_page(mm, vma, pages, vmas,
 						&start, &nr_pages, i,
-						foll_flags, locked);
+						gup_flags, locked);
 				if (locked && *locked == 0) {
 					/*
 					 * We've got a VM_FAULT_RETRY
@@ -1049,10 +1038,6 @@ static long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 				continue;
 			}
 		}
-
-		if (should_force_cow_break(vma, foll_flags))
-			foll_flags |= FOLL_WRITE;
-
 retry:
 		/*
 		 * If we have a pending SIGKILL, don't keep faulting pages and
@@ -1239,6 +1224,9 @@ static __always_inline long __get_user_pages_locked(struct task_struct *tsk,
 		/* check caller initialized locked */
 		BUG_ON(*locked != 1);
 	}
+
+	if (flags & FOLL_PIN)
+		atomic_set(&mm->has_pinned, 1);
 
 	/*
 	 * FOLL_PIN and FOLL_GET are mutually exclusive. Traditional behavior
@@ -1945,6 +1933,12 @@ long get_user_pages_locked(unsigned long start, unsigned long nr_pages,
 	 */
 	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
 		return -EINVAL;
+	/*
+	 * FOLL_PIN must only be set internally by the pin_user_pages*() APIs,
+	 * never directly by the caller, so enforce that:
+	 */
+	if (WARN_ON_ONCE(gup_flags & FOLL_PIN))
+		return -EINVAL;
 
 	return __get_user_pages_locked(current, current->mm, start, nr_pages,
 				       pages, NULL, locked,
@@ -2616,82 +2610,99 @@ static int __gup_longterm_unlocked(unsigned long start, int nr_pages,
 	return ret;
 }
 
-static int internal_get_user_pages_fast(unsigned long start, int nr_pages,
+static unsigned long lockless_pages_from_mm(unsigned long start,
+					    unsigned long end,
+					    unsigned int gup_flags,
+					    struct page **pages)
+{
+	unsigned long flags;
+	int nr_pinned = 0;
+	unsigned seq = 0;
+
+	if (!IS_ENABLED(CONFIG_HAVE_FAST_GUP) ||
+	    !gup_fast_permitted(start, end))
+		return 0;
+
+	if (gup_flags & FOLL_PIN) {
+		seq = raw_read_seqcount(&current->mm->write_protect_seq);
+		if (seq & 1)
+			return 0;
+	}
+
+	/*
+	 * Disable interrupts. The nested form is used, in order to allow full,
+	 * general purpose use of this routine.
+	 *
+	 * With interrupts disabled, we block page table pages from being freed
+	 * from under us. See struct mmu_table_batch comments in
+	 * include/asm-generic/tlb.h for more details.
+	 *
+	 * We do not adopt an rcu_read_lock() here as we also want to block IPIs
+	 * that come from THPs splitting.
+	 */
+	local_irq_save(flags);
+	gup_pgd_range(start, end, gup_flags, pages, &nr_pinned);
+	local_irq_restore(flags);
+
+	/*
+	 * When pinning pages for DMA there could be a concurrent write protect
+	 * from fork() via copy_page_range(), in this case always fail fast GUP.
+	 */
+	if (gup_flags & FOLL_PIN) {
+		if (read_seqcount_retry(&current->mm->write_protect_seq, seq)) {
+			unpin_user_pages(pages, nr_pinned);
+			return 0;
+		}
+	}
+	return nr_pinned;
+}
+
+static int internal_get_user_pages_fast(unsigned long start,
+					unsigned long nr_pages,
 					unsigned int gup_flags,
 					struct page **pages)
 {
-	unsigned long addr, len, end;
-	unsigned long flags;
-	int nr_pinned = 0, ret = 0;
+	unsigned long len, end;
+	unsigned long nr_pinned;
+	int ret;
 
 	if (WARN_ON_ONCE(gup_flags & ~(FOLL_WRITE | FOLL_LONGTERM |
 				       FOLL_FORCE | FOLL_PIN | FOLL_GET |
 				       FOLL_FAST_ONLY)))
 		return -EINVAL;
 
-	start = untagged_addr(start) & PAGE_MASK;
-	addr = start;
-	len = (unsigned long) nr_pages << PAGE_SHIFT;
-	end = start + len;
+	if (gup_flags & FOLL_PIN)
+		atomic_set(&current->mm->has_pinned, 1);
 
-	if (end <= start)
+	if (!(gup_flags & FOLL_FAST_ONLY))
+		might_lock_read(&current->mm->mmap_sem);
+
+	start = untagged_addr(start) & PAGE_MASK;
+	len = nr_pages << PAGE_SHIFT;
+	if (check_add_overflow(start, len, &end))
 		return 0;
 	if (unlikely(!access_ok((void __user *)start, len)))
 		return -EFAULT;
 
-	/*
-	 * The FAST_GUP case requires FOLL_WRITE even for pure reads,
-	 * because get_user_pages() may need to cause an early COW in
-	 * order to avoid confusing the normal COW routines. So only
-	 * targets that are already writable are safe to do by just
-	 * looking at the page tables.
-	 *
-	 * NOTE! With FOLL_FAST_ONLY we allow read-only gup_fast() here,
-	 * because there is no slow path to fall back on. But you'd
-	 * better be careful about possible COW pages - you'll get _a_
-	 * COW page, but not necessarily the one you intended to get
-	 * depending on what COW event happens after this. COW may break
-	 * the page copy in a random direction.
-	 *
-	 * Disable interrupts. The nested form is used, in order to allow
-	 * full, general purpose use of this routine.
-	 *
-	 * With interrupts disabled, we block page table pages from being
-	 * freed from under us. See struct mmu_table_batch comments in
-	 * include/asm-generic/tlb.h for more details.
-	 *
-	 * We do not adopt an rcu_read_lock(.) here as we also want to
-	 * block IPIs that come from THPs splitting.
-	 */
-	if (IS_ENABLED(CONFIG_HAVE_FAST_GUP) && gup_fast_permitted(start, end)) {
-		unsigned long fast_flags = gup_flags;
-		if (!(gup_flags & FOLL_FAST_ONLY))
-			fast_flags |= FOLL_WRITE;
+	nr_pinned = lockless_pages_from_mm(start, end, gup_flags, pages);
+	if (nr_pinned == nr_pages || gup_flags & FOLL_FAST_ONLY)
+		return nr_pinned;
 
-		local_irq_save(flags);
-		gup_pgd_range(addr, end, fast_flags, pages, &nr_pinned);
-		local_irq_restore(flags);
-		ret = nr_pinned;
+	/* Slow path: try to get the remaining pages with get_user_pages */
+	start += nr_pinned << PAGE_SHIFT;
+	pages += nr_pinned;
+	ret = __gup_longterm_unlocked(start, nr_pages - nr_pinned, gup_flags,
+				      pages);
+	if (ret < 0) {
+		/*
+		 * The caller has to unpin the pages we already pinned so
+		 * returning -errno is not an option
+		 */
+		if (nr_pinned)
+			return nr_pinned;
+		return ret;
 	}
-
-	if (nr_pinned < nr_pages && !(gup_flags & FOLL_FAST_ONLY)) {
-		/* Try to get the remaining pages with get_user_pages */
-		start += nr_pinned << PAGE_SHIFT;
-		pages += nr_pinned;
-
-		ret = __gup_longterm_unlocked(start, nr_pages - nr_pinned,
-					      gup_flags, pages);
-
-		/* Have to be a bit careful with return values */
-		if (nr_pinned > 0) {
-			if (ret < 0)
-				ret = nr_pinned;
-			else
-				ret += nr_pinned;
-		}
-	}
-
-	return ret;
+	return ret + nr_pinned;
 }
 
 /*
@@ -2920,3 +2931,49 @@ long pin_user_pages(unsigned long start, unsigned long nr_pages,
 				     pages, vmas, gup_flags);
 }
 EXPORT_SYMBOL(pin_user_pages);
+
+/*
+ * pin_user_pages_unlocked() is the FOLL_PIN variant of
+ * get_user_pages_unlocked(). Behavior is the same, except that this one sets
+ * FOLL_PIN and rejects FOLL_GET.
+ */
+long pin_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
+			     struct page **pages, unsigned int gup_flags)
+{
+	/* FOLL_GET and FOLL_PIN are mutually exclusive. */
+	if (WARN_ON_ONCE(gup_flags & FOLL_GET))
+		return -EINVAL;
+
+	gup_flags |= FOLL_PIN;
+	return get_user_pages_unlocked(start, nr_pages, pages, gup_flags);
+}
+EXPORT_SYMBOL(pin_user_pages_unlocked);
+
+/*
+ * pin_user_pages_locked() is the FOLL_PIN variant of get_user_pages_locked().
+ * Behavior is the same, except that this one sets FOLL_PIN and rejects
+ * FOLL_GET.
+ */
+long pin_user_pages_locked(unsigned long start, unsigned long nr_pages,
+			   unsigned int gup_flags, struct page **pages,
+			   int *locked)
+{
+	/*
+	 * FIXME: Current FOLL_LONGTERM behavior is incompatible with
+	 * FAULT_FLAG_ALLOW_RETRY because of the FS DAX check requirement on
+	 * vmas.  As there are no users of this flag in this call we simply
+	 * disallow this option for now.
+	 */
+	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
+		return -EINVAL;
+
+	/* FOLL_GET and FOLL_PIN are mutually exclusive. */
+	if (WARN_ON_ONCE(gup_flags & FOLL_GET))
+		return -EINVAL;
+
+	gup_flags |= FOLL_PIN;
+	return __get_user_pages_locked(current, current->mm, start, nr_pages,
+				       pages, NULL, locked,
+				       gup_flags | FOLL_TOUCH);
+}
+EXPORT_SYMBOL(pin_user_pages_locked);

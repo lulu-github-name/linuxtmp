@@ -401,7 +401,10 @@ static inline bool is_file_hugepages(struct file *file)
 	return is_file_shm_hugepages(file);
 }
 
-
+static inline struct hstate *hstate_inode(struct inode *i)
+{
+	return HUGETLBFS_SB(i->i_sb)->hstate;
+}
 #else /* !CONFIG_HUGETLBFS */
 
 #define is_file_hugepages(file)			false
@@ -413,6 +416,10 @@ hugetlb_file_setup(const char *name, size_t size, vm_flags_t acctflag,
 	return ERR_PTR(-ENOSYS);
 }
 
+static inline struct hstate *hstate_inode(struct inode *i)
+{
+	return NULL;
+}
 #endif /* !CONFIG_HUGETLBFS */
 
 #ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
@@ -420,6 +427,65 @@ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
 					unsigned long len, unsigned long pgoff,
 					unsigned long flags);
 #endif /* HAVE_ARCH_HUGETLB_UNMAPPED_AREA */
+
+/*
+ * huegtlb page specific state flags.  These flags are located in page.private
+ * of the hugetlb head page.  Functions created via the below macros should be
+ * used to manipulate these flags.
+ *
+ * HPG_restore_reserve - Set when a hugetlb page consumes a reservation at
+ *	allocation time.  Cleared when page is fully instantiated.  Free
+ *	routine checks flag to restore a reservation on error paths.
+ * HPG_migratable  - Set after a newly allocated page is added to the page
+ *	cache and/or page tables.  Indicates the page is a candidate for
+ *	migration.
+ */
+enum hugetlb_page_flags {
+	HPG_restore_reserve = 0,
+	HPG_migratable,
+	__NR_HPAGEFLAGS,
+};
+
+/*
+ * Macros to create test, set and clear function definitions for
+ * hugetlb specific page flags.
+ */
+#ifdef CONFIG_HUGETLB_PAGE
+#define TESTHPAGEFLAG(uname, flname)				\
+static inline int HPage##uname(struct page *page)		\
+	{ return test_bit(HPG_##flname, &(page->private)); }
+
+#define SETHPAGEFLAG(uname, flname)				\
+static inline void SetHPage##uname(struct page *page)		\
+	{ set_bit(HPG_##flname, &(page->private)); }
+
+#define CLEARHPAGEFLAG(uname, flname)				\
+static inline void ClearHPage##uname(struct page *page)		\
+	{ clear_bit(HPG_##flname, &(page->private)); }
+#else
+#define TESTHPAGEFLAG(uname, flname)				\
+static inline int HPage##uname(struct page *page)		\
+	{ return 0; }
+
+#define SETHPAGEFLAG(uname, flname)				\
+static inline void SetHPage##uname(struct page *page)		\
+	{ }
+
+#define CLEARHPAGEFLAG(uname, flname)				\
+static inline void ClearHPage##uname(struct page *page)		\
+	{ }
+#endif
+
+#define HPAGEFLAG(uname, flname)				\
+	TESTHPAGEFLAG(uname, flname)				\
+	SETHPAGEFLAG(uname, flname)				\
+	CLEARHPAGEFLAG(uname, flname)				\
+
+/*
+ * Create functions associated with hugetlb page flags
+ */
+HPAGEFLAG(RestoreReserve, restore_reserve)
+HPAGEFLAG(Migratable, migratable)
 
 #ifdef CONFIG_HUGETLB_PAGE
 
@@ -483,9 +549,18 @@ extern unsigned int default_hstate_idx;
 
 #define default_hstate (hstates[default_hstate_idx])
 
-static inline struct hstate *hstate_inode(struct inode *i)
+/*
+ * hugetlb page subpool pointer located in hpage[1].private
+ */
+static inline struct hugepage_subpool *hugetlb_page_subpool(struct page *hpage)
 {
-	return HUGETLBFS_SB(i->i_sb)->hstate;
+	return (struct hugepage_subpool *)(hpage+1)->private;
+}
+
+static inline void hugetlb_set_page_subpool(struct page *hpage,
+					struct hugepage_subpool *subpool)
+{
+	set_page_private(hpage+1, (unsigned long)subpool);
 }
 
 static inline struct hstate *hstate_file(struct file *f)
@@ -753,11 +828,6 @@ static inline struct hstate *hstate_sizelog(int page_size_log)
 }
 
 static inline struct hstate *hstate_vma(struct vm_area_struct *vma)
-{
-	return NULL;
-}
-
-static inline struct hstate *hstate_inode(struct inode *i)
 {
 	return NULL;
 }

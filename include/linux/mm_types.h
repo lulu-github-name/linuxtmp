@@ -15,6 +15,7 @@
 #include <linux/page-flags-layout.h>
 #include <linux/workqueue.h>
 #include <linux/rh_kabi.h>
+#include <linux/seqlock.h>
 
 #include <asm/mmu.h>
 
@@ -546,10 +547,10 @@ struct mm_struct {
 		atomic_long_t hugetlb_usage;
 #endif
 		struct work_struct async_put_work;
-
-#if IS_ENABLED(CONFIG_HMM)
-		/* HMM needs to track a few things per mm */
-		struct hmm *hmm;
+#ifdef CONFIG_HMM_MIRROR
+#ifdef __GENKSYMS__
+		RH_KABI_DEPRECATE(struct hmm *, hmm)
+#endif
 #endif
 	} __randomize_layout;
 
@@ -558,8 +559,21 @@ struct mm_struct {
 #else
 	RH_KABI_RESERVE(1)
 #endif
-	RH_KABI_RESERVE(2)
-	RH_KABI_RESERVE(3)
+	/**
+	 * @has_pinned: Whether this mm has pinned any pages.  This can
+	 * be either replaced in the future by @pinned_vm when it
+	 * becomes stable, or grow into a counter on its own. We're
+	 * aggresive on this bit now - even if the pinned pages were
+	 * unpinned later on, we'll still keep this bit set for the
+	 * lifecycle of this mm just for simplicity.
+	 */
+	RH_KABI_USE(2, atomic_t has_pinned)
+	/**
+	 * @write_protect_seq: Locked when any thread is write
+	 * protecting pages mapped by this mm to enforce a later COW,
+	 * for instance during page table copying for fork().
+	 */
+	RH_KABI_USE(3, seqcount_t write_protect_seq)
 	RH_KABI_RESERVE(4)
 	RH_KABI_RESERVE(5)
 	RH_KABI_RESERVE(6)

@@ -593,7 +593,7 @@ config ZSMALLOC
 
 config PGTABLE_MAPPING
 	bool "Use page table mapping to access object in zsmalloc"
-	depends on ZSMALLOC
+	depends on ZSMALLOC=y
 	help
 	  By default, zsmalloc uses a copy-based object mapping method to
 	  access allocations that span two pages. However, if a particular
@@ -681,28 +681,15 @@ config ZONE_DEVICE
 
 	  If FS_DAX is enabled, then say Y.
 
-config ARCH_HAS_HMM
-	bool
-	default y
-	depends on (X86_64 || PPC64)
-	depends on ZONE_DEVICE
-	depends on MMU && 64BIT
-	depends on MEMORY_HOTPLUG
-	depends on MEMORY_HOTREMOVE
-	depends on SPARSEMEM_VMEMMAP
-
 config DEV_PAGEMAP_OPS
 	bool
 
-config HMM
-	bool
-	select MIGRATE_VMA_HELPER
-
 config HMM_MIRROR
 	bool "HMM mirror CPU page table into a device page table"
-	depends on ARCH_HAS_HMM
+	depends on (X86_64 || PPC64)
+	depends on MMU && 64BIT
 	select MMU_NOTIFIER
-	select HMM
+	select MIGRATE_VMA_HELPER
 	help
 	  Select HMM_MIRROR if you want to mirror range of the CPU page table of a
 	  process into a device page table. Here, mirror means "keep synchronized".
@@ -720,6 +707,9 @@ config DEVICE_PRIVATE
 	  Allows creation of struct pages to represent unaddressable device
 	  memory; i.e., memory that is only accessible from the device (or
 	  group of devices). You likely also want to select HMM_MIRROR.
+
+config VMAP_PFN
+	bool
 
 config FRAME_VECTOR
 	bool
