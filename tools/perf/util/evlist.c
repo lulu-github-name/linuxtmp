@@ -305,6 +305,11 @@ int __evlist__add_default_attrs(struct evlist *evlist, struct perf_event_attr *a
 	return evlist__add_attrs(evlist, attrs, nr_attrs);
 }
 
+__weak int arch_evlist__add_default_attrs(struct evlist *evlist __maybe_unused)
+{
+	return 0;
+}
+
 struct evsel *evlist__find_tracepoint_by_id(struct evlist *evlist, int id)
 {
 	struct evsel *evsel;
@@ -573,6 +578,14 @@ int evlist__filter_pollfd(struct evlist *evlist, short revents_and_mask)
 {
 	return perf_evlist__filter_pollfd(&evlist->core, revents_and_mask);
 }
+
+#ifdef HAVE_EVENTFD_SUPPORT
+int evlist__add_wakeup_eventfd(struct evlist *evlist, int fd)
+{
+	return perf_evlist__add_pollfd(&evlist->core, fd, NULL, POLLIN,
+				       fdarray_flag__nonfilterable);
+}
+#endif
 
 int evlist__poll(struct evlist *evlist, int timeout)
 {
@@ -1294,6 +1307,7 @@ void evlist__close(struct evlist *evlist)
 		perf_evsel__free_fd(&evsel->core);
 		perf_evsel__free_id(&evsel->core);
 	}
+	perf_evlist__reset_id_hash(&evlist->core);
 }
 
 static int evlist__create_syswide_maps(struct evlist *evlist)
@@ -1941,6 +1955,12 @@ static int evlist__ctlfd_recv(struct evlist *evlist, enum evlist_ctl_cmd *cmd,
 		} else if (!strncmp(cmd_data, EVLIST_CTL_CMD_EVLIST_TAG,
 				    (sizeof(EVLIST_CTL_CMD_EVLIST_TAG)-1))) {
 			*cmd = EVLIST_CTL_CMD_EVLIST;
+		} else if (!strncmp(cmd_data, EVLIST_CTL_CMD_STOP_TAG,
+				    (sizeof(EVLIST_CTL_CMD_STOP_TAG)-1))) {
+			*cmd = EVLIST_CTL_CMD_STOP;
+		} else if (!strncmp(cmd_data, EVLIST_CTL_CMD_PING_TAG,
+				    (sizeof(EVLIST_CTL_CMD_PING_TAG)-1))) {
+			*cmd = EVLIST_CTL_CMD_PING;
 		}
 	}
 
@@ -2078,6 +2098,8 @@ int evlist__ctlfd_process(struct evlist *evlist, enum evlist_ctl_cmd *cmd)
 				err = evlist__ctlfd_list(evlist, cmd_data);
 				break;
 			case EVLIST_CTL_CMD_SNAPSHOT:
+			case EVLIST_CTL_CMD_STOP:
+			case EVLIST_CTL_CMD_PING:
 				break;
 			case EVLIST_CTL_CMD_ACK:
 			case EVLIST_CTL_CMD_UNSUPPORTED:
