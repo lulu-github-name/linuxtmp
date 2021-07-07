@@ -535,7 +535,6 @@ static const struct virtio_config_ops virtio_pci_config_ops = {
 	.get_shm_region  = vp_get_shm_region,
 };
 
-<<<<<<< HEAD
 /**
  * virtio_pci_find_capability - walk capabilities to find device info.
  * @dev: the pci device
@@ -638,8 +637,6 @@ static inline void check_offsets(void)
 		     offsetof(struct virtio_pci_common_cfg, queue_used_hi));
 }
 
-=======
->>>>>>> ffc1759676be... Merge tag 'for_linus' of git://git.kernel.org/pub/scm/linux/kernel/git/mst/vhost
 /* the PCI probing function */
 int virtio_pci_modern_probe(struct virtio_pci_device *vp_dev)
 {
