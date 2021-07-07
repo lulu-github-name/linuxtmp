@@ -818,8 +818,7 @@ typedef struct pglist_data {
 	 * is the first PFN that needs to be initialised.
 	 */
 	unsigned long first_deferred_pfn;
-	/* Number of non-deferred pages */
-	unsigned long static_init_pgcnt;
+	RH_KABI_DEPRECATE(unsigned long, static_init_pgcnt)
 #endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE

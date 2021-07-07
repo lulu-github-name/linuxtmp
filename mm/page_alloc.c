@@ -418,8 +418,15 @@ defer_init(int nid, unsigned long pfn, unsigned long end_pfn)
 	/* Always populate low zones for address-constrained allocations */
 	if (end_pfn < pgdat_end_pfn(NODE_DATA(nid)))
 		return false;
+
+	if (NODE_DATA(nid)->first_deferred_pfn != ULONG_MAX)
+		return true;
+	/*
+	 * We start only with one section of pages, more pages are added as
+	 * needed until the rest of deferred pages are initialized.
+	 */
 	nr_initialised++;
-	if ((nr_initialised > NODE_DATA(nid)->static_init_pgcnt) &&
+	if ((nr_initialised > PAGES_PER_SECTION) &&
 	    (pfn & (PAGES_PER_SECTION - 1)) == 0) {
 		NODE_DATA(nid)->first_deferred_pfn = pfn;
 		return true;
@@ -6005,10 +6012,15 @@ overlap_memmap_init(unsigned long zone, unsigned long *pfn)
  * Initially all pages are reserved - free ones are freed
  * up by memblock_free_all() once the early boot process is
  * done. Non-atomic initialization, single-pass.
+ *
+ * All aligned pageblocks are initialized to the specified migratetype
+ * (usually MIGRATE_MOVABLE). Besides setting the migratetype, no related
+ * zone stats (e.g., nr_isolate_pageblock) are touched.
  */
 void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
-		unsigned long start_pfn, enum meminit_context context,
-		struct vmem_altmap *altmap)
+		unsigned long start_pfn, unsigned long zone_end_pfn,
+		enum meminit_context context,
+		struct vmem_altmap *altmap, int migratetype)
 {
 	unsigned long pfn, end_pfn = start_pfn + size;
 	struct page *page;
@@ -6042,7 +6054,7 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 		if (context == MEMINIT_EARLY) {
 			if (overlap_memmap_init(zone, &pfn))
 				continue;
-			if (defer_init(nid, pfn, end_pfn))
+			if (defer_init(nid, pfn, zone_end_pfn))
 				break;
 		}
 
@@ -6052,14 +6064,12 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 			__SetPageReserved(page);
 
 		/*
-		 * Mark the block movable so that blocks are reserved for
-		 * movable at startup. This will force kernel allocations
-		 * to reserve their blocks rather than leaking throughout
-		 * the address space during boot when many long-lived
-		 * kernel allocations are made.
+		 * Usually, we want to mark the pageblock MIGRATE_MOVABLE,
+		 * such that unmovable allocations won't be scattered all
+		 * over the place during system boot.
 		 */
 		if (IS_ALIGNED(pfn, pageblock_nr_pages)) {
-			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
+			set_pageblock_migratetype(page, migratetype);
 			cond_resched();
 		}
 		pfn++;
@@ -6158,8 +6168,8 @@ void __meminit __weak memmap_init(unsigned long size, int nid,
 
 		if (end_pfn > start_pfn) {
 			size = end_pfn - start_pfn;
-			memmap_init_zone(size, nid, zone, start_pfn,
-					 MEMINIT_EARLY, NULL);
+			memmap_init_zone(size, nid, zone, start_pfn, range_end_pfn,
+					 MEMINIT_EARLY, NULL, MIGRATE_MOVABLE);
 		}
 	}
 }
@@ -6935,12 +6945,6 @@ static void __ref alloc_node_mem_map(struct pglist_data *pgdat) { }
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
 static inline void pgdat_set_deferred_range(pg_data_t *pgdat)
 {
-	/*
-	 * We start only with one section of pages, more pages are added as
-	 * needed until the rest of deferred pages are initialized.
-	 */
-	pgdat->static_init_pgcnt = min_t(unsigned long, PAGES_PER_SECTION,
-						pgdat->node_spanned_pages);
 	pgdat->first_deferred_pfn = ULONG_MAX;
 }
 #else
