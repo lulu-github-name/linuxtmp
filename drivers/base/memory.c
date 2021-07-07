@@ -185,45 +185,6 @@ int memory_notify(unsigned long val, void *v)
 }
 
 /*
- * The probe routines leave the pages uninitialized, just as the bootmem code
- * does. Make sure we do not access them, but instead use only information from
- * within sections.
- */
-static bool pages_correctly_probed(unsigned long start_pfn)
-{
-	unsigned long section_nr = pfn_to_section_nr(start_pfn);
-	unsigned long section_nr_end = section_nr + sections_per_block;
-	unsigned long pfn = start_pfn;
-
-	/*
-	 * memmap between sections is not contiguous except with
-	 * SPARSEMEM_VMEMMAP. We lookup the page once per section
-	 * and assume memmap is contiguous within each section
-	 */
-	for (; section_nr < section_nr_end; section_nr++) {
-		if (WARN_ON_ONCE(!pfn_valid(pfn)))
-			return false;
-
-		if (!present_section_nr(section_nr)) {
-			pr_warn("section %ld pfn[%lx, %lx) not present",
-				section_nr, pfn, pfn + PAGES_PER_SECTION);
-			return false;
-		} else if (!valid_section_nr(section_nr)) {
-			pr_warn("section %ld pfn[%lx, %lx) no valid memmap",
-				section_nr, pfn, pfn + PAGES_PER_SECTION);
-			return false;
-		} else if (online_section_nr(section_nr)) {
-			pr_warn("section %ld pfn[%lx, %lx) is already online",
-				section_nr, pfn, pfn + PAGES_PER_SECTION);
-			return false;
-		}
-		pfn += PAGES_PER_SECTION;
-	}
-
-	return true;
-}
-
-/*
  * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
  * OK to have direct references to sparsemem variables in here.
  */
@@ -239,9 +200,6 @@ memory_block_action(unsigned long start_section_nr, unsigned long action,
 
 	switch (action) {
 	case MEM_ONLINE:
-		if (!pages_correctly_probed(start_pfn))
-			return -EBUSY;
-
 		ret = online_pages(start_pfn, nr_pages, online_type, nid);
 		break;
 	case MEM_OFFLINE:
@@ -303,10 +261,6 @@ static int memory_subsys_offline(struct device *dev)
 
 	if (mem->state == MEM_OFFLINE)
 		return 0;
-
-	/* Can't offline block with non-present sections */
-	if (mem->section_count != sections_per_block)
-		return -EINVAL;
 
 	return memory_block_change_state(mem, MEM_OFFLINE, MEM_ONLINE);
 }
@@ -661,7 +615,7 @@ static int init_memory_block(struct memory_block **memory,
 
 static int add_memory_block(unsigned long base_section_nr)
 {
-	int ret, section_count = 0;
+	int section_count = 0;
 	struct memory_block *mem;
 	unsigned long nr;
 
@@ -672,12 +626,8 @@ static int add_memory_block(unsigned long base_section_nr)
 
 	if (section_count == 0)
 		return 0;
-	ret = init_memory_block(&mem, base_memory_block_id(base_section_nr),
-				MEM_ONLINE);
-	if (ret)
-		return ret;
-	mem->section_count = section_count;
-	return 0;
+	return init_memory_block(&mem, base_memory_block_id(base_section_nr),
+				 MEM_ONLINE);
 }
 
 static void unregister_memory(struct memory_block *memory)
@@ -715,7 +665,6 @@ int create_memory_block_devices(unsigned long start, unsigned long size)
 		ret = init_memory_block(&mem, block_id, MEM_OFFLINE);
 		if (ret)
 			break;
-		mem->section_count = sections_per_block;
 	}
 	if (ret) {
 		end_block_id = block_id;
@@ -724,7 +673,6 @@ int create_memory_block_devices(unsigned long start, unsigned long size)
 			mem = find_memory_block_by_id(block_id);
 			if (WARN_ON_ONCE(!mem))
 				continue;
-			mem->section_count = 0;
 			unregister_memory(mem);
 		}
 	}
@@ -753,7 +701,6 @@ void remove_memory_block_devices(unsigned long start, unsigned long size)
 		mem = find_memory_block_by_id(block_id);
 		if (WARN_ON_ONCE(!mem))
 			continue;
-		mem->section_count = 0;
 		unregister_memory_block_under_nodes(mem);
 		unregister_memory(mem);
 	}
