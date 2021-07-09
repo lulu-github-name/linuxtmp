@@ -21,7 +21,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/sysfs.h>
 #include <linux/file.h>
-#include <linux/dma-map-ops.h>
+//#include <linux/dma-map-ops.h>
 #include <linux/vringh.h>
 #include <linux/vdpa.h>
 #include <linux/vhost_iotlb.h>
