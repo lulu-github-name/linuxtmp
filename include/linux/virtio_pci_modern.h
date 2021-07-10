@@ -41,16 +41,16 @@ struct virtio_pci_modern_device {
  */
 static inline u8 vp_ioread8(const u8 __iomem *addr)
 {
-	return ioread8(addr);
+	return ioread8((void __iomem *)addr);
 }
 static inline u16 vp_ioread16 (const __le16 __iomem *addr)
 {
-	return ioread16(addr);
+	return ioread16((void __iomem *)addr);
 }
 
 static inline u32 vp_ioread32(const __le32 __iomem *addr)
 {
-	return ioread32(addr);
+	return ioread32((void __iomem *)addr);
 }
 
 static inline void vp_iowrite8(u8 value, u8 __iomem *addr)
