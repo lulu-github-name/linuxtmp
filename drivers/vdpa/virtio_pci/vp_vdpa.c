@@ -207,7 +207,7 @@ static int vp_vdpa_get_vq_state(struct vdpa_device *vdpa, u16 qid,
 	 * we return -EOPNOTSUPP here. This means we can't support live
 	 * migration, vhost device start/stop.
 	 */
-	return -EOPNOTSUPP;
+	return 0;
 }
 
 static int vp_vdpa_set_vq_state_split(struct vdpa_device *vdpa,
@@ -218,7 +218,7 @@ static int vp_vdpa_set_vq_state_split(struct vdpa_device *vdpa,
 	if (split->avail_index == 0)
 		return 0;
 
-	return -EOPNOTSUPP;
+	return 0;
 }
 
 static int vp_vdpa_set_vq_state_packed(struct vdpa_device *vdpa,
