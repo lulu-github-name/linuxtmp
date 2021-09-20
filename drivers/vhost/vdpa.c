@@ -895,10 +895,10 @@ static int vhost_vdpa_alloc_domain(struct vhost_vdpa *v)
 	bus = dma_dev->bus;
 	if (!bus)
 		return -EFAULT;
-
+#if 0
 	if (!iommu_capable(bus, IOMMU_CAP_CACHE_COHERENCY))
 		return -ENOTSUPP;
-
+#endif
 	v->domain = iommu_domain_alloc(bus);
 	if (!v->domain)
 		return -EIO;
