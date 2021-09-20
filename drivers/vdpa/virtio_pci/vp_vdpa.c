@@ -157,7 +157,7 @@ static int vp_vdpa_request_irq(struct vp_vdpa *vp_vdpa)
 		vp_modern_queue_vector(mdev, i, i);
 		vp_vdpa->vring[i].irq = irq;
 	}
-
+printk(KERN_ERR "[%s] %d called\n", __func__,__LINE__);
 	snprintf(vp_vdpa->msix_name, VP_VDPA_NAME_SIZE, "vp-vdpa[%s]-config\n",
 		 pci_name(pdev));
 	irq = pci_irq_vector(pdev, queues);
@@ -386,7 +386,7 @@ static void vp_vdpa_set_config_cb(struct vdpa_device *vdpa,
 				  struct vdpa_callback *cb)
 {
 	struct vp_vdpa *vp_vdpa = vdpa_to_vp(vdpa);
-
+printk(KERN_ERR "[%s] %d called\n", __func__,__LINE__);
 	vp_vdpa->config_cb = *cb;
 }
 
